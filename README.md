@@ -5,7 +5,6 @@
 [License: MIT](LICENSE)
 
 > **论文**：MSAS-GNN: Spectrally-Driven Adaptive Sparse GNN for Robust and Efficient Inference  
-> **作者**：常昊，北京师范大学应用统计专业  
 > **基础框架**：SDGNN（Hu et al., arXiv:2410.19723）
 
 ---
