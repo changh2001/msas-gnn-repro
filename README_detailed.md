@@ -359,7 +359,7 @@ python scripts/visualization/build_paper_figures.py --main
 
 模块消融定义：
 
-- `B0`：SDGNN 兼容基线，全局统一 `lambda`，但仍沿用本仓库分层候选/Phase-Θ 口径
+- `B0`：SDGNN 兼容基线，和 `B1-B5` 共用分层 BFS 候选池、残差级联 `Phase-Θ` 与交替优化主干，但将自适应机制退化为全局统一 `lambda` 与均匀跳距预算
 - `B1`：在 `B0` 上加入谱能量驱动的 `tau(i)`
 - `B2`：在 `B1` 上加入中心性
 - `B3`：在 `B2` 上加入 `k-core`
@@ -367,10 +367,11 @@ python scripts/visualization/build_paper_figures.py --main
 - `B5`：在 `B4` 上加入跳距预算，正文主方法
 - `B2-RND`：沿 `B2` 路径对 `tau(i)` 施加随机扰动的对照
 - `B5-frozen`：冻结 `W`，不执行 `Phase-W`
-- `sdgnn_pure`：更贴近原论文的 SDGNN 训练协议，使用 `K-hop + D-hop fanout` 候选集与平坦 LARS/Lasso `Phase-Θ`
+- `sdgnn_pure`：更贴近原论文的 SDGNN 训练协议，使用 `K-hop + D-hop fanout` 平坦候选池与单次 LARS/Lasso `Phase-Θ`
 
 正文实验中，凡依赖教师表示 `H*` 的分解式方法统一采用两层 `GCN` 作为教师模型；因此
-`B0`、`sdgnn_pure` 与 `B5` 的差异只来自稀疏分解与预算机制，而不来自教师骨干网络。
+`B0`、`sdgnn_pure` 与 `B5` 的差异只来自稀疏分解与预算机制，而不来自教师骨干网络。其中
+`B0` 与 `B5` 共享同一分层求解主干，`sdgnn_pure` 则在候选集构造和 `Phase-Θ` 口径上都单独对齐原始协议。
 
 跳距策略消融定义：
 
@@ -657,6 +658,7 @@ python scripts/setup/verify_env.py
 ## 15. 当前默认论文口径
 
 - `Cora` 主方法默认配置已对齐附录 C.1：`B5 / B0` 使用 `lr=0.005`、`dropout=0.3`
+- 正文消融表同时报告两条 SDGNN 口径：`sdgnn_pure` 为原始协议基线，`B0` 为与 `B1-B5` 共用分层求解主干的兼容基线
 - 正文实验中所有依赖教师表示 `H*` 的分解式方法统一采用两层 `GCN` 教师模型
 - `GCN` 教师默认配置为 `hidden_dim=128`、`lr=0.005`、`dropout=0.3`
 - 正文敏感性分析默认扫描 `tau_base / k / xi_budget`
@@ -671,13 +673,13 @@ python scripts/setup/verify_env.py
 
 | 方法 | Cora | Citeseer | PubMed | ogbn-arxiv |
 |------|------|----------|--------|------------|
-| SDGNN (B0) | 86.6±0.9 | 80.3±1.1 | 88.7±0.5 | 74.27±0.21 |
+| SDGNN-compatible (B0) | 86.6±0.9 | 80.3±1.1 | 88.7±0.5 | 74.27±0.21 |
 | **MSAS-GNN (B5)** | **88.3±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
 | p 值 | 0.002 | 0.001 | 0.048 | 0.009 |
 
 | 方法 | Chameleon | Squirrel |
 |------|-----------|----------|
-| SDGNN (B0) | 63.5±1.1 | 54.2±1.4 |
+| SDGNN-compatible (B0) | 63.5±1.1 | 54.2±1.4 |
 | **MSAS-GNN (B5)** | **67.2±0.9** | **56.9±1.2** |
 
 复现完成后，可参考 [docs/reproduce_checklist.md](docs/reproduce_checklist.md) 做逐项核对。
@@ -693,6 +695,7 @@ python scripts/setup/verify_env.py
 ### 17.2 SDGNN 基线为什么是仓库内兼容实现
 
 因为该方法没有直接可用的官方代码，本仓库同时保留了两条口径：`B0` 作为兼容基线，`sdgnn_pure` 作为更贴近原论文的复现入口。为保证正文实验可比性，这两条口径当前都统一采用 `GCN` 教师模型。相关说明见 `references/sdgnn_impl_notes.md`。
+其中，`B0` 与 `B1-B5` 共用分层求解主干，适合作为正文消融链的内部基线；`sdgnn_pure` 则在候选集与 `Phase-Θ` 口径上单独贴近原始 SDGNN。
 
 ### 17.3 为什么效率实验和论文数字不完全一致
 

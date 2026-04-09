@@ -97,6 +97,7 @@ python scripts/visualization/build_paper_figures.py --all
 
 - Cora 主方法默认配置已对齐附录 C.1：`B5/B0` 使用 `lr=0.005`、`dropout=0.3`
 - 正文实验中所有依赖教师表示 `H*` 的分解式方法（`SDGNN-compatible`、`sdgnn_pure`、`MSAS-GNN`）统一采用两层 `GCN` 教师模型
+- 正文消融表中同时区分两条 SDGNN 口径：`sdgnn_pure` 表示更贴近原论文的原始协议基线，`B0` 表示与 `B1-B5` 共用分层求解主干的兼容基线
 - `GCN` 教师默认配置为 `hidden_dim=128`、`lr=0.005`、`dropout=0.3`
 - 正文敏感性分析默认扫描 `τ_base / k / ξ`
 - 附录谱代理量实验默认按 10 个随机种子聚合，结果可直接生成 `tab:appC-spectral`
@@ -107,13 +108,13 @@ python scripts/visualization/build_paper_figures.py --all
 
 | 方法 | Cora | Citeseer | PubMed | ogbn-arxiv |
 |------|------|----------|--------|------------|
-| SDGNN (B0) | 86.6±0.9 | 80.3±1.1 | 88.7±0.5 | 74.27±0.21 |
+| SDGNN-compatible (B0) | 86.6±0.9 | 80.3±1.1 | 88.7±0.5 | 74.27±0.21 |
 | **MSAS-GNN (B5)** | **88.3±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
 | p 值 | 0.002 | 0.001 | 0.048 | 0.009 |
 
 | 方法 | Chameleon | Squirrel |
 |------|-----------|----------|
-| SDGNN (B0) | 63.5±1.1 | 54.2±1.4 |
+| SDGNN-compatible (B0) | 63.5±1.1 | 54.2±1.4 |
 | **MSAS-GNN (B5)** | **67.2±0.9** | **56.9±1.2** |
 
 ---
@@ -121,7 +122,7 @@ python scripts/visualization/build_paper_figures.py --all
 ## 注意事项
 
 1. **Chameleon/Squirrel** 使用 60/20/20 重划分，**不可**与官方固定划分文献直接比较
-2. **SDGNN 口径**：`B0` 为兼容基线；若需更贴近原论文的实现，请使用 `--ablation sdgnn_pure`。两者在当前默认实验中都统一采用 `GCN` 教师模型（见 `references/sdgnn_impl_notes.md`）
+2. **SDGNN 口径**：`B0` 为兼容基线，它与 `B1-B5` 共用分层 BFS 候选集、残差级联 `Phase-Θ` 和交替优化主干，只是将自适应机制退化为全局统一 `lambda` 与均匀跳距预算；若需更贴近原论文的实现，请使用 `--ablation sdgnn_pure`，其采用 `K-hop + D-hop fanout` 平坦候选池。两者在当前默认实验中都统一采用 `GCN` 教师模型（见 `references/sdgnn_impl_notes.md`）
 3. **推理口径**：小图 ms/次全图前向，ogbn-arxiv ms/batch（bs=1024），不得混用
 4. **参数量口径**：稠密基线按模型参数数统计；SDGNN/MSAS-GNN 按固化稀疏权重 `Θ^{fixed}` 非零项加线性头统计
 5. **收敛性**：交替优化为非凸问题，代码仅保证训练稳定性
