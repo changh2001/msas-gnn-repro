@@ -1,0 +1,8 @@
+name: sage
+layers: 2
+hidden_dim: 128
+dropout: 0.5
+lr: 0.01
+weight_decay: 5.0e-4
+epochs: 200
+early_stopping_patience: 20

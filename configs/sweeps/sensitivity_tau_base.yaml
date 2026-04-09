@@ -1,0 +1,4 @@
+parameter: tau_base
+values: [1.0e-5, 1.0e-4, 1.0e-3, 1.0e-2, 1.0e-1]
+datasets: [cora, chameleon, ogbn_arxiv]
+seeds: [42, 123, 456]

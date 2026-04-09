@@ -1,0 +1,43 @@
+% !TeX root = ../main.tex
+
+% 中英文摘要和关键字
+
+\begin{abstract}
+
+图神经网络以消息传递为核心运算范式，通过在图拓扑引导下递归聚合多跳邻域信息，在节点分类、链接预测等任务上表现突出，已成为处理图结构数据的主流方法之一。当图神经网络从学术评测环境迁移至推荐系统、实时风控等对响应时延有严格约束的在线场景时，多层消息传递引发的感受野指数扩张使推理效率瓶颈成为规模化部署的主要障碍。与此同时，真实图数据中普遍存在的噪声边与缺失边等结构质量缺陷，会通过固定邻接矩阵的训练范式直接影响节点表示，进而损害下游任务的可靠性。
+
+稀疏分解图神经网络（SDGNN）将推理过程转化为对教师模型输出的单次稀疏矩阵乘法，使推理主项复杂度压缩至线性量级，在实测中实现了显著加速。然而，SDGNN 存在核心结构性局限：全局统一正则系数对所有节点施加相同稀疏约束，忽视节点拓扑异质性：枢纽节点通常承载更多全局结构信息，过激进稀疏化可能截断关键邻居；外围节点局部连接较稀疏，过保守稀疏化则会削弱压缩收益。这种不区分节点特性的全局设计在拓扑差异显著的真实图上容易产生系统性精度损耗，制约了方法的通用适应能力。
+
+针对上述局限，本文以 SDGNN 为基础，提出多尺度自适应稀疏图神经网络（MSAS-GNN），以“在保持线性推理复杂度优势的前提下提升节点自适应性”为核心目标，从问题形式化与指标提取、三维自适应机制设计、算法整合与误差分析三个层次依次推进。
+
+方法层面，本文首先经谱计算提取四类图复杂度指标——谱间隙、节点谱能量、归一化局部图熵与节点中心性，为参数设计提供量化依据。进而沿频率、节点与跳距三个维度构建节点级自适应参数：频率维度以节点谱能量的均匀加权作为频率接口，保持方法对下游任务类型的通用性；节点维度依据谱能量与邻居有效信息量的相关关系，设计节点级自适应正则系数，使谱能量较高的节点获得更充裕的邻居保留预算；跳距维度依据多跳传播信息逐层衰减的规律，设计近邻优先的分层预算分配策略，并在均匀分配与几何衰减分配方案中实现自适应选取。三维参数体系在推理阶段仍保持单次稀疏矩阵乘法形式，推理主项复杂度维持线性量级。
+
+实验层面，本文在 Cora、Citeseer、PubMed、ogbn-arxiv、Chameleon、Squirrel 六个静态节点分类基准数据集上对 MSAS-GNN 进行系统验证；主实验及用于显著性检验的结果在十个随机种子下重复，并以 Wilcoxon 符号秩检验评估差异显著性。MSAS-GNN 在全部六个数据集上均优于基线 SDGNN，逐数据集差异均通过显著性检验：三个引文网络数据集（Cora、Citeseer、PubMed）平均准确率提升约 1.4 个百分点；大规模图 ogbn-arxiv 上准确率达 75.13\%，高于 SDGNN 的 74.27\%；Chameleon 与 Squirrel 分别达到 67.2\% 与 56.9\%。推理效率方面，MSAS-GNN 相对标准消息传递基线在大规模图上实现约 13.6 倍加速，四数据集平均加速比约 8.0 倍，显存占用减少约 74.8\%。消融实验表明，节点谱能量为三维参数体系中的主导因子，近邻优先的跳距预算分配策略相比均匀分配在精度与近似误差两项指标上均具有优势，与方法设计预期方向一致。
+
+本文以谱图分析为工具，构建了由可计算图复杂度指标驱动的节点级差异化稀疏分配方法，在保持线性推理复杂度的前提下提升了模型对节点拓扑异质性与图类型差异的适应能力，可为图神经网络在大规模在线推理场景中的高效部署提供方法参考。
+  % 关键词用“英文逗号”分隔，输出时会自动处理为正确的分隔符
+  \bnusetup{
+    keywords = {图神经网络, 自适应稀疏化, 谱图分析, 节点异质性, 高效推理, 跳距预算分配, 结构异质性适应},
+  }
+\end{abstract}
+
+\begin{abstract*}
+
+Graph Neural Networks (GNNs) have emerged as a mainstream paradigm for processing graph-structured data, achieving strong performance on tasks such as node classification and link prediction by recursively aggregating multi-hop neighborhood information under the guidance of graph topology. When GNNs are deployed beyond academic benchmarks into latency-sensitive industrial applications — including recommender systems and real-time fraud detection — the exponential expansion of the receptive field induced by multi-layer message passing creates a fundamental inference efficiency bottleneck that hinders large-scale deployment. Concurrently, structural quality defects that are pervasive in real-world graphs, such as noisy edges and missing connections, corrupt node representations through the fixed-adjacency training paradigm and thereby undermine the reliability of downstream tasks.
+
+The Sparse Decomposition Graph Neural Network (SDGNN) addresses the efficiency challenge by reformulating inference as a single sparse matrix multiplication against the teacher model's output, compressing the dominant inference complexity to linear scale and achieving substantial speedup in practice. Nevertheless, SDGNN embeds a core structural limitation: a globally uniform regularization coefficient imposes identical sparsity constraints on every node, ignoring topological heterogeneity among nodes: hub nodes, which typically carry richer global structural information, risk losing critical neighbors through over-aggressive sparsification, while peripheral nodes with sparser local connections see diminished compression benefit under overly conservative budgets. This topology-agnostic design introduces systematic accuracy degradation on real-world graphs with pronounced node heterogeneity.
+
+To address this limitation, this thesis proposes the Multi-Scale Adaptive Sparse Graph Neural Network (MSAS-GNN), building on SDGNN with the central objective of improving node adaptivity while preserving the linear inference complexity advantage. The methodology proceeds through three stages: problem formalization and indicator extraction, three-dimensional adaptive mechanism design, and algorithm integration with error analysis.
+
+On the methodological side, this thesis first extracts four categories of computable graph complexity indicators via spectral computation — spectral gap, node spectral energy, normalized local graph entropy, and node centrality — providing a quantitative basis for parameter design. Node-level adaptive parameters are then constructed along three dimensions. The frequency dimension adopts equal-weight instantiation of node spectral energy as the frequency interface, preserving generality across task types without relying on label-derived statistics. The node dimension establishes a monotone mapping from node spectral energy to the regularization coefficient, assigning greater neighborhood retention budget to nodes with richer spectral information. The hop-distance dimension designs near-neighbor-priority layer-wise budget allocation strategies based on the empirical observation that multi-hop information contributions decay with hop distance, comparing uniform and geometric-decay allocation schemes. At inference time, the three-dimensional parameter system retains the single sparse matrix multiplication form of SDGNN, keeping the dominant inference complexity at linear scale.
+
+Experiments were conducted on six static node classification benchmark datasets --- Cora, Citeseer, PubMed, ogbn-arxiv, Chameleon, and Squirrel --- with all trials repeated under ten random seeds and significance assessed via the Wilcoxon signed-rank test. MSAS-GNN outperformed the baseline SDGNN across all six datasets, with per-dataset differences all statistically significant: on the three citation network datasets (Cora, Citeseer, PubMed), average accuracy improved by approximately 1.4 percentage points; on the large-scale graph ogbn-arxiv, accuracy reached 75.13\%, exceeding SDGNN's 74.27\%; on Chameleon and Squirrel, accuracy reached 67.2\% and 56.9\%, respectively. In terms of inference efficiency, MSAS-GNN achieved approximately 13.6x speedup over the standard message-passing baseline on ogbn-arxiv, with an average speedup of approximately 8.0x across four datasets and a reduction in GPU memory usage of approximately 74.8\%. Ablation studies identified node spectral energy as the dominant contributor within the three-dimensional parameter system, and showed that the near-neighbor-priority hop-distance budget allocation outperforms uniform allocation on both accuracy and approximation error, consistent with the intended design direction.
+
+This thesis presents a node-level differentiated sparsity allocation framework driven by computable graph complexity indicators and supported by spectral graph analysis. By improving adaptability to node topological heterogeneity and graph-type variation while maintaining linear inference complexity, the proposed framework offers a methodological reference for the efficient and reliable deployment of GNNs in large-scale online inference settings.
+
+% Use comma as separator when inputting
+  % 英文关键词首字母请大写
+  \bnusetup{
+    keywords* = {Graph Neural Network, Adaptive Sparsification, Spectral Graph Analysis, Node Heterogeneity, Efficient Inference, Hop-Distance Budget Allocation, Structural Heterogeneity Adaptation},
+  }
+\end{abstract*}

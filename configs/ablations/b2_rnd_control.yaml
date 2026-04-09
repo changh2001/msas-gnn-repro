@@ -1,0 +1,17 @@
+ablation_id: b2_rnd
+description: 沿 B2 路径对 τ(i) 做随机扰动（随机对照）
+node_dim:
+  use_spectral_energy: true
+  use_centrality: true
+  use_kcore: false
+  use_entropy: false
+  tau_base: 1.0e-3
+  tau_min: 1.0e-7
+  random_tau_perturbation: true
+  random_tau_log_scale: 0.5
+  gamma: 0.5
+hop_dim:
+  strategy: uniform
+  L: 3
+lars:
+  k: 50

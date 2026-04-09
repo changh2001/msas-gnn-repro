@@ -1,0 +1,15 @@
+name: pubmed
+loader: planetoid
+num_classes: 3
+num_features: 500
+split_ratio: [0.6, 0.2, 0.2]
+stats:
+  n_nodes: 19717
+  n_edges: 44338
+  h_edge: 0.80
+tau_base: 1.0e-3
+k: 50
+L: 3
+dropout: 0.5
+lr: 0.01
+weight_decay: 5.0e-4

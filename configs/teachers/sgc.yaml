@@ -1,0 +1,5 @@
+name: sgc
+K: 2
+lr: 0.2
+weight_decay: 5.0e-5
+epochs: 100

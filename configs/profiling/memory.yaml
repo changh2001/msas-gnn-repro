@@ -1,0 +1,4 @@
+measurement: max_allocated
+scope: forward_only
+unit: MB
+reset_before: true

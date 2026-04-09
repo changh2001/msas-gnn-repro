@@ -1,0 +1,17 @@
+device: auto
+num_workers: 4
+pin_memory: true
+log_level: INFO
+log_to_file: true
+structured_log: true
+# 工程便捷配置：用于跳过 ogbn-arxiv 的高成本 Optuna 搜索；
+# 不是论文附录C.1的原始预设结果，需在实验日志中单独说明来源。
+skip_optuna_datasets:
+  - ogbn_arxiv
+use_spectral_cache: true
+use_teacher_cache: true
+use_theta_cache: false
+efficiency:
+  warmup_runs: 10
+  repeat_runs: 100
+  cuda_sync: true

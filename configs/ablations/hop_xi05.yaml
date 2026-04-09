@@ -1,0 +1,7 @@
+ablation_id: hop_xi05
+hop_dim:
+  strategy: xi_budget
+  xi_budget: 0.5
+  L: 3
+lars:
+  k: 50

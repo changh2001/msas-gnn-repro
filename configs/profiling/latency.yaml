@@ -1,0 +1,13 @@
+warmup_runs: 10
+repeat_runs: 100
+aggregation: median
+cuda_sync: true
+paper_protocol:
+  small_graphs:
+    mode: full_graph
+    unit: ms_per_forward
+  large_graph:
+    mode: mini_batch
+    batch_size: 1024
+    unit: ms_per_batch
+    also_report: nodes_per_sec

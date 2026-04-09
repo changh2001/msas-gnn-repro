@@ -1,0 +1,4 @@
+parameter: k
+values: [20, 30, 50, 70, 100, 150]
+datasets: [cora, chameleon, ogbn_arxiv]
+seeds: [42, 123, 456]

@@ -1,0 +1,27 @@
+n_trials: 50
+sampler: TPESampler
+direction: maximize
+search_space:
+  tau_base:
+    type: loguniform
+    low: 1.0e-5
+    high: 1.0e-1
+  k:
+    type: int
+    low: 20
+    high: 100
+  L:
+    type: categorical
+    choices: [2, 3]
+  lr:
+    type: loguniform
+    low: 1.0e-4
+    high: 1.0e-1
+  dropout:
+    type: uniform
+    low: 0.0
+    high: 0.7
+  weight_decay:
+    type: loguniform
+    low: 1.0e-5
+    high: 1.0e-3

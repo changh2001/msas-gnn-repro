@@ -1,0 +1,5 @@
+name: geom_gcn
+structural_neighbors: 2
+lr: 0.005
+weight_decay: 5.0e-5
+epochs: 200

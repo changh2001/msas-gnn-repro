@@ -1,0 +1,7 @@
+ablation_id: hop_reverse
+description: 远跳优先分配（对照实验）
+hop_dim:
+  strategy: reverse
+  L: 3
+lars:
+  k: 50

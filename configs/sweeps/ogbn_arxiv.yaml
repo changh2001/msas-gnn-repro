@@ -1,0 +1,10 @@
+n_trials: 30
+sampler: TPESampler
+direction: maximize
+preset_optimal:
+  tau_base: 1.0e-3
+  k: 50
+  L: 3
+  dropout: 0.3
+  lr: 0.005
+  weight_decay: 1.0e-4

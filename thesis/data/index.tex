@@ -1,0 +1,136 @@
+% !TeX root = ../main.tex
+
+\begin{bnuindex}
+
+\section*{索引说明}
+
+\noindent\hspace{2em} 本学位论文编制了创新索引、主题索引、专有名称索引。
+
+% 创新索引以学位论文中描述创新内容的词语为目标编制，款目采用\textbf{加粗}格式表示，按标目在论文中首次出现的顺序集中排列在索引的最前面。
+
+% 主题索引以学位论文中重点论述、具有检索价值的重要主题词为标目编制，按拼音排序。
+
+% 专有名称索引以机构名、人名、地名、文献名等专有名称为标目编制，按拼音排序。
+
+% ════════════════════════════════════════════════════════════════
+\section*{创新索引}
+\addcontentsline{toc}{section}{创新索引}
+
+\noindent\hspace{2em} 创新索引以学位论文中描述创新内容的词语为目标编制，款目采用\textbf{加粗}格式表示，按标目在论文中首次出现的顺序集中排列在索引的最前面。
+
+\vspace{1em}
+
+% ── 高层创新条目（按页码顺序）──────────────────────────────────
+
+\textbf{三维自适应稀疏参数体系（频率维 $\times$ 节点维 $\times$ 跳距维）}%
+\dotfill\pageref{idx:innov:3dim}
+
+\textit{以节点等权谱能量 $E_{\mathrm{spectral}}(i)$ 为核心，从频率、节点、跳距三条线索取代 SDGNN 的全局统一正则系数 $\lambda_{\mathrm{reg}}$，在推理期保持 $O(n\bar{k}d)$ 单次稀疏矩阵乘形式。}
+
+% ── 创新一细节：三维谱驱动自适应稀疏参数体系（第3章）────────────
+
+% \vspace{0.5em}
+% \textbf{同配系数感知频率权重调整机制}\dotfill\pageref{idx:innov:freq}
+
+% \textit{以节点谱能量等纯结构统计量驱动三维自适应参数，保持频率维等权实例化与无泄漏口径。}
+
+% \vspace{0.5em}
+% \textbf{等权谱能量 $E_{\mathrm{spectral}}(i)$}\dotfill\pageref{idx:innov:espectral}
+
+% \textit{引入统一控制变量 $h^{\dagger}(i)$ 对各频率分量的 softmax 权重 $w_k(i)$ 做同配/异配感知修正，使同配节点侧重低频、异配节点为高频保留更大权重。第4章相关分析刻画了该量随局部同配环境变化的单调趋势。}
+
+\vspace{0.5em}
+\textbf{节点级正则系数 $\tau(i)$ 设计准则}\dotfill\pageref{idx:innov:tau}
+
+\textit{依据谱能量与邻居有效信息量的正相关关系，建立“谱能量高 $\Rightarrow$ $\tau(i)$ 小 $\Rightarrow$ LARS 截断晚 $\Rightarrow$ 保留邻居多”的单调映射，并融合度中心性 $C_{\mathrm{deg}}(i)$、$k$\hbox{-}core 指数和局部图熵形成多因子节点级参数。}
+
+\vspace{0.5em}
+\textbf{节点—跳距联合预算分配}\dotfill\pageref{idx:innov:joint_budget}
+
+\textit{将节点级总预算 $k_i^{\mathrm{total}}$（由 $\tau(i)$ 驱动）与各跳距配额 $k_i^{(l)}$（由衰减律驱动）纳入统一框架，使节点维与跳距维的稀疏约束在 LARS 求解器层面通过 \texttt{max\_iter} 接口协同生效，形成“节点粒度 $\times$ 跳距粒度”的二级稀疏预算体系。}
+
+\vspace{0.5em}
+\textbf{跳距预算配额 $k_i^{(l)}$ 的近邻优先分配策略}\dotfill\pageref{idx:innov:hopdist}
+
+\textit{以第二谱半径为衰减基底建立各跳距信息衰减界，依据衰减规律设计近跳密集、远跳稀疏的分层预算分配策略，使近跳关键邻居优先保留。相关分析见第4章第4.3节。}
+
+\vspace{0.5em}
+\textbf{$\sigma$-谱相似性误差分析}\dotfill\pageref{idx:innov:sigma}
+
+\textit{在三维参数联合约束下讨论稀疏化后多项式谱滤波近似误差的条件型分析结果，为第4章和第5章提供跨章节评估结构变化质量的统一度量接口。}
+
+% ════════════════════════════════════════════════════════════════
+
+\section*{主题索引}
+\addcontentsline{toc}{section}{主题索引}
+
+\noindent\hspace{2em}  主题索引以学位论文中重点论述、具有检索价值的重要主题词为标目编制，按拼音排序。
+
+\vspace{1em}
+
+\indexletter{G}
+\indexentry{归一化拉普拉斯矩阵}{idx:theme:normlaplacian}
+
+\indexletter{H}
+\indexentry{过度平滑}{idx:theme:oversmooth}
+\indexentry{过压缩}{idx:theme:oversquash}
+
+\indexletter{J}
+\indexentry{节点拓扑异质性}{idx:theme:tophete}
+\indexentry{节点谱相似性}{idx:theme:spectralsim}
+
+\indexletter{L}
+\indexentry{谱近似误差分析}{idx:theme:specpreserve}
+
+\indexletter{P}
+\indexentry{谱间隙}{idx:theme:specgap}
+
+\indexletter{S}
+\indexentry{稀疏分解推理}{idx:theme:sparsedecomp}
+\indexentry{稀疏预算分配}{idx:theme:sparsebud}
+\indexentry{信息衰减规律}{idx:theme:infodecay}
+
+\indexletter{T}
+\indexentry{跳距预算配额}{idx:theme:hopbudget}
+
+\indexletter{Y}
+\indexentry{异配图}{idx:theme:heterophily}
+
+% ════════════════════════════════════════════════════════════════
+\section*{专有名称索引}
+\addcontentsline{toc}{section}{专有名称索引}
+
+\noindent\hspace{2em} 专有名称索引以机构名、人名、地名、文献名等专有名称为标目编制，按拼音排序。
+
+\vspace{1em}
+
+\indexletter{A}
+\indexentry{APPNP}{idx:name:appnp}
+
+\indexletter{F}
+\indexentry{FAGCN}{idx:name:fagcn}
+\indexentry{FastGCN}{idx:name:fastgcn}
+
+\indexletter{G}
+\indexentry{GAT（图注意力网络）}{idx:name:gat}
+\indexentry{GCN（图卷积网络）}{idx:name:gcn}
+\indexentry{GIN（图同构网络）}{idx:name:gin}
+\indexentry{Gilmer 等（MPNN，2017）}{idx:name:gilmer}
+\indexentry{GPR-GNN}{idx:name:gprgnn}
+\indexentry{GraphSAGE}{idx:name:graphsage}
+\indexentry{GraphSAINT}{idx:name:graphsaint}
+
+\indexletter{H}
+\indexentry{H2GCN}{idx:name:h2gcn}
+
+\indexletter{L}
+\indexentry{LINKX}{idx:name:linkx}
+
+\indexletter{M}
+\indexentry{MSAS-GNN（多尺度自适应稀疏图神经网络）}{idx:name:msasgnn}
+
+\indexletter{S}
+\indexentry{SDGNN（稀疏分解图神经网络）}{idx:name:sdgnn}
+\indexentry{SGC（简单图卷积）}{idx:name:sgc}
+
+\end{bnuindex}

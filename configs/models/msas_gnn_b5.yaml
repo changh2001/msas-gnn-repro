@@ -1,0 +1,36 @@
+name: msas_gnn_b5
+ablation_id: b5
+teacher: gcn
+frequency:
+  mode: equal_weight
+node_dim:
+  use_spectral_energy: true
+  use_centrality: true
+  use_kcore: true
+  use_entropy: true
+  tau_base: 1.0e-3
+  tau_min: 1.0e-7
+  c_e: 1.0
+  beta_tau: 1.0
+  gamma: 0.5
+  delta: 0.3
+  eta: 0.2
+hop_dim:
+  strategy: xi_budget
+  xi_budget: 0.5
+  L: 3
+lars:
+  k: 50
+  scheme: residual_cascade
+alternating_opt:
+  protocol: b5_full
+  max_outer_iter: 20
+  patience: 5
+  t_w: 5
+  eta_w: 0.005
+train:
+  lr: 0.005
+  weight_decay: 5.0e-4
+  dropout: 0.3
+  epochs: 200
+  early_stopping_patience: 20

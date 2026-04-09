@@ -1,0 +1,14 @@
+\contentsline {table}{\numberline {2.1}{\ignorespaces 现有方法研究空白与本文对应章节方案汇总}}{12}{table.caption.25}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces 节点稀疏参数因子方案与节点类型对照（具体准确率见第~6~章消融实验）}}{26}{table.caption.40}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces 策略1与策略2的对比分析}}{30}{table.caption.46}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces 各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text {sparse}}=n\bar {k}$，$K_{\text {eig}}\in [50,100]$视为常数）}}{42}{table.caption.56}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces MSAS-GNN 超参数配置（以 Cora 为示例数据集）}}{45}{table.caption.57}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces 节点分类数据集统计信息}}{46}{table.caption.59}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces 引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{47}{table.caption.61}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces 网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{48}{table.caption.63}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces 综合消融实验（Cora，准确率\%，主体结果为10次重复；个别日志缺失项已单独注明）}}{49}{table.caption.65}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces 跳距预算分配策略消融（3层GNN，准确率\%）}}{50}{table.caption.67}%
+\contentsline {table}{\numberline {6.7}{\ignorespaces 推理效率与显存占用综合对比（GPU，$\text {batch\_size}=1024$）}}{52}{table.caption.70}%
+\contentsline {table}{\numberline {6.8}{\ignorespaces 预处理摊销与break-even估计（时间单位统一为秒）}}{52}{table.caption.72}%
+\contentsfinish 
+\contentsfinish 

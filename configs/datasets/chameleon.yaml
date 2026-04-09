@@ -1,0 +1,17 @@
+name: chameleon
+loader: wikipedia
+pyg_preprocess: true
+use_original_split: false
+split_ratio: [0.6, 0.2, 0.2]
+num_classes: 5
+num_features: 2325
+stats:
+  n_nodes: 2277
+  n_edges: 36101
+  h_edge: 0.23
+tau_base: 1.0e-3
+k: 50
+L: 3
+dropout: 0.5
+lr: 0.01
+weight_decay: 5.0e-4

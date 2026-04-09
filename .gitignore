@@ -1,0 +1,17 @@
+data/raw/
+data/cache/
+data/processed/
+outputs/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+.venv
+.idea/
+.vscode/
+*.log
+*.json
+!data/splits/*.pt
+.DS_Store

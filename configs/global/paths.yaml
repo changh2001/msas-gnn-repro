@@ -1,0 +1,17 @@
+data:
+  raw: data/raw
+  processed: data/processed
+  splits: data/splits
+  cache:
+    root: data/cache
+    teachers: data/cache/teachers
+    spectral: data/cache/spectral
+    adaptive_params: data/cache/adaptive_params
+    sparse_theta: data/cache/sparse_theta
+    eval_cache: data/cache/eval_cache
+outputs:
+  root: outputs
+  results: outputs/results
+  logs: outputs/logs
+  figures: outputs/figures
+  checkpoints: outputs/checkpoints

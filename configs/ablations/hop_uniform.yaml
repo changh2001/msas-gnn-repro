@@ -1,0 +1,6 @@
+ablation_id: hop_uniform
+hop_dim:
+  strategy: uniform
+  L: 3
+lars:
+  k: 50

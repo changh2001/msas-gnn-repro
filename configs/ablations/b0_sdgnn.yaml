@@ -1,0 +1,10 @@
+ablation_id: b0
+description: SDGNN兼容基线，全局统一正则系数并沿用 MSAS 分层候选/Phase-Theta 口径
+lambda_reg: 1.0e-3
+node_dim:
+  use_spectral_energy: false
+hop_dim:
+  strategy: uniform
+  L: 3
+lars:
+  k: 50

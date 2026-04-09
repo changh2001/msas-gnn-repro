@@ -1,0 +1,2 @@
+ablation_id: sdgnn_pure
+description: 原始 SDGNN 风格基线；使用全局统一 lambda 与 K-hop + D-hop fanout 候选集，正文默认统一采用 GCN 教师

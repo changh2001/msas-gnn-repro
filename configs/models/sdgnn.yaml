@@ -1,0 +1,22 @@
+name: sdgnn
+ablation_id: b0
+# B0 仅代表“SDGNN-compatible”口径：
+# - 全局统一 lambda；
+# - 仍沿用本仓库的分层 BFS 候选集与残差级联 Phase-Theta。
+teacher: gcn
+lambda_reg: 1.0e-3
+lars:
+  k: 50
+  scheme: residual_cascade
+alternating_opt:
+  protocol: b5_full
+  max_outer_iter: 20
+  patience: 5
+  t_w: 5
+  eta_w: 0.005
+train:
+  lr: 0.005
+  weight_decay: 5.0e-4
+  dropout: 0.3
+  epochs: 200
+  early_stopping_patience: 20

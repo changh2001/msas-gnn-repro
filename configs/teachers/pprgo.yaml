@@ -1,0 +1,7 @@
+name: pprgo
+alpha: 0.1
+eps: 1.0e-4
+K: 32
+lr: 0.01
+weight_decay: 5.0e-4
+epochs: 100

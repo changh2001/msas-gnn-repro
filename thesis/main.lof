@@ -1,0 +1,23 @@
+\contentsline {figure}{\numberline {1.1}{\ignorespaces SDGNN全局统一稀疏预算局限与MSAS-GNN谱驱动自适应改进示意图}}{1}{figure.caption.19}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces 本文技术路线与章节接口示意图}}{5}{figure.caption.20}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces 本章三条文献脉络与后续方法章节的对应关系}}{7}{figure.caption.21}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces 消息传递GNN感受野扩张与在线推理瓶颈示意图}}{9}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces 不同图结构的频率响应差异示意图}}{11}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces 三大研究空白与本文方法链的对应关系图}}{13}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces 第3章整体流程图：从图输入到四类复杂度指标输出}}{15}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces SDGNN全局统一稀疏预算失效示意图}}{16}{figure.caption.28}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces 第4章三维自适应稀疏机制整体框架图}}{23}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces 不同图结构的频率能量分布对比（背景动机）}}{23}{figure.caption.36}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces 节点级正则系数 $\mittau (i)$ 的三维自适应框架示意图}}{24}{figure.caption.37}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces 层级维度——分层跳距预算分配示意图}}{28}{figure.caption.41}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces 跳距预算衰减分配示意图（策略1 vs 策略2）}}{30}{figure.caption.44}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces 第5章整体框架图：三维参数整合→LARS算法→误差分析→复杂度}}{35}{figure.caption.48}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces 共享目标与残差级联两种分层 LARS 方案对比}}{36}{figure.caption.49}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces $\mittau _{\text {base}}$反向设计结果与经验值的对比（多数据集）}}{41}{figure.caption.53}%
+\contentsline {figure}{\numberline {5.4}{\ignorespaces 复杂度分解与线性推理适用边界示意图}}{42}{figure.caption.54}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces 关键超参数敏感性分析（Cora）}}{51}{figure.caption.69}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces 节点级自适应稀疏参数$\mittau (i)$分布分析（Cora）}}{53}{figure.caption.74}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces t-SNE节点表示可视化对比（Cora，7类）}}{54}{figure.caption.75}%
+\contentsline {figure}{\numberline {7.1}{\ignorespaces MSAS-GNN 谱驱动自适应稀疏化框架贡献结构}}{56}{figure.caption.76}%
+\contentsfinish 
+\contentsfinish 

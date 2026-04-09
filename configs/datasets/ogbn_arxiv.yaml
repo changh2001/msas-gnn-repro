@@ -1,0 +1,19 @@
+name: ogbn_arxiv
+loader: ogb
+use_time_split: true
+num_classes: 40
+num_features: 128
+stats:
+  n_nodes: 169343
+  n_edges: 1166243
+  h_edge: 0.65
+tau_base: 1.0e-3
+k: 50
+L: 3
+dropout: 0.3
+lr: 0.005
+weight_decay: 1.0e-4
+batch_size: 1024
+epochs: 50
+alternating_opt:
+  batch_mode: mini_batch

@@ -1,0 +1,26 @@
+name: sdgnn_pure
+ablation_id: sdgnn_pure
+teacher: gcn
+lambda_reg: 1.0e-5
+alternating_opt:
+  protocol: sdgnn_orig
+  max_outer_iter: 20
+  patience: 5
+  t_w: 5
+  eta_w: 0.01
+feature_transform:
+  init_protocol: ridge_x_to_h_star
+  ridge: 1.0e-4
+sdgnn_pure:
+  base_hops: 2
+  extra_hops: 2
+  fanouts: [10, 10]
+  max_lars_iter: 0
+lars:
+  k: 50
+train:
+  lr: 0.01
+  weight_decay: 5.0e-4
+  dropout: 0.5
+  epochs: 200
+  early_stopping_patience: 20

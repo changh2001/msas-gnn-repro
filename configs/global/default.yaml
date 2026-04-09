@@ -1,0 +1,26 @@
+spectral:
+  K_eig: 50
+train:
+  lr: 0.01
+  weight_decay: 5.0e-4
+  dropout: 0.5
+  epochs: 200
+  early_stopping_patience: 20
+  batch_size: 1024
+teacher:
+  name: gcn
+  layers: 2
+  hidden_dim: 64
+lars:
+  k: 50
+  scheme: residual_cascade
+alternating_opt:
+  max_outer_iter: 20
+  patience: 5
+  batch_mode: auto
+  node_threshold_for_minibatch: 50000
+  t_w: 5
+  eta_w: 0.005
+eval:
+  n_seeds: 10
+  wilcoxon_alpha: 0.05
