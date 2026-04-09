@@ -1,4 +1,4 @@
-"""附录C.3：Chameleon+ogbn-arxiv超参敏感性补充。"""
+"""补充实验：Chameleon 与 ogbn-arxiv 的超参敏感性补充。"""
 import sys, os, argparse, json
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../src"))
 def main():

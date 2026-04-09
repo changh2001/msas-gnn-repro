@@ -22,7 +22,7 @@ def _torch_sparse_to_scipy(matrix):
 
 
 def build_proxy_adjacency(theta_fixed):
-    """按论文附录B.2的口径，由 Θ^fixed 构造对称非负代理邻接矩阵。"""
+    """按补充谱代理实验的口径，由 Θ^fixed 构造对称非负代理邻接矩阵。"""
     theta = theta_fixed.theta
     if not theta.is_sparse:
         theta = theta.to_sparse()
@@ -108,7 +108,7 @@ def _low_frequency_eigenvalues(laplacian, num_eigs, exact_threshold=512):
 
 
 def compute_engineering_reference(sigma_proxy, features, poly_coeff_sum=1.0):
-    """将式(5.9)按 ε_approx 口径做工程化归一，供附录图表对照。"""
+    """将式(5.9)按 ε_approx 口径做工程化归一，供补充实验图表对照。"""
     n = max(int(features.shape[0]), 1)
     feature_scale = float(torch.norm(features, p="fro").item() / math.sqrt(n))
     return float(2.0 * max(float(poly_coeff_sum), 0.0) * max(float(sigma_proxy) - 1.0, 0.0) * feature_scale)

@@ -1,4 +1,4 @@
-"""附录C.3 超参敏感性补充图。"""
+"""补充实验超参敏感性图。"""
 import argparse
 import json
 import os
@@ -10,7 +10,7 @@ DATASETS = ["chameleon", "ogbn_arxiv"]
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--results_dir",default="outputs/results")
-    parser.add_argument("--output_dir",default="outputs/figures/appendix")
+    parser.add_argument("--output_dir",default="outputs/figures/supplemental")
     args=parser.parse_args()
     data = {}
     for ds in DATASETS:
@@ -40,7 +40,7 @@ def main():
             ax.set_ylabel("Test Acc (%)")
     plt.tight_layout()
     os.makedirs(args.output_dir, exist_ok=True)
-    out = os.path.join(args.output_dir, "sensitivity_appendix.pdf")
+    out = os.path.join(args.output_dir, "sensitivity_supplemental.pdf")
     plt.savefig(out, dpi=300, bbox_inches="tight")
     plt.close()
     print(f"已保存：{out}")

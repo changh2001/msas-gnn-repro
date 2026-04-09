@@ -1,4 +1,4 @@
-"""附录C.3：σ̃代理量验证补充。"""
+"""补充实验：σ̃ 代理量验证。"""
 import argparse
 import copy
 import json
@@ -97,8 +97,8 @@ def main():
                 row["engineering_ref"],
             )
         all_results[ds] = results
-        with open(os.path.join(args.log_dir, f"appendix_sigma_proxy_{ds}.json"), "w") as f:
+        with open(os.path.join(args.log_dir, f"supplemental_sigma_proxy_{ds}.json"), "w") as f:
             json.dump(results, f, indent=2)
-    with open(os.path.join(args.log_dir, "appendix_sigma_proxy.json"), "w") as f:
+    with open(os.path.join(args.log_dir, "supplemental_sigma_proxy.json"), "w") as f:
         json.dump(all_results, f, indent=2)
 if __name__ == "__main__": main()

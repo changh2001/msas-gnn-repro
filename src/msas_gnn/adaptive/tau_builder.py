@@ -61,7 +61,7 @@ def build_tau(bundle, tau_base=1e-3, tau_min=1e-7, e_threshold=1.0,
 
 
 def build_tau_feature_matrix(bundle) -> torch.Tensor:
-    """构造附录B.1所需的四维手工特征 [E, C_deg, core_norm, H_norm]。"""
+    """构造补充实验所需的四维手工特征 [E, C_deg, core_norm, H_norm]。"""
     core = bundle.core.float()
     core_norm = core / core.max().clamp_min(1.0)
     return torch.stack(

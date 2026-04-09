@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 
-def test_cora_b5_defaults_align_with_appendix_c1():
+def test_cora_b5_defaults_align_with_current_paper_defaults():
     from msas_gnn.config import load_experiment_config
 
     cfg = load_experiment_config("cora", ablation_id="b5")

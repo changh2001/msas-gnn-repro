@@ -19,10 +19,10 @@ ABLATION = [
 EFFICIENCY = [
     ("scripts/visualization/build_paper_tables.py", ["--efficiency"]),
 ]
-APP = [
-    ("scripts/visualization/build_paper_tables.py", ["--appendix"]),
+SUPPLEMENTAL = [
+    ("scripts/visualization/build_paper_tables.py", ["--supplemental"]),
     ("scripts/visualization/plot_xi_sweep.py", []),
-    ("scripts/visualization/plot_sensitivity_appendix.py", []),
+    ("scripts/visualization/plot_sensitivity_supplemental.py", []),
     ("scripts/visualization/plot_sigma_proxy.py", []),
 ]
 
@@ -42,14 +42,14 @@ def main():
     parser.add_argument("--main", action="store_true")
     parser.add_argument("--ablation", action="store_true")
     parser.add_argument("--efficiency", action="store_true")
-    parser.add_argument("--appendix", action="store_true")
+    parser.add_argument("--supplemental", action="store_true")
     parser.add_argument("--all", action="store_true")
     args = parser.parse_args()
     scripts = (
         (MAIN if args.main or args.all else [])
         + (ABLATION if args.ablation or args.all else [])
         + (EFFICIENCY if args.efficiency or args.all else [])
-        + (APP if args.appendix or args.all else [])
+        + (SUPPLEMENTAL if args.supplemental or args.all else [])
     )
     if not scripts:
         parser.print_help()
@@ -57,5 +57,5 @@ def main():
     logger.info("生成%s个论文产物...", len(scripts))
     for script, extra_args in scripts:
         run(script, extra_args)
-    logger.info("完成！outputs/figures/、outputs/figures/appendix/、outputs/tables/")
+    logger.info("完成！outputs/figures/、outputs/figures/supplemental/、outputs/tables/")
 if __name__ == "__main__": main()

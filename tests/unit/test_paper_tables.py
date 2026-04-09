@@ -21,7 +21,7 @@ def _write_json(path: Path, payload) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-def test_build_selected_tables_generates_main_ch6_and_appendix_outputs(tmp_path):
+def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_path):
     module = _load_module()
     results_dir = tmp_path / "results"
     output_dir = tmp_path / "tables"
@@ -162,7 +162,7 @@ def test_build_selected_tables_generates_main_ch6_and_appendix_outputs(tmp_path)
     )
 
     _write_json(
-        results_dir / "appendix_sigma_proxy.json",
+        results_dir / "supplemental_sigma_proxy.json",
         {
             "citeseer": [
                 {
@@ -190,7 +190,7 @@ def test_build_selected_tables_generates_main_ch6_and_appendix_outputs(tmp_path)
     outputs = module.build_selected_tables(
         results_dir,
         output_dir,
-        {"main", "ablation", "efficiency", "appendix"},
+        {"main", "ablation", "efficiency", "supplemental"},
     )
     assert len(outputs) == 7
 
@@ -209,7 +209,7 @@ def test_build_selected_tables_generates_main_ch6_and_appendix_outputs(tmp_path)
     assert r"\label{tab:ch6-infer}" in efficiency_table
     assert r"\textbf{0.70}" in efficiency_table
 
-    appendix_sigma = (output_dir / "appendix/table_appC_spectral.tex").read_text(encoding="utf-8")
-    assert r"\label{tab:appC-spectral}" in appendix_sigma
-    assert "1.21" in appendix_sigma
-    assert "71.8$\\pm$1.2" in appendix_sigma
+    supplemental_sigma = (output_dir / "supplemental/table_supp_spectral.tex").read_text(encoding="utf-8")
+    assert r"\label{tab:supp-spectral}" in supplemental_sigma
+    assert "1.21" in supplemental_sigma
+    assert "71.8$\\pm$1.2" in supplemental_sigma

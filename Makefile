@@ -1,4 +1,4 @@
-.PHONY: reproduce-main reproduce-ablation reproduce-efficiency reproduce-appendix \
+.PHONY: reproduce-main reproduce-ablation reproduce-efficiency reproduce-supplemental \
         reproduce-all smoke-test-cora download-data check-env export test
 
 check-env:
@@ -32,13 +32,13 @@ reproduce-efficiency:
 	python scripts/experiments/run_breakeven.py --datasets cora pubmed ogbn_arxiv
 	python scripts/visualization/build_paper_figures.py --efficiency
 
-reproduce-appendix:
-	python scripts/experiments/appendix/run_xi_sweep.py --datasets cora chameleon
-	python scripts/experiments/appendix/run_sensitivity_appendix.py --datasets chameleon ogbn_arxiv
-	python scripts/experiments/appendix/run_spectral_proxy.py --datasets citeseer ogbn_arxiv
-	python scripts/visualization/build_paper_figures.py --appendix
+reproduce-supplemental:
+	python scripts/experiments/supplemental/run_xi_sweep.py --datasets cora chameleon
+	python scripts/experiments/supplemental/run_sensitivity_supplemental.py --datasets chameleon ogbn_arxiv
+	python scripts/experiments/supplemental/run_spectral_proxy.py --datasets citeseer ogbn_arxiv
+	python scripts/visualization/build_paper_figures.py --supplemental
 
-reproduce-all: reproduce-main reproduce-ablation reproduce-efficiency reproduce-appendix
+reproduce-all: reproduce-main reproduce-ablation reproduce-efficiency reproduce-supplemental
 	python scripts/visualization/build_paper_figures.py --all
 
 export:

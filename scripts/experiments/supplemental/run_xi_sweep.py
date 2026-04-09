@@ -1,4 +1,4 @@
-"""附录C.3：ξ细粒度扫描（10档）。"""
+"""补充实验：ξ 细粒度扫描（10档）。"""
 import argparse, json, logging, os, sys, numpy as np, copy
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../src"))
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -29,5 +29,5 @@ def main():
             if accs: xi_r[xi]={"mean":float(np.mean(accs)),"std":float(np.std(accs))}; logger.info(f"  [{ds}] ξ={xi:.1f}: {np.mean(accs)*100:.1f}%")
         all_r[ds]=xi_r
     os.makedirs(args.log_dir,exist_ok=True)
-    with open(os.path.join(args.log_dir,"appendix_xi_sweep.json"),"w") as f: json.dump(all_r,f,indent=2)
+    with open(os.path.join(args.log_dir,"supplemental_xi_sweep.json"),"w") as f: json.dump(all_r,f,indent=2)
 if __name__ == "__main__": main()

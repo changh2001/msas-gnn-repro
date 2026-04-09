@@ -1,4 +1,4 @@
-"""附录C.3 图C.3（σ̃代理量补充曲线）。"""
+"""补充实验中的 σ̃ 代理量曲线。"""
 import argparse
 import json
 import os
@@ -12,7 +12,7 @@ def _load_results(results_file, results_dir, datasets):
             return payload
     data = {}
     for dataset in datasets:
-        path = os.path.join(results_dir, f"appendix_sigma_proxy_{dataset}.json")
+        path = os.path.join(results_dir, f"supplemental_sigma_proxy_{dataset}.json")
         if not os.path.exists(path):
             raise FileNotFoundError(f"文件不存在：{path}")
         with open(path, encoding="utf-8") as fp:
@@ -22,10 +22,10 @@ def _load_results(results_file, results_dir, datasets):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results_file", default="outputs/results/appendix_sigma_proxy.json")
+    parser.add_argument("--results_file", default="outputs/results/supplemental_sigma_proxy.json")
     parser.add_argument("--results_dir", default="outputs/results")
     parser.add_argument("--datasets", nargs="+", default=["citeseer", "ogbn_arxiv"])
-    parser.add_argument("--output_dir", default="outputs/figures/appendix")
+    parser.add_argument("--output_dir", default="outputs/figures/supplemental")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
     data = _load_results(args.results_file, args.results_dir, args.datasets)

@@ -35,8 +35,8 @@ MSAS-GNN 针对 SDGNN 三个结构性局限展开改进：
 | 第6章 §6.3 | 消融实验 | `scripts/experiments/run_ablation_modular.py` |
 | 第6章 §6.4 | 效率分析 | `scripts/experiments/run_efficiency.py` |
 | 第6章 实验设置 | ogbn-arxiv 大图 mini-batch 训练口径 | `training/alternating_opt.py` |
-| 附录 C.3 | 补充实验 | `scripts/experiments/appendix/` |
-| 第6章/附录C 图表 | LaTeX 表格与 PDF 图 | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
+| 补充实验脚本 | `xi` 扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/` |
+| 第6章图表与补充实验图表 | LaTeX 表格与 PDF 图 | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
 
 ---
 
@@ -66,8 +66,8 @@ make smoke-test-cora
 make reproduce-main       # 主实验（≈27h，双GPU并行）
 make reproduce-ablation   # 消融实验 + 表6.4/6.5（≈9h）
 make reproduce-efficiency # 效率分析 + 表6.6/6.7（≈1h）
-make reproduce-appendix   # 附录实验 + 附录表/图（≈6.5h）
-make reproduce-all        # 全量复现 + 全部表图（约2–3天）
+make reproduce-supplemental # 补充实验脚本（可选，≈6.5h）
+make reproduce-all          # 全量复现 + 补充实验脚本（约2–3天）
 make export               # 结果打包
 ```
 
@@ -77,9 +77,9 @@ make export               # 结果打包
 
 - `outputs/results/`：实验原始 JSON 结果
 - `outputs/figures/`：正文图（如敏感性、`τ(i)` 分布、t-SNE）
-- `outputs/figures/appendix/`：附录图（如 `ξ` 扫描、谱代理量曲线）
+- `outputs/figures/supplemental/`：补充实验输出图
 - `outputs/tables/`：正文 LaTeX 表格（表 6.2–6.7）
-- `outputs/tables/appendix/`：附录 LaTeX 表格（当前覆盖 `tab:appC-spectral`）
+- `outputs/tables/supplemental/`：补充实验输出表
 
 生成入口：
 
@@ -87,7 +87,7 @@ make export               # 结果打包
 python scripts/visualization/build_paper_figures.py --main
 python scripts/visualization/build_paper_figures.py --ablation
 python scripts/visualization/build_paper_figures.py --efficiency
-python scripts/visualization/build_paper_figures.py --appendix
+python scripts/visualization/build_paper_figures.py --supplemental
 python scripts/visualization/build_paper_figures.py --all
 ```
 
@@ -95,12 +95,12 @@ python scripts/visualization/build_paper_figures.py --all
 
 ## 当前默认论文口径
 
-- Cora 主方法默认配置已对齐附录 C.1：`B5/B0` 使用 `lr=0.005`、`dropout=0.3`
+- Cora 正文主方法默认配置中，`B5/B0` 使用 `lr=0.005`、`dropout=0.3`
 - 正文实验中所有依赖教师表示 `H*` 的分解式方法（`SDGNN-compatible`、`sdgnn_pure`、`MSAS-GNN`）统一采用两层 `GCN` 教师模型
 - 正文消融表中同时区分两条 SDGNN 口径：`sdgnn_pure` 表示更贴近原论文的原始协议基线，`B0` 表示与 `B1-B5` 共用分层求解主干的兼容基线
 - `GCN` 教师默认配置为 `hidden_dim=128`、`lr=0.005`、`dropout=0.3`
 - 正文敏感性分析默认扫描 `τ_base / k / ξ`
-- 附录谱代理量实验默认按 10 个随机种子聚合，结果可直接生成 `tab:appC-spectral`
+- 仓库保留 `supplemental_sigma_proxy`、`supplemental_xi_sweep` 等补充实验脚本，便于扩展验证与额外分析
 
 ---
 

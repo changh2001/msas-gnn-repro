@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_supervised_data(cfg, seed, device="cpu") -> tuple[Data, int, int]:
-    """加载数据、应用论文协议划分，并按需施加附录噪声扰动。"""
+    """加载数据、应用论文协议划分，并按需施加噪声扰动。"""
     from msas_gnn.data.dataset_factory import load_dataset
     from msas_gnn.data.split_manager import load_or_create_split
     from msas_gnn.data.transforms import add_self_loops_transform, apply_edge_noise

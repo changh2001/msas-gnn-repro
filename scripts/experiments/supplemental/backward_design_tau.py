@@ -1,4 +1,4 @@
-"""附录B.2：τ_base反向设计（预期：α≈8.3，τ_practical≈8.7e-6，σ̃_proxy=1.09）。"""
+"""补充分析：τ_base 反向设计（预期：α≈8.3，τ_practical≈8.7e-6，σ̃_proxy=1.09）。"""
 import argparse, logging, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../src"))
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -19,7 +19,7 @@ def main():
     S = alpha_G*X_norm/n
     tau_p = args.epsilon_total/(3*args.L*S+1e-20)
     sigma = tau_p*alpha_G/1e-3
-    logger.info(f"=== 附录B.2 τ_base反向设计（{args.dataset}）===")
+    logger.info(f"=== 补充分析 τ_base 反向设计（{args.dataset}）===")
     logger.info(f"  α(G) ≈ {alpha_G:.2f}（预期≈8.3）")
     logger.info(f"  τ_base^practical ≈ {tau_p:.3e}（预期≈8.7e-6）")
     logger.info(f"  σ̃_proxy = {sigma:.3f}（预期≈1.09）")

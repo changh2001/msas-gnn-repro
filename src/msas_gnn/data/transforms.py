@@ -18,7 +18,7 @@ def add_self_loops_transform(data):
 
 
 def apply_edge_noise(data, mode="flip", ratio=0.0, seed=42):
-    """对边集施加简单随机扰动，用于附录中的噪声鲁棒性对照。"""
+    """对边集施加简单随机扰动，用于噪声鲁棒性对照。"""
     if float(ratio) <= 0.0:
         return data
     if mode not in {"add", "delete", "flip"}:

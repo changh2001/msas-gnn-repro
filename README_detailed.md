@@ -39,7 +39,7 @@ MSAS-GNN 是一个围绕论文复现组织的研究代码仓库，目标是对 S
 - 主实验与对照基线
 - 模块消融与跳距策略消融
 - 推理效率与摊销分析
-- 附录实验、图表生成与导出脚本
+- 补充实验脚本、图表生成与导出脚本
 
 MSAS-GNN 针对 SDGNN 三个结构性局限展开改进：
 
@@ -73,7 +73,7 @@ MSAS-GNN 针对 SDGNN 三个结构性局限展开改进：
 - **跳距策略消融**：`uniform / xi05 / xi10 / reverse`
 - **效率实验**：时延、显存、参数量、相对加速比
 - **摊销实验**：break-even 查询次数 `Q_be`
-- **附录实验**：`xi` 细粒度扫描、补充敏感性、谱代理量验证
+- **补充实验脚本**：`xi` 细粒度扫描、补充敏感性、谱代理量验证
 
 ---
 
@@ -123,7 +123,7 @@ make smoke-test-cora
 4. 跑主实验
 5. 跑消融
 6. 跑效率
-7. 跑附录
+7. 视需要运行补充实验脚本
 8. 统一生成图表与导出包
 
 完整命令见“[7. 完整复现流程](#7-完整复现流程)”。
@@ -243,8 +243,8 @@ make smoke-test-cora
 make reproduce-main
 make reproduce-ablation
 make reproduce-efficiency
-make reproduce-appendix
-make reproduce-all
+make reproduce-supplemental  # 补充实验脚本，可选
+make reproduce-all           # 包含补充实验脚本
 make export
 ```
 
@@ -265,14 +265,14 @@ python scripts/experiments/run_tsne.py --dataset cora
 
 ## 7. 完整复现流程
 
-仓库已经把论文复现分成四大批次，对应 [Makefile](Makefile) 中的目标。
+仓库已经把论文复现分成三条正文主线和一条可选补充实验线，对应 [Makefile](Makefile) 中的目标。
 
 ```bash
 make reproduce-main       # 主实验（约 27h，双 GPU 并行）
 make reproduce-ablation   # 消融实验 + 表 6.4 / 6.5（约 9h）
 make reproduce-efficiency # 效率分析 + 表 6.6 / 6.7（约 1h）
-make reproduce-appendix   # 附录实验 + 附录表 / 图（约 6.5h）
-make reproduce-all        # 全量复现 + 全部表图（约 2-3 天）
+make reproduce-supplemental # 补充实验脚本（可选，约 6.5h）
+make reproduce-all          # 全量复现 + 补充实验脚本（约 2-3 天）
 make export               # 结果打包
 ```
 
@@ -317,13 +317,18 @@ python scripts/visualization/build_paper_figures.py --main
 - 相对 `GCN` 加速比
 - 预处理摊销 break-even 分析
 
-### 7.4 附录 `make reproduce-appendix`
+### 7.4 补充实验脚本 `make reproduce-supplemental`
 
 包括：
 
 - `xi` 细粒度扫描
 - Chameleon 与 ogbn-arxiv 的补充敏感性
 - `sigma proxy` 谱代理量验证
+
+说明：
+
+- 这一批脚本用于额外验证与扩展分析
+- 如只关心当前 thesis 正文复现，可不运行这一批
 
 ---
 
@@ -396,14 +401,19 @@ python scripts/visualization/build_paper_figures.py --main
 - `sdgnn`
 - `msas_gnn`
 
-### 8.4 附录实验
+### 8.4 补充实验脚本
 
 脚本：
 
-- `scripts/experiments/appendix/run_xi_sweep.py`
-- `scripts/experiments/appendix/run_sensitivity_appendix.py`
-- `scripts/experiments/appendix/run_spectral_proxy.py`
-- `scripts/experiments/appendix/backward_design_tau.py`
+- `scripts/experiments/supplemental/run_xi_sweep.py`
+- `scripts/experiments/supplemental/run_sensitivity_supplemental.py`
+- `scripts/experiments/supplemental/run_spectral_proxy.py`
+- `scripts/experiments/supplemental/backward_design_tau.py`
+
+说明：
+
+- 以上脚本统一放在 `supplemental/` 目录下
+- 这一批脚本用于补充验证与扩展分析，不影响正文实验链
 
 ### 8.5 可视化与统计
 
@@ -570,8 +580,8 @@ python scripts/visualization/build_paper_figures.py --main
 | 第 6 章 §6.3 | 消融实验 | `scripts/experiments/run_ablation_modular.py` |
 | 第 6 章 §6.4 | 效率分析 | `scripts/experiments/run_efficiency.py` |
 | 第 6 章 实验设置 | 大图 mini-batch 交替优化协议 | `src/msas_gnn/training/alternating_opt.py` |
-| 附录 C.3 | 补充实验 | `scripts/experiments/appendix/` |
-| 第 6 章 / 附录 C 图表 | LaTeX 表格与 PDF 图 | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
+| 补充实验脚本 | `xi` 扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/` |
+| 第 6 章图表与补充实验图表 | LaTeX 表格与 PDF 图 | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
 
 ---
 
@@ -581,9 +591,9 @@ python scripts/visualization/build_paper_figures.py --main
 
 - `outputs/results/`：实验原始 JSON 结果
 - `outputs/figures/`：正文图，如敏感性、`tau(i)` 分布、t-SNE
-- `outputs/figures/appendix/`：附录图，如 `xi` 扫描、谱代理量曲线
+- `outputs/figures/supplemental/`：补充实验输出图
 - `outputs/tables/`：正文 LaTeX 表格，覆盖表 6.2-6.7
-- `outputs/tables/appendix/`：附录 LaTeX 表格（当前默认生成 `tab:appC-spectral`）
+- `outputs/tables/supplemental/`：补充实验输出表
 - `outputs/logs/`：日志
 - `outputs/checkpoints/`：模型或中间 checkpoint
 
@@ -593,7 +603,7 @@ python scripts/visualization/build_paper_figures.py --main
 python scripts/visualization/build_paper_figures.py --main
 python scripts/visualization/build_paper_figures.py --ablation
 python scripts/visualization/build_paper_figures.py --efficiency
-python scripts/visualization/build_paper_figures.py --appendix
+python scripts/visualization/build_paper_figures.py --supplemental
 python scripts/visualization/build_paper_figures.py --all
 ```
 
@@ -657,12 +667,12 @@ python scripts/setup/verify_env.py
 
 ## 15. 当前默认论文口径
 
-- `Cora` 主方法默认配置已对齐附录 C.1：`B5 / B0` 使用 `lr=0.005`、`dropout=0.3`
+- `Cora` 主方法默认配置中，`B5 / B0` 使用 `lr=0.005`、`dropout=0.3`
 - 正文消融表同时报告两条 SDGNN 口径：`sdgnn_pure` 为原始协议基线，`B0` 为与 `B1-B5` 共用分层求解主干的兼容基线
 - 正文实验中所有依赖教师表示 `H*` 的分解式方法统一采用两层 `GCN` 教师模型
 - `GCN` 教师默认配置为 `hidden_dim=128`、`lr=0.005`、`dropout=0.3`
 - 正文敏感性分析默认扫描 `tau_base / k / xi_budget`
-- 附录谱代理量实验默认按 10 个随机种子聚合，结果可直接生成 `tab:appC-spectral`
+- 仓库保留 `supplemental_sigma_proxy`、`supplemental_xi_sweep` 等补充实验脚本，便于扩展验证与额外分析
 - 大图 `ogbn-arxiv` 默认按第 6 章实验设置口径使用 mini-batch 交替优化
 
 ---

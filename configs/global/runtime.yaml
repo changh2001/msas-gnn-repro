@@ -5,7 +5,7 @@ log_level: INFO
 log_to_file: true
 structured_log: true
 # 工程便捷配置：用于跳过 ogbn-arxiv 的高成本 Optuna 搜索；
-# 不是论文附录C.1的原始预设结果，需在实验日志中单独说明来源。
+# 不是正文默认配置的原始预设结果，需在实验日志中单独说明来源。
 skip_optuna_datasets:
   - ogbn_arxiv
 use_spectral_cache: true

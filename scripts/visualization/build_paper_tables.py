@@ -1,4 +1,4 @@
-"""生成第6章与附录的 LaTeX 表格文件。"""
+"""生成第6章与补充实验的 LaTeX 表格文件。"""
 from __future__ import annotations
 
 import argparse
@@ -308,19 +308,19 @@ def _breakeven_payload(results_dir: Path) -> dict[str, Any]:
     return _load_json(latest)
 
 
-def _appendix_sigma_payload(results_dir: Path) -> dict[str, Any]:
-    merged_path = results_dir / "appendix_sigma_proxy.json"
+def _supplemental_sigma_payload(results_dir: Path) -> dict[str, Any]:
+    merged_path = results_dir / "supplemental_sigma_proxy.json"
     if merged_path.exists():
         payload = _load_json(merged_path)
         if isinstance(payload, dict):
             return payload
     data: dict[str, Any] = {}
     for dataset in ("citeseer", "ogbn_arxiv"):
-        path = results_dir / f"appendix_sigma_proxy_{dataset}.json"
+        path = results_dir / f"supplemental_sigma_proxy_{dataset}.json"
         if path.exists():
             data[dataset] = _load_json(path)
     if not data:
-        raise FileNotFoundError("未找到 appendix_sigma_proxy 结果")
+        raise FileNotFoundError("未找到 supplemental_sigma_proxy 结果")
     return data
 
 
@@ -591,15 +591,15 @@ def build_efficiency_tables(results_dir: Path, output_root: Path) -> list[Path]:
     return outputs
 
 
-def build_appendix_tables(results_dir: Path, output_root: Path) -> list[Path]:
+def build_supplemental_tables(results_dir: Path, output_root: Path) -> list[Path]:
     outputs: list[Path] = []
-    appendix_root = output_root / "appendix"
-    spectral_payload = _appendix_sigma_payload(results_dir)
+    supplemental_root = output_root / "supplemental"
+    spectral_payload = _supplemental_sigma_payload(results_dir)
     spectral_lines = [
         r"\begin{table}[htbp]",
         r"  \centering",
         r"  \caption{谱相似性代理量$\widetilde{\sigma}_{\mathrm{proxy}}$验证补充（Citeseer与ogbn-arxiv，$K_{\text{poly}}=3$）}",
-        r"  \label{tab:appC-spectral}",
+        r"  \label{tab:supp-spectral}",
         r"  \begin{threeparttable}",
         r"    \begin{tabular}{>{\centering\arraybackslash}m{1.5cm}",
         r"                    >{\centering\arraybackslash}m{1.7cm}",
@@ -643,13 +643,13 @@ def build_appendix_tables(results_dir: Path, output_root: Path) -> list[Path]:
             r"      \bottomrule",
             r"    \end{tabular}",
             r"    \begin{tablenotes}",
-            r"      \item 注：若 `appendix_sigma_proxy.json` 已按多种子聚合生成，则本表读取其均值列；否则回退为现有单次结果字段。",
+            r"      \item 注：若 `supplemental_sigma_proxy.json` 已按多种子聚合生成，则本表读取其均值列；否则回退为现有单次结果字段。",
             r"    \end{tablenotes}",
             r"  \end{threeparttable}",
             r"\end{table}",
         ]
     )
-    spectral_path = appendix_root / "table_appC_spectral.tex"
+    spectral_path = supplemental_root / "table_supp_spectral.tex"
     _write_table(spectral_path, spectral_lines)
     outputs.append(spectral_path)
     return outputs
@@ -663,8 +663,8 @@ def build_selected_tables(results_dir: Path, output_root: Path, groups: set[str]
         outputs.extend(build_ablation_tables(results_dir, output_root))
     if "efficiency" in groups:
         outputs.extend(build_efficiency_tables(results_dir, output_root))
-    if "appendix" in groups:
-        outputs.extend(build_appendix_tables(results_dir, output_root))
+    if "supplemental" in groups:
+        outputs.extend(build_supplemental_tables(results_dir, output_root))
     return outputs
 
 
@@ -673,7 +673,7 @@ def main() -> None:
     parser.add_argument("--main", action="store_true")
     parser.add_argument("--ablation", action="store_true")
     parser.add_argument("--efficiency", action="store_true")
-    parser.add_argument("--appendix", action="store_true")
+    parser.add_argument("--supplemental", action="store_true")
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--results_dir", default="outputs/results")
     parser.add_argument("--output_dir", default="outputs/tables")
@@ -686,8 +686,8 @@ def main() -> None:
         groups.add("ablation")
     if args.efficiency or args.all:
         groups.add("efficiency")
-    if args.appendix or args.all:
-        groups.add("appendix")
+    if args.supplemental or args.all:
+        groups.add("supplemental")
     if not groups:
         parser.print_help()
         return
