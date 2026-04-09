@@ -1,8 +1,8 @@
 # MSAS-GNN：谱驱动自适应稀疏图神经网络的鲁棒高效推理
 
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![PyTorch 2.0.1](https://img.shields.io/badge/pytorch-2.0.1-orange.svg)](https://pytorch.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[Python 3.10](https://www.python.org/)
+[PyTorch 2.0.1](https://pytorch.org/)
+[License: MIT](LICENSE)
 
 > **论文**：MSAS-GNN: Spectrally-Driven Adaptive Sparse GNN for Robust and Efficient Inference  
 > **作者**：常昊，北京师范大学应用统计专业  
@@ -22,21 +22,23 @@ MSAS-GNN 针对 SDGNN 三个结构性局限展开改进：
 
 ## 论文–代码映射表
 
-| 论文章节 | 核心内容 | 对应代码路径 |
-|---------|---------|------------|
-| 第3章 §3.1 | 拉普拉斯 + Lanczos | `src/msas_gnn/spectral/laplacian.py`, `lanczos.py` |
-| 第3章 §3.2 | 四类图复杂度指标 | `src/msas_gnn/spectral/` |
-| 第4章 §4.1 | 频率维（等权谱能量） | `adaptive/frequency_correction.py` |
-| 第4章 §4.2 | 节点维 τ(i) | `adaptive/tau_builder.py` |
-| 第4章 §4.3 | 跳距维 k_i^(l) | `adaptive/hop_budget.py` |
-| 第5章 §5.1 | LARS 稀疏分解 | `decomposition/lars_solver.py`, `theta_optimizer.py` |
-| 第5章 §5.2 | 交替优化 | `training/alternating_opt.py` |
-| 第6章 §6.2 | 主实验 | `scripts/experiments/run_main_benchmarks.py` |
-| 第6章 §6.3 | 消融实验 | `scripts/experiments/run_ablation_modular.py` |
-| 第6章 §6.4 | 效率分析 | `scripts/experiments/run_efficiency.py` |
-| 第6章 实验设置 | ogbn-arxiv 大图 mini-batch 训练口径 | `training/alternating_opt.py` |
-| 补充实验脚本 | `xi` 扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/` |
-| 第6章图表与补充实验图表 | LaTeX 表格与 PDF 图 | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
+
+| 论文章节         | 核心内容                          | 对应代码路径                                                                  |
+| ------------ | ----------------------------- | ----------------------------------------------------------------------- |
+| 第3章 §3.1     | 拉普拉斯 + Lanczos                | `src/msas_gnn/spectral/laplacian.py`, `lanczos.py`                      |
+| 第3章 §3.2     | 四类图复杂度指标                      | `src/msas_gnn/spectral/`                                                |
+| 第4章 §4.1     | 频率维（等权谱能量）                    | `adaptive/frequency_correction.py`                                      |
+| 第4章 §4.2     | 节点维 τ(i)                      | `adaptive/tau_builder.py`                                               |
+| 第4章 §4.3     | 跳距维 k_i^(l)                   | `adaptive/hop_budget.py`                                                |
+| 第5章 §5.1     | LARS 稀疏分解                     | `decomposition/lars_solver.py`, `theta_optimizer.py`                    |
+| 第5章 §5.2     | 交替优化                          | `training/alternating_opt.py`                                           |
+| 第6章 §6.2     | 主实验                           | `scripts/experiments/run_main_benchmarks.py`                            |
+| 第6章 §6.3     | 消融实验                          | `scripts/experiments/run_ablation_modular.py`                           |
+| 第6章 §6.4     | 效率分析                          | `scripts/experiments/run_efficiency.py`                                 |
+| 第6章 实验设置     | ogbn-arxiv 大图 mini-batch 训练口径 | `training/alternating_opt.py`                                           |
+| 补充实验脚本       | `xi` 扫描、补充敏感性、谱代理量验证          | `scripts/experiments/supplemental/`                                     |
+| 第6章图表与补充实验图表 | LaTeX 表格与 PDF 图               | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
+
 
 ---
 
@@ -106,16 +108,20 @@ python scripts/visualization/build_paper_figures.py --all
 
 ## 预期主实验结果（论文表6.2/6.3）
 
-| 方法 | Cora | Citeseer | PubMed | ogbn-arxiv |
-|------|------|----------|--------|------------|
-| SDGNN-compatible (B0) | 86.6±0.9 | 80.3±1.1 | 88.7±0.5 | 74.27±0.21 |
-| **MSAS-GNN (B5)** | **88.3±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
-| p 值 | 0.002 | 0.001 | 0.048 | 0.009 |
 
-| 方法 | Chameleon | Squirrel |
-|------|-----------|----------|
-| SDGNN-compatible (B0) | 63.5±1.1 | 54.2±1.4 |
-| **MSAS-GNN (B5)** | **67.2±0.9** | **56.9±1.2** |
+| 方法                    | Cora         | Citeseer     | PubMed       | ogbn-arxiv     |
+| --------------------- | ------------ | ------------ | ------------ | -------------- |
+| SDGNN-compatible (B0) | 86.6±0.9     | 80.3±1.1     | 88.7±0.5     | 74.27±0.21     |
+| **MSAS-GNN (B5)**     | **88.3±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
+| p 值                   | 0.002        | 0.001        | 0.048        | 0.009          |
+
+
+
+| 方法                    | Chameleon    | Squirrel     |
+| --------------------- | ------------ | ------------ |
+| SDGNN-compatible (B0) | 63.5±1.1     | 54.2±1.4     |
+| **MSAS-GNN (B5)**     | **67.2±0.9** | **56.9±1.2** |
+
 
 ---
 
@@ -127,3 +133,4 @@ python scripts/visualization/build_paper_figures.py --all
 4. **参数量口径**：稠密基线按模型参数数统计；SDGNN/MSAS-GNN 按固化稀疏权重 `Θ^{fixed}` 非零项加线性头统计
 5. **收敛性**：交替优化为非凸问题，代码仅保证训练稳定性
 6. **大图训练口径**：ogbn-arxiv 按第6章实验设置使用 mini-batch 交替优化，训练结束后会补做一次全图 Phase-Θ 重对齐
+

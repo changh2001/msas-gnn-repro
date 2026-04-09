@@ -1,8 +1,8 @@
 # MSAS-GNN：谱驱动自适应稀疏图神经网络的鲁棒高效推理
 
-[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
-[![PyTorch 2.0.1](https://img.shields.io/badge/pytorch-2.0.1-orange.svg)](https://pytorch.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[Python 3.10](https://www.python.org/)
+[PyTorch 2.0.1](https://pytorch.org/)
+[License: MIT](LICENSE)
 
 > **论文**：MSAS-GNN: Spectrally-Driven Adaptive Sparse GNN for Robust and Efficient Inference  
 > **作者**：常昊，北京师范大学应用统计专业  
@@ -457,22 +457,24 @@ python scripts/visualization/build_paper_figures.py --main
 
 常见论文符号与代码字段映射：
 
-| 论文符号 | 代码变量 |
-|---------|--------|
-| `xi` | `xi_budget` |
-| `beta_tau` | `beta_tau` |
-| `gamma` | `gamma` |
-| `delta` | `delta` |
-| `eta` | `eta` |
-| `tau_base` | `tau_base` |
-| `tau_min` | `tau_min` |
-| `c_E` | `c_e` |
-| `lambda` | `lambda_reg` |
-| `k` | `lars.k` |
-| `L` | `hop_dim.L` |
-| `K_eig` | `spectral.K_eig` |
-| `T_W` | `alternating_opt.t_w` |
-| `eta_W` | `alternating_opt.eta_w` |
+
+| 论文符号       | 代码变量                    |
+| ---------- | ----------------------- |
+| `xi`       | `xi_budget`             |
+| `beta_tau` | `beta_tau`              |
+| `gamma`    | `gamma`                 |
+| `delta`    | `delta`                 |
+| `eta`      | `eta`                   |
+| `tau_base` | `tau_base`              |
+| `tau_min`  | `tau_min`               |
+| `c_E`      | `c_e`                   |
+| `lambda`   | `lambda_reg`            |
+| `k`        | `lars.k`                |
+| `L`        | `hop_dim.L`             |
+| `K_eig`    | `spectral.K_eig`        |
+| `T_W`      | `alternating_opt.t_w`   |
+| `eta_W`    | `alternating_opt.eta_w` |
+
 
 更多字段说明见 [docs/config_schema.md](docs/config_schema.md)。
 
@@ -566,22 +568,24 @@ python scripts/visualization/build_paper_figures.py --main
 
 ## 11. 论文-代码映射表
 
-| 论文章节 | 核心内容 | 对应代码路径 |
-|---------|---------|------------|
-| 第 3 章 §3.1 | 拉普拉斯 + Lanczos | `src/msas_gnn/spectral/laplacian.py`, `src/msas_gnn/spectral/lanczos.py` |
-| 第 3 章 §3.2 | 四类图复杂度指标 | `src/msas_gnn/spectral/` |
-| 第 4 章 §4.1 | 频率维（等权谱能量） | `src/msas_gnn/adaptive/frequency_correction.py` |
-| 第 4 章 §4.2 | 节点维 `tau(i)` | `src/msas_gnn/adaptive/tau_builder.py` |
-| 第 4 章 §4.3 | 跳距维 `k_i^(l)` | `src/msas_gnn/adaptive/hop_budget.py` |
-| 第 4 章 §4.4 | 三维参数统一封装 | `src/msas_gnn/adaptive/joint_budget.py` |
-| 第 5 章 §5.1 | LARS 稀疏分解 | `src/msas_gnn/decomposition/lars_solver.py`, `theta_optimizer.py` |
-| 第 5 章 §5.2 | 交替优化 | `src/msas_gnn/training/alternating_opt.py` |
-| 第 6 章 §6.2 | 主实验 | `scripts/experiments/run_main_benchmarks.py` |
-| 第 6 章 §6.3 | 消融实验 | `scripts/experiments/run_ablation_modular.py` |
-| 第 6 章 §6.4 | 效率分析 | `scripts/experiments/run_efficiency.py` |
-| 第 6 章 实验设置 | 大图 mini-batch 交替优化协议 | `src/msas_gnn/training/alternating_opt.py` |
-| 补充实验脚本 | `xi` 扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/` |
-| 第 6 章图表与补充实验图表 | LaTeX 表格与 PDF 图 | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py` |
+
+| 论文章节           | 核心内容                 | 对应代码路径                                                                   |
+| -------------- | -------------------- | ------------------------------------------------------------------------ |
+| 第 3 章 §3.1     | 拉普拉斯 + Lanczos       | `src/msas_gnn/spectral/laplacian.py`, `src/msas_gnn/spectral/lanczos.py` |
+| 第 3 章 §3.2     | 四类图复杂度指标             | `src/msas_gnn/spectral/`                                                 |
+| 第 4 章 §4.1     | 频率维（等权谱能量）           | `src/msas_gnn/adaptive/frequency_correction.py`                          |
+| 第 4 章 §4.2     | 节点维 `tau(i)`         | `src/msas_gnn/adaptive/tau_builder.py`                                   |
+| 第 4 章 §4.3     | 跳距维 `k_i^(l)`        | `src/msas_gnn/adaptive/hop_budget.py`                                    |
+| 第 4 章 §4.4     | 三维参数统一封装             | `src/msas_gnn/adaptive/joint_budget.py`                                  |
+| 第 5 章 §5.1     | LARS 稀疏分解            | `src/msas_gnn/decomposition/lars_solver.py`, `theta_optimizer.py`        |
+| 第 5 章 §5.2     | 交替优化                 | `src/msas_gnn/training/alternating_opt.py`                               |
+| 第 6 章 §6.2     | 主实验                  | `scripts/experiments/run_main_benchmarks.py`                             |
+| 第 6 章 §6.3     | 消融实验                 | `scripts/experiments/run_ablation_modular.py`                            |
+| 第 6 章 §6.4     | 效率分析                 | `scripts/experiments/run_efficiency.py`                                  |
+| 第 6 章 实验设置     | 大图 mini-batch 交替优化协议 | `src/msas_gnn/training/alternating_opt.py`                               |
+| 补充实验脚本         | `xi` 扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/`                                      |
+| 第 6 章图表与补充实验图表 | LaTeX 表格与 PDF 图      | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py`  |
+
 
 ---
 
@@ -681,16 +685,20 @@ python scripts/setup/verify_env.py
 
 论文表 6.2 / 6.3 的目标结果如下。
 
-| 方法 | Cora | Citeseer | PubMed | ogbn-arxiv |
-|------|------|----------|--------|------------|
-| SDGNN-compatible (B0) | 86.6±0.9 | 80.3±1.1 | 88.7±0.5 | 74.27±0.21 |
-| **MSAS-GNN (B5)** | **88.3±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
-| p 值 | 0.002 | 0.001 | 0.048 | 0.009 |
 
-| 方法 | Chameleon | Squirrel |
-|------|-----------|----------|
-| SDGNN-compatible (B0) | 63.5±1.1 | 54.2±1.4 |
-| **MSAS-GNN (B5)** | **67.2±0.9** | **56.9±1.2** |
+| 方法                    | Cora         | Citeseer     | PubMed       | ogbn-arxiv     |
+| --------------------- | ------------ | ------------ | ------------ | -------------- |
+| SDGNN-compatible (B0) | 86.6±0.9     | 80.3±1.1     | 88.7±0.5     | 74.27±0.21     |
+| **MSAS-GNN (B5)**     | **88.0±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
+| p 值                   | 0.002        | 0.001        | 0.048        | 0.009          |
+
+
+
+| 方法                    | Chameleon    | Squirrel     |
+| --------------------- | ------------ | ------------ |
+| SDGNN-compatible (B0) | 63.5±1.1     | 54.2±1.4     |
+| **MSAS-GNN (B5)**     | **67.2±0.9** | **56.9±1.2** |
+
 
 复现完成后，可参考 [docs/reproduce_checklist.md](docs/reproduce_checklist.md) 做逐项核对。
 
@@ -748,3 +756,4 @@ python scripts/setup/verify_env.py
 - 只想复现实验：看“[7. 完整复现流程](#7-完整复现流程)”
 - 只想改配置：看“[9. 配置系统说明](#9-配置系统说明)”
 - 只想读代码：看“[10. 代码层次结构](#10-代码层次结构)”
+
