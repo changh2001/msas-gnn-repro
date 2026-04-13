@@ -119,7 +119,7 @@ python scripts/visualization/build_paper_figures.py --all
 | 方法                    | Chameleon    | Squirrel     |
 | --------------------- | ------------ | ------------ |
 | SDGNN-compatible (B0) | 63.5±1.1     | 54.2±1.4     |
-| **MSAS-GNN (B5)**     | **67.2±0.9** | **56.9±1.2** |
+| **MSAS-GNN (B5)**     | **65.6±0.9** | **55.9±1.2** |
 
 
 ---

@@ -696,7 +696,7 @@ python scripts/setup/verify_env.py
 | 方法                    | Chameleon    | Squirrel     |
 | --------------------- | ------------ | ------------ |
 | SDGNN-compatible (B0) | 63.5±1.1     | 54.2±1.4     |
-| **MSAS-GNN (B5)**     | **67.2±0.9** | **56.9±1.2** |
+| **MSAS-GNN (B5)**     | **65.6±0.9** | **55.9±1.2** |
 
 
 复现完成后，可参考 [docs/reproduce_checklist.md](docs/reproduce_checklist.md) 做逐项核对。
