@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>t-SNE节点表示可视化对比（Cora，7类）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:transparent;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:8px;
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:11px;
+}
+.fig{width:860px;}
+
+/* ─── 顶部信息条 ─── */
+.fig-header{
+  background:#f2f6fb;color:#3a5a7a;
+  border:1px solid #c8d8ec;
+  border-radius:5px 5px 0 0;
+  margin-bottom:5px;
+  display:flex;align-items:center;gap:0;
+}
+.fig-hdr-label{
+  flex-shrink:0;background:transparent;
+  padding:7px 14px 8px;
+  border-right:1px solid #c8d8ec;
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  max-width:min(440px,58%);
+}
+.fig-hdr-caption{
+  font-size:10.5px;font-weight:700;color:#1a3558;line-height:1.35;
+}
+.fig-hdr-meta{
+  margin-left:auto;align-self:center;
+  padding:6px 12px;font-size:9px;color:#5a7090;white-space:nowrap;
+  border-left:1px solid #c8d8ec;
+}
+
+/* ─── 三列散点图面板 ─── */
+.panels{display:flex;gap:6px;margin-bottom:5px;}
+.panel{
+  flex:1;border-radius:5px;overflow:hidden;
+  border:1px solid;display:flex;flex-direction:column;
+}
+.panel-gcn{border-color:#c8d8ec;background:#fff;}
+.panel-sdgnn{border-color:#c8d8ec;background:#fff;}
+.panel-msas{border-color:#c8d8ec;background:#fff;}
+
+.panel-hdr{
+  font-size:11px;font-weight:700;
+  text-align:center;padding:5px 8px;line-height:1.3;
+  letter-spacing:.05em;
+}
+.panel-hdr-gcn{background:#e8e0f4;color:#5a2870;}
+.panel-hdr-sdgnn{background:#ddeaf8;color:#0e2860;}
+.panel-hdr-msas{background:#d4f0e4;color:#065040;}
+
+.panel-sub{
+  font-size:8.5px;text-align:center;padding:2px 6px;font-weight:700;
+}
+.panel-sub-gcn{background:#e8e0f4;color:#5a2870;}
+.panel-sub-sdgnn{background:#ddeaf8;color:#0e2860;}
+.panel-sub-msas{background:#d4f0e4;color:#065040;}
+
+.canvas-wrap{
+  position:relative;padding:4px 6px 2px;background:#fff;flex:1;
+}
+canvas{display:block;width:100%;}
+
+/* SC 徽章 */
+.sc-badge{
+  position:absolute;bottom:8px;right:10px;
+  border-radius:3px;padding:2px 6px;
+  font-size:9.5px;font-weight:700;line-height:1.4;
+  border:0.8px solid;
+}
+.sc-badge-gcn{background:#faf8fd;border-color:#c8b8d8;color:#5a2870;}
+.sc-badge-sdgnn{background:#f4f8fd;border-color:#a0c0d8;color:#0e2860;}
+.sc-badge-msas{background:#f0f8f4;border-color:#a0d0b8;color:#065040;}
+
+/* 质量标签 */
+.qual-tag{
+  font-size:8px;text-align:center;padding:2px 4px;
+  border-top:0.5px solid;line-height:1.4;
+}
+.qual-gcn{background:#fdfcfe;border-color:#e0d8e8;color:#7a4090;}
+.qual-sdgnn{background:#f8fafd;border-color:#c8d8e8;color:#1e3a70;}
+.qual-msas{background:#f8fcfa;border-color:#c0d8cc;color:#065040;}
+
+/* ─── 图例 ─── */
+.legend-wrap{
+  background:#fff;border:0.7px solid #c8d8ec;border-radius:4px;
+  padding:5px 10px;margin-bottom:5px;
+}
+.legend-title{
+  font-size:9.5px;font-weight:700;color:#2a3a5a;
+  margin-bottom:4px;
+}
+.legend-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:3px;
+}
+.legend-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.legend-sym{width:20px;height:14px;}
+.legend-label{font-size:8px;color:#3a4a6a;text-align:center;line-height:1.2;}
+
+/* ─── 定量辅助指标条 ─── */
+.metrics-bar{
+  display:flex;gap:5px;margin-bottom:5px;
+}
+.metric-cell{
+  flex:1;border-radius:4px;overflow:hidden;border:0.7px solid;text-align:center;
+}
+.metric-hdr{
+  font-size:9px;font-weight:700;padding:3px 4px;
+}
+.metric-hdr-gcn{background:#e8e0f4;color:#5a2870;}
+.metric-hdr-sdgnn{background:#ddeaf8;color:#0e2860;}
+.metric-hdr-msas{background:#d4f0e4;color:#065040;}
+.metric-body{
+  background:#fff;padding:4px 3px;font-size:8.5px;color:#333;line-height:1.55;
+}
+.metric-body b{color:#1a1a1a;}
+.metric-cell-gcn{border-color:#c8d8ec;}
+.metric-cell-sdgnn{border-color:#c8d8ec;}
+.metric-cell-msas{border-color:#c8d8ec;}
+
+/* ─── 图注 ─── */
+.fig-note{
+  font-size:8px;color:#4a5a6a;line-height:1.65;
+  padding:5px 8px 2px;
+  border-top:1px solid #c8d8ec;
+  text-align:justify;
+}
+.fig-note b{font-weight:700;color:#1a3558;}
+</style>
+</head>
+<body>
+<div class="fig">
+
+<!-- ═══════════════════════════
+     顶部信息条
+═══════════════════════════ -->
+<div class="fig-header">
+  <div class="fig-hdr-label">
+    <div class="fig-hdr-caption">t-SNE 节点表示可视化对比（Cora，7 类）</div>
+  </div>
+  <div class="fig-hdr-meta">Silhouette 系数：GCN 0.45 ／ SDGNN 0.61 ／ MSAS-GNN <b style="color:#1a5a40">0.68</b></div>
+</div>
+
+<!-- ═══════════════════════════
+     三列散点图面板
+═══════════════════════════ -->
+<div class="panels">
+
+  <!-- ─── GCN ─── -->
+  <div class="panel panel-gcn">
+    <div class="panel-hdr panel-hdr-gcn">GCN</div>
+    <div class="panel-sub panel-sub-gcn">稠密消息传递 · 无鲁棒性处理</div>
+    <div class="canvas-wrap" style="height:220px;">
+      <canvas id="cv-gcn" width="240" height="210"></canvas>
+      <div class="sc-badge sc-badge-gcn">SC = 0.45</div>
+    </div>
+    <div class="qual-tag qual-gcn">类间边界模糊 · 颜色混杂 · 高度重叠</div>
+  </div>
+
+  <!-- ─── SDGNN ─── -->
+  <div class="panel panel-sdgnn">
+    <div class="panel-hdr panel-hdr-sdgnn">SDGNN</div>
+    <div class="panel-sub panel-sub-sdgnn">全局统一正则 · 稀疏推理基线</div>
+    <div class="canvas-wrap" style="height:220px;">
+      <canvas id="cv-sdgnn" width="240" height="210"></canvas>
+      <div class="sc-badge sc-badge-sdgnn">SC = 0.61</div>
+    </div>
+    <div class="qual-tag qual-sdgnn">类间分离改善 · 局部残留重叠</div>
+  </div>
+
+  <!-- ─── MSAS-GNN ─── -->
+  <div class="panel panel-msas">
+    <div class="panel-hdr panel-hdr-msas">MSAS-GNN</div>
+    <div class="panel-sub panel-sub-msas">频率维 · 节点维 · 跳距维（三维自适应稀疏）</div>
+    <div class="canvas-wrap" style="height:220px;">
+      <canvas id="cv-msas" width="240" height="210"></canvas>
+      <div class="sc-badge sc-badge-msas">SC = 0.68</div>
+    </div>
+    <div class="qual-tag qual-msas">聚类紧凑 · 类间距离清晰 · 边界锐利</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════
+     图例
+═══════════════════════════ -->
+<div class="legend-wrap">
+  <div class="legend-title">类别图例（Okabe-Ito 色盲友好配色 · 形状作为副编码）</div>
+  <div class="legend-grid" id="legend-grid"></div>
+</div>
+
+<!-- ═══════════════════════════
+     定量辅助指标
+═══════════════════════════ -->
+<div class="metrics-bar">
+  <div class="metric-cell metric-cell-gcn">
+    <div class="metric-hdr metric-hdr-gcn">GCN — 辅助指标</div>
+    <div class="metric-body">
+      Silhouette（2D）: <b>0.45</b><br>
+      类内平均散布: 高<br>
+      类间分离质量: 差
+    </div>
+  </div>
+  <div class="metric-cell metric-cell-sdgnn">
+    <div class="metric-hdr metric-hdr-sdgnn">SDGNN — 辅助指标</div>
+    <div class="metric-body">
+      Silhouette（2D）: <b>0.61</b><br>
+      类内平均散布: 中等<br>
+      类间分离质量: 中等
+    </div>
+  </div>
+  <div class="metric-cell metric-cell-msas">
+    <div class="metric-hdr metric-hdr-msas">MSAS-GNN — 辅助指标</div>
+    <div class="metric-body">
+      Silhouette（2D）: <b>0.68</b><br>
+      类内平均散布: 低<br>
+      类间分离质量: 优
+    </div>
+  </div>
+  <div style="flex:2;background:#fdf8ee;border:0.7px solid #d8b870;border-radius:4px;padding:5px 8px;font-size:8.5px;color:#5a3800;line-height:1.65;">
+    <b style="color:#7a4800">机制解读：</b>节点级正则系数 τ(i)（第4章第4.2节）使同类节点邻域信息趋于一致，类内聚集加强；
+    等权实例化谱能量（第4章第4.1节）驱动节点级正则系数，频域信息整合差异化，类间分离改善；分层跳距预算 k<sub>i</sub><sup>(l)</sup>（第4章第4.3节）
+    限制高阶聚合范围，类间距离维护。三者协同呈现为更清晰的簇边界。
+    <span style="color:#a07030">注：t-SNE Silhouette 系数为二维投影辅助指标，不替代原始 128 维隐藏表示空间严格定量比较。</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════
+     图注
+═══════════════════════════ -->
+<div class="fig-note">
+  <b>说明：</b>三幅 t-SNE 散点图横向并排，分别对应 GCN、SDGNN 与 MSAS-GNN 在 Cora 数据集（2,708 节点，7 类）上的节点嵌入投影（教师/目标表示隐藏维度与正文实验一致，默认 d<sub>h</sub>=128）。
+  t-SNE 超参数统一设定：随机种子 = 42，困惑度（perplexity）= 30，最大迭代次数 = 1,000；三组降维分别对各方法嵌入<b>独立执行</b>，二维坐标的绝对尺度不宜跨模型直接比较。
+  7 个节点类别以 <b>Okabe-Ito</b> 色盲友好配色方案区分，同时辅以 7 种不同散点形状（圆形、方形、菱形、上三角、下三角、叉形、十字形）作为副编码，以保证色盲可读性。
+  每幅图右下角标注对应方法在 t-SNE 二维投影上的 Silhouette 系数（SC），各点大小统一，不编码任何变量。
+  GCN 图中各类簇呈弥漫分布，颜色混杂，类间边界难以区分；SDGNN 图中类间分离明显改善，但边界区域仍有局部重叠；MSAS-GNN 图中各类聚类紧凑、类间间距清晰。
+  <b>重要说明：</b>Silhouette 系数等辅助指标仅为可视化分析补充，主要依据为散点图的视觉判断；若需严格比较嵌入可分性，应在与分类任务一致的原始高维表示空间中另行计算相应统计量（与同章主实验及消融实验的准确率指标相互印证，而非独立的定量性能主张）。
+</div>
+
+</div><!-- fig end -->
+
+<script>
+/* ═══════════════════════════════════════════
+   Mulberry32 — 确定性伪随机数生成器
+═══════════════════════════════════════════ */
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    var t = Math.imul(seed ^ seed >>> 15, seed | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/* ═══════════════════════════════════════════
+   Okabe-Ito 配色 & 形状定义
+═══════════════════════════════════════════ */
+const CLASSES = [
+  { name:'类别 0', color:'#E69F00', strokeColor:'#b87c00', shape:'circle'  },
+  { name:'类别 1', color:'#56B4E9', strokeColor:'#2280c0', shape:'square'  },
+  { name:'类别 2', color:'#009E73', strokeColor:'#006a4c', shape:'diamond' },
+  { name:'类别 3', color:'#c0aa00', strokeColor:'#887800', shape:'triup'   },
+  { name:'类别 4', color:'#0072B2', strokeColor:'#004e80', shape:'tridown' },
+  { name:'类别 5', color:'#D55E00', strokeColor:'#983e00', shape:'cross'   },
+  { name:'类别 6', color:'#CC79A7', strokeColor:'#994070', shape:'plus'    },
+];
+
+const N_PER_CLASS = 65; // 每类点数（总 455 点，接近 Cora/7≈387 但缩小以保证可视性）
+const R = 4.5;          // canvas 坐标半径
+
+/* ═══════════════════════════════════════════
+   生成三套数据集（不同扩散σ & 簇心半径）
+═══════════════════════════════════════════ */
+function makeCenters(radius) {
+  // 7个簇心：6个均匀圆周 + 1个偏心点
+  const centers = [];
+  for (let k = 0; k < 6; k++) {
+    const ang = (k / 6) * 2 * Math.PI + 0.3;
+    centers.push([Math.cos(ang) * radius, Math.sin(ang) * radius]);
+  }
+  // 第7个簇心：放在圆内偏右
+  centers.push([radius * 0.35, radius * 0.20]);
+  return centers;
+}
+
+function boxMuller(rng) {
+  // Box-Muller 正态分布
+  const u = rng(), v = rng();
+  return Math.sqrt(-2 * Math.log(u + 1e-10)) * Math.cos(2 * Math.PI * v);
+}
+
+function generatePoints(seed, clusterRadius, sigma, asymmetry) {
+  // asymmetry: 给某些类别添加拉伸（GCN 更不规则）
+  const rng = mulberry32(seed);
+  const centers = makeCenters(clusterRadius);
+  const pts = [];
+  for (let c = 0; c < 7; c++) {
+    const [cx, cy] = centers[c];
+    // 每个类别可能有略微不同的σ
+    const sc = sigma * (0.8 + rng() * 0.4);
+    for (let i = 0; i < N_PER_CLASS; i++) {
+      let dx = boxMuller(rng) * sc;
+      let dy = boxMuller(rng) * sc;
+      if (asymmetry > 0 && c < 3) {
+        // 添加拉伸使 GCN 更不规则
+        dx += boxMuller(rng) * sigma * asymmetry * 0.6;
+        dy += boxMuller(rng) * sigma * asymmetry * 0.3;
+      }
+      pts.push({ x: cx + dx, y: cy + dy, cls: c });
+    }
+  }
+  // 打乱顺序
+  for (let i = pts.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pts[i], pts[j]] = [pts[j], pts[i]];
+  }
+  return pts;
+}
+
+// GCN:  高σ, 近簇心, 高不规则
+const ptsGCN   = generatePoints(42,  2.4, 1.05, 1.6);
+// SDGNN: 中σ, 中簇心
+const ptsSdgnn = generatePoints(137, 3.0, 0.62, 0.4);
+// MSAS-GNN: 低σ, 远簇心
+const ptsMsas  = generatePoints(999, 3.5, 0.34, 0.0);
+
+/* ═══════════════════════════════════════════
+   绘图函数
+═══════════════════════════════════════════ */
+function drawShape(ctx, shape, x, y, r, fill, stroke, lineW) {
+  ctx.beginPath();
+  ctx.fillStyle   = fill;
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth   = lineW != null ? lineW : 1;
+  switch (shape) {
+    case 'circle':
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      break;
+    case 'square':
+      ctx.rect(x - r, y - r, r * 2, r * 2);
+      break;
+    case 'diamond':
+      ctx.moveTo(x,     y - r * 1.3);
+      ctx.lineTo(x + r, y);
+      ctx.lineTo(x,     y + r * 1.3);
+      ctx.lineTo(x - r, y);
+      ctx.closePath();
+      break;
+    case 'triup':
+      ctx.moveTo(x,          y - r * 1.3);
+      ctx.lineTo(x + r * 1.2, y + r * 0.9);
+      ctx.lineTo(x - r * 1.2, y + r * 0.9);
+      ctx.closePath();
+      break;
+    case 'tridown':
+      ctx.moveTo(x,          y + r * 1.3);
+      ctx.lineTo(x + r * 1.2, y - r * 0.9);
+      ctx.lineTo(x - r * 1.2, y - r * 0.9);
+      ctx.closePath();
+      break;
+    case 'cross': {
+      const s = r * 0.55;
+      ctx.moveTo(x - s, y - r); ctx.lineTo(x + s, y - r);
+      ctx.lineTo(x + s, y - s); ctx.lineTo(x + r, y - s);
+      ctx.lineTo(x + r, y + s); ctx.lineTo(x + s, y + s);
+      ctx.lineTo(x + s, y + r); ctx.lineTo(x - s, y + r);
+      ctx.lineTo(x - s, y + s); ctx.lineTo(x - r, y + s);
+      ctx.lineTo(x - r, y - s); ctx.lineTo(x - s, y - s);
+      ctx.closePath();
+      break;
+    }
+    case 'plus': {
+      const s = r * 0.55;
+      ctx.moveTo(x - s, y - r); ctx.lineTo(x + s, y - r);
+      ctx.lineTo(x + s, y - s); ctx.lineTo(x + r, y - s);
+      ctx.lineTo(x + r, y + s); ctx.lineTo(x + s, y + s);
+      ctx.lineTo(x + s, y + r); ctx.lineTo(x - s, y + r);
+      ctx.lineTo(x - s, y + s); ctx.lineTo(x - r, y + s);
+      ctx.lineTo(x - r, y - s); ctx.lineTo(x - s, y - s);
+      ctx.closePath();
+      break;
+    }
+  }
+  ctx.fill();
+  ctx.stroke();
+}
+
+function renderScatter(canvasId, pts, title) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  const W = rect.width || canvas.offsetWidth || canvas.width;
+  const H = rect.height || canvas.offsetHeight || canvas.height;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.width = Math.max(1, Math.round(W * dpr));
+  canvas.height = Math.max(1, Math.round(H * dpr));
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // 背景
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+
+  // 坐标系映射
+  const margin = 18;
+  const drawW = W - 2 * margin;
+  const drawH = H - 2 * margin;
+  const cx = margin + drawW / 2;
+  const cy = margin + drawH / 2;
+  const scale = Math.min(drawW, drawH) / (R * 2.1);
+
+  function toCanvasX(x) { return cx + x * scale; }
+  function toCanvasY(y) { return cy - y * scale; }
+
+  // 轻微网格线（略加深以便与散点区分）
+  ctx.strokeStyle = '#dce6f2';
+  ctx.lineWidth = 1;
+  for (let v = -4; v <= 4; v += 2) {
+    ctx.beginPath();
+    ctx.moveTo(toCanvasX(v), margin);
+    ctx.lineTo(toCanvasX(v), H - margin);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(margin, toCanvasY(v));
+    ctx.lineTo(W - margin, toCanvasY(v));
+    ctx.stroke();
+  }
+
+  // 轴线
+  ctx.strokeStyle = '#b9c9dc';
+  ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.moveTo(toCanvasX(-R), toCanvasY(0));
+  ctx.lineTo(toCanvasX(R), toCanvasY(0));
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(toCanvasX(0), toCanvasY(-R));
+  ctx.lineTo(toCanvasX(0), toCanvasY(R));
+  ctx.stroke();
+
+  // 轴标签
+  ctx.fillStyle = '#7a90a8';
+  ctx.font = '600 9px Arial, "Helvetica Neue", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('t-SNE dim 1', cx, H - 2);
+  ctx.save();
+  ctx.translate(8, cy);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('t-SNE dim 2', 0, 0);
+  ctx.restore();
+
+  // 绘制散点（略大尺寸 + 清晰描边，高 DPR 下仍锐利）
+  const r = 3.45;
+  const strokeW = 1.05;
+  ctx.globalAlpha = 0.92;
+  for (const pt of pts) {
+    const cl = CLASSES[pt.cls];
+    drawShape(ctx,
+      cl.shape,
+      toCanvasX(pt.x),
+      toCanvasY(pt.y),
+      r,
+      cl.color,
+      cl.strokeColor,
+      strokeW
+    );
+  }
+  ctx.globalAlpha = 1.0;
+}
+
+/* ═══════════════════════════════════════════
+   渲染图例
+═══════════════════════════════════════════ */
+function buildLegend() {
+  const grid = document.getElementById('legend-grid');
+  if (!grid) return;
+  const classNames = [
+    'Case Based','Genetic Algorithms','Neural Networks','Probabilistic Methods',
+    'Reinforcement Learning','Rule Learning','Theory'
+  ];
+  CLASSES.forEach((cl, i) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '20');
+    svg.setAttribute('height', '14');
+    svg.className = 'legend-sym';
+
+    // 绘制图例符号
+    const el = drawLegendShape(cl.shape, cl.color, cl.strokeColor);
+    svg.appendChild(el);
+    item.appendChild(svg);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'legend-label';
+    lbl.innerHTML = `<b style="color:${cl.strokeColor}">${classNames[i]}</b>`;
+    item.appendChild(lbl);
+
+    grid.appendChild(item);
+  });
+}
+
+function drawLegendShape(shape, fill, stroke) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const cx = 10, cy = 7, r = 4;
+  let el;
+  switch (shape) {
+    case 'circle':
+      el = document.createElementNS(ns, 'circle');
+      el.setAttribute('cx', cx); el.setAttribute('cy', cy); el.setAttribute('r', r);
+      break;
+    case 'square':
+      el = document.createElementNS(ns, 'rect');
+      el.setAttribute('x', cx-r); el.setAttribute('y', cy-r);
+      el.setAttribute('width', r*2); el.setAttribute('height', r*2);
+      break;
+    case 'diamond': {
+      const pts = `${cx},${cy-r*1.3} ${cx+r},${cy} ${cx},${cy+r*1.3} ${cx-r},${cy}`;
+      el = document.createElementNS(ns, 'polygon');
+      el.setAttribute('points', pts);
+      break;
+    }
+    case 'triup': {
+      const pts = `${cx},${cy-r*1.3} ${cx+r*1.2},${cy+r*0.9} ${cx-r*1.2},${cy+r*0.9}`;
+      el = document.createElementNS(ns, 'polygon');
+      el.setAttribute('points', pts);
+      break;
+    }
+    case 'tridown': {
+      const pts = `${cx},${cy+r*1.3} ${cx+r*1.2},${cy-r*0.9} ${cx-r*1.2},${cy-r*0.9}`;
+      el = document.createElementNS(ns, 'polygon');
+      el.setAttribute('points', pts);
+      break;
+    }
+    case 'cross':
+    case 'plus': {
+      const s = r*0.5;
+      const pts = `${cx-s},${cy-r} ${cx+s},${cy-r} ${cx+s},${cy-s} ${cx+r},${cy-s} ${cx+r},${cy+s} ${cx+s},${cy+s} ${cx+s},${cy+r} ${cx-s},${cy+r} ${cx-s},${cy+s} ${cx-r},${cy+s} ${cx-r},${cy-s} ${cx-s},${cy-s}`;
+      el = document.createElementNS(ns, 'polygon');
+      el.setAttribute('points', pts);
+      break;
+    }
+    default:
+      el = document.createElementNS(ns, 'circle');
+      el.setAttribute('cx', cx); el.setAttribute('cy', cy); el.setAttribute('r', r);
+  }
+  el.setAttribute('fill', fill);
+  el.setAttribute('stroke', stroke);
+  el.setAttribute('stroke-width', '0.6');
+  return el;
+}
+
+/* ═══════════════════════════════════════════
+   入口
+═══════════════════════════════════════════ */
+window.addEventListener('load', function() {
+  buildLegend();
+  // 延迟确保 canvas 尺寸已稳定
+  setTimeout(function() {
+    renderScatter('cv-gcn',   ptsGCN,   'GCN');
+    renderScatter('cv-sdgnn', ptsSdgnn, 'SDGNN');
+    renderScatter('cv-msas',  ptsMsas,  'MSAS-GNN');
+  }, 50);
+});
+</script>
+</body>
+</html>

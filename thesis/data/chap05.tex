@@ -1,0 +1,937 @@
+% !TeX root = ../main.tex
+
+\chapter{算法整合、误差分析与复杂度分析}
+\label{chap:algorithm-theory}
+
+第4章已经从频率、节点与跳距三个维度完成自适应稀疏机制设计，但这些设计结果仍停留在参数构造层面，尚未通过统一求解流程转化为可执行算法；与此同时，稀疏化后表示误差如何刻画、各阶段复杂度应如何统一分析，也仍需进一步说明。本章在前述设计基础上，围绕算法落地、误差分析与复杂度分析三个方面展开：第~\ref{sec:ch5-lars}~节以 LARS 为核心求解器，将节点级正则系数 $\tau(i)$ 与跳距预算配额 $k_i^{(l)}$ 整合为端到端交替优化流程；第~\ref{sec:ch5-spectral}~节在 $\sigma$-谱相似性框架下讨论稀疏化后的条件化误差界及其适用条件；第~\ref{sec:ch5-time}~节进一步区分推理、训练与预处理三类复杂度口径，并说明线性规模推理复杂度成立的条件。
+
+% 本章整体框架如图~\ref{fig:ch5-overview} 所示。
+
+% ---- 图~\ref{fig:ch5-overview}~占位符 ----
+% \begin{figure}[htbp]
+%   \centering
+%       \includegraphics[width=1\linewidth]{5-1.pdf}
+%   % \setlength{\fboxsep}{1.2em}
+%   % \fbox{\parbox{0.88\textwidth}{\small\centering
+%   %   \textbf{【占位图~\ref{fig:ch5-overview}~】}\\[0.6em]
+%   %   图题：第5章整体框架图。表达内容：从三维参数输入（$\tau(i)$、$k_i^{(l)}$、$\mathcal{R}_l(i)$）→LARS端到端算法（算法5.1/5.2，输出$\Theta^{\text{fixed}}$）→谱保持理论（式~\eqref{eq:ch5-tau-grace}、式~\eqref{eq:ch5-budget-lagrange}，参数初始化参考）→复杂度分析（$O(n\bar{k}d)$及其适用条件）的四层纵向流程，各层以箭头标注数据流向。
+%   % }}
+%   \caption{第5章整体框架图：三维参数整合→LARS算法→误差分析→复杂度}
+%   \label{fig:ch5-overview}
+% \end{figure}
+
+%%============================================================
+\section{LARS分层稀疏求解与交替优化}
+\label{sec:ch5-lars}
+
+第4章得到的节点级正则系数 $\tau(i)$ 与分层跳距预算 $k_i^{(l)}$ 仍停留在参数设计层面，尚未形成统一的可执行求解流程。其中，$\tau(i)$ 表示节点 $i$ 对应稀疏子问题的正则强度，$k_i^{(l)}$ 表示节点 $i$ 在第 $l$ 跳环层上的预算配额。本节以 LARS\cite{Efron2004LARS}（Efron等，2004）为核心稀疏求解器，将上述两类参数整合到节点级稀疏分解过程中。具体而言，本文以 $\tau(i)$ 作为节点 $i$ 对应 Lasso 子问题的正则强度，并以 $k_i^{(l)}$ 作为第 $l$ 跳环层子问题的路径截断上限，即令 \texttt{max\_iter} 不超过 $k_i^{(l)}$，从而将第4章的节点维与跳距维设计落实到具体求解流程中。
+
+具体地，候选集按跳距划分为互不相交的环层 $\mathcal{R}_l(i)$，其中，$\mathcal{R}_l(i)$ 表示节点 $i$ 的第 $l$ 跳邻居环层；在此基础上，各环层按照“由近及远”的顺序执行残差级联 LARS。完整端到端流程见第~\ref{subsec:ch5-mainloop}~节算法~\ref{alg:ch5-main}，优化稳定性与收敛性讨论见第~\ref{subsec:ch5-convergence}~节。
+
+\subsection{分层LARS的候选集构造与方案选定}
+\label{subsec:ch5-candidateset}
+
+对节点 $i$，记 $L$ 为候选集所考虑的最大跳数，则其候选集定义为节点自身与前 $L$ 跳邻居环层的并集
+$C_i=\{i\}\cup\bigcup_{l=1}^{L}\mathcal{R}_l(i)$，其中，$C_i$ 表示节点 $i$ 的候选节点集合，各邻居环层 $\mathcal{R}_l(i)$ 两两不相交。需要说明的是，节点自身 $i$ 固定并入候选集，可视为第 $0$ 跳自特征通道；由于该通道仅包含单个候选变量，本文不对其分配跳距预算，而是固定保留并单独学习其系数。相应地，第4章定义的分层预算配额 $\{k_i^{(l)}\}_{l=1}^{L}$ 仍仅对 $l=1,\ldots,L$ 的邻居环层生效，不单独为自连分配预算。对于大规模图上的训练，若直接保留全部前 $L$ 跳邻居会使候选集规模过大，则可采用工程化裁剪策略：对近跳环层完整保留，对较远跳环层进行分层采样，以控制 Phase $\Theta$ 中单节点子问题的求解开销。
+
+在候选集构造完成后，分层 LARS 的关键问题在于：不同跳距环层应共享同一拟合目标，还是按残差逐层递推。为说明这一点，记节点 $i$ 的教师或基准 GNN 目标表示为
+\begin{equation}
+  \Omega_i := H_{i,:}^{*}\in\mathbb{R}^{d}.
+  \label{eq:ch5-target-vector}
+\end{equation}
+其中，$H_{i,:}^{*}$ 表示目标表示矩阵 $H^{*}$ 的第 $i$ 行，$\Omega_i$ 即节点 $i$ 在 $d$ 维表示空间中的目标向量。
+
+由于节点自身对应的第 $0$ 跳通道固定保留，因此本文先对自连系数进行单变量拟合。记 $\tilde{\phi}_i\in\mathbb{R}^{d}$ 为节点 $i$ 在缓存特征矩阵 $\tilde{\Phi}$ 中对应的行向量，则其第 $0$ 跳系数定义为
+\begin{equation}
+  \theta_i^{(0)}
+  =
+  \operatorname*{arg\,min}_{\alpha\in\mathbb{R}}
+  \left\|
+  \alpha\,\tilde{\phi}_i-\Omega_i
+  \right\|_2^2
+  +
+  \tau(i)|\alpha|.
+  \label{eq:ch5-self-channel}
+\end{equation}
+式~\eqref{eq:ch5-self-channel} 的作用是先估计节点自身特征对目标表示的直接贡献强度。进一步地，令
+\begin{equation}
+  r_i^{(0)}
+  :=
+  \Omega_i-\theta_i^{(0)}\tilde{\phi}_i,
+  \label{eq:ch5-initial-residual}
+\end{equation}
+其中，$r_i^{(0)}$ 表示在扣除节点自身特征贡献后得到的初始残差。
+
+首先考虑共享目标方案。对每一层邻居环层 $\mathcal{R}_l(i)$，分别独立求解
+\begin{equation}
+  \theta_i^{(l)}
+  =
+  \operatorname*{arg\,min}_{\theta\in\mathbb{R}^{|\mathcal{R}_l(i)|}}
+  \left\|
+  \tilde{\Phi}_{\mathcal{R}_l(i)}^{\top}\theta-\Omega_i
+  \right\|_2^2
+  +
+  \tau(i)\|\theta\|_1.
+  \label{eq:ch5-shared-target}
+\end{equation}
+其中，$\tilde{\Phi}_{\mathcal{R}_l(i)}$ 表示候选特征矩阵 $\tilde{\Phi}$ 在环层 $\mathcal{R}_l(i)$ 上的行子矩阵，$\theta_i^{(l)}$ 表示节点 $i$ 在第 $l$ 个邻居环层上的稀疏系数向量。式~\eqref{eq:ch5-shared-target} 表明，各层均以同一目标向量 $\Omega_i$ 为拟合对象，环层之间彼此独立。该处理方式的主要问题在于，不同跳距子问题会重复逼近同一目标表示，从而引入跨层冗余；当近跳环层已经能够解释主要目标分量时，较远跳环层继续针对同一目标独立拟合，容易削弱第4章第~\ref{sec:ch4-hop}~节所建立的“近跳优先、远跳递减”预算动机。基于这一考虑，本文不采用共享目标方案，以下将其记为方案1。
+
+本文最终采用残差级联方案，即方案2。具体而言，节点 $i$ 的拟合过程按“先第 $0$ 跳自特征通道、后第 $1$ 至 $L$ 跳邻居环层”的顺序递推进行。
+
+对第 $0$ 跳而言，由于该通道仅包含节点自身一个候选变量，因此不再采用多变量 LARS 路径求解，而是先解如下单变量稀疏子问题：
+\begin{equation}
+  \theta_i^{(0)}
+  =
+  \operatorname*{arg\,min}_{\alpha\in\mathbb{R}}
+  \left\|
+  \alpha\,\tilde{\phi}_i-\Omega_i
+  \right\|_2^2
+  +
+  \tau(i)|\alpha|.
+  \label{eq:ch5-self-channel}
+\end{equation}
+其中，$\tilde{\phi}_i\in\mathbb{R}^{d}$ 表示节点 $i$ 在缓存特征矩阵 $\tilde{\Phi}$ 中对应的行向量，$\theta_i^{(0)}$ 表示第 $0$ 跳自特征通道的系数。由此可得扣除节点自身特征贡献后的初始残差
+\begin{equation}
+  r_i^{(0)}
+  :=
+  \Omega_i-\theta_i^{(0)}\tilde{\phi}_i,
+  \label{eq:ch5-initial-residual}
+\end{equation}
+
+对第 $l$ 个邻居环层（$l=1,\ldots,L$），再依次求解如下子问题：
+\begin{equation}
+  \theta_i^{(l)}
+  =
+  \operatorname*{arg\,min}_{\theta\in\mathbb{R}^{|\mathcal{R}_l(i)|}}
+  \left\|
+  \tilde{\Phi}_{\mathcal{R}_l(i)}^{\top}\theta-r_i^{(l-1)}
+  \right\|_2^2
+  +
+  \tau(i)\|\theta\|_1.
+  \label{eq:ch5-tau-full}
+\end{equation}
+其中，$r_i^{(l-1)}$ 表示在完成第 $0$ 跳至第 $l-1$ 跳拟合后剩余的残差。实现上，第 $l$ 层 LARS 路径的迭代上限设为 $k_i^{(l)}$，即以 \texttt{max\_iter} 控制该层激活变量数不超过预算配额。求得 $\theta_i^{(l)}$ 后，按
+\begin{equation}
+  r_i^{(l)}
+  :=
+  r_i^{(l-1)}-\tilde{\Phi}_{\mathcal{R}_l(i)}^{\top}\theta_i^{(l)}.
+  \label{eq:ch5-residual-update}
+\end{equation}
+更新残差，其中，$r_i^{(l)}$ 表示节点 $i$ 在完成第 $0$ 跳至第 $l$ 跳拟合后的剩余误差。
+
+因此，在方案2中，第 $0$ 跳负责先拟合节点自身特征对目标表示的直接贡献，第 $1$ 至 $L$ 跳邻居环层则在此基础上对剩余误差逐层补偿。全部环层完成后，节点 $i$ 的最终稀疏权重向量定义在候选集 $C_i$ 上，其由第 $0$ 跳自特征系数 $\theta_i^{(0)}$ 与各邻居环层系数 $\{\theta_i^{(l)}\}_{l=1}^{L}$ 共同组成。换言之，本文的分层预算仅控制多跳邻居环层上的稀疏保留规模，而节点自身对应的系数通过式~\eqref{eq:ch5-self-channel} 中的一维稀疏子问题单独学习得到。因此，对角元位置 $\Theta_{i,i}$ 允许非零，且其数值不再由人工固定，而是由节点自身特征对目标表示的拟合强度自适应决定。
+
+与方案1相比，方案2将“对同一目标的重复逼近”改为“对剩余误差的逐层补偿”，因此在工程上更有利于减少不同跳距之间的表示冗余，也与第4章建立的近跳优先预算逻辑保持一致。需要说明的是，这里给出的仍是算法设计上的合理性解释，而非关于整体 Lasso 最优支撑集性质的严格理论结论。相关交替优化流程的稳定性与收敛性讨论见第~\ref{subsec:ch5-convergence}~节。
+% ---- 图~\ref{fig:ch5-lars-compare}~占位符 ----
+\begin{figure}[htbp]
+  \centering
+      \includegraphics[width=1\linewidth]{5-1.pdf}
+  % \setlength{\fboxsep}{1.2em}
+  % \fbox{\parbox{0.88\textwidth}{\small\centering
+  %   \textbf{【占位图~\ref{fig:ch5-lars-compare}~】}\\[0.6em]
+  %   图题：共享目标方案与残差级联方案对比。表达内容：左侧给出“共享目标”路径，显示各环层均直接拟合同一目标 $\Omega_i$；右侧给出“残差级联”路径，显示第 $l$ 层以 $r_i^{(l-1)}$ 为拟合对象并逐层更新残差。图中用箭头对比两种方案的信息流向，并标注“前者存在重复逼近，后者更符合分层预算动机”。 
+  % }}
+  \caption{共享目标与残差级联两种分层 LARS 方案对比}
+  \label{fig:ch5-lars-compare}
+\end{figure}
+
+\subsection{完整交替优化算法}
+\label{subsec:ch5-mainloop}
+节点级正则系数 $\tau(i)$ 由第4章算法~\ref{alg:ch4-tau-compute} 离线计算得到，其数值范围为 $[\tau_{\min},\tau_{\text{base}}]$；分层预算配额 $\{k_i^{(l)}\}$ 由第4章第4.3节给出。二者共同构成第5章主循环的外部输入接口：算法~\ref{alg:ch5-main} 在交替优化阶段同时使用 $\tau(i)$ 与 $\{k_i^{(l)}\}$，算法~\ref{alg:ch5-fixed} 则在训练完成后生成推理期所需的固化结果 $\Theta^{\text{fixed}}$ 与 $\tilde{\Phi}^{\text{cache}}$。
+
+\begin{algorithm}[tp]
+\caption{MSAS-GNN三维自适应稀疏分解主循环（完整交替优化版）}
+\label{alg:ch5-main}
+\begin{algorithmic}[1]
+\setlength{\algorithmicindent}{2em}
+\REQUIRE 图 $G=(V,E,X)$，其中 $X\in\mathbb{R}^{n\times D}$；目标中间表示矩阵 $H^*\in\mathbb{R}^{n\times d}$；节点级正则系数 $\{\tau(i)\}_{i\in V}$；分层预算配额 $\{k_i^{(l)}\}_{i\in V,\,l=1,\ldots,L}$；预训练参数 $W_\phi^*$；最大跳数 $L$；外层迭代轮数 $T_{\text{epoch}}$；Phase $W$ 更新步数 $T_W$；学习率 $\eta_W$；早停窗口 $q$
+\ENSURE 稀疏权重矩阵 $\Theta=\{\theta_i\}_{i\in V}$；特征变换参数 $W_\phi$
+
+\STATE \textbf{阶段一：候选集与环层构建}
+\FORALL{$i\in V$}
+  \FOR{$l=1$ \textbf{to} $L$}
+    \STATE $\mathcal{R}_l(i)\leftarrow \{j\in V\mid d_G(i,j)=l\}$ \COMMENT{第 $l$ 跳邻居环层}
+  \ENDFOR
+  \STATE $C_i\leftarrow \{i\}\cup\bigcup_{l=1}^{L}\mathcal{R}_l(i)$ \COMMENT{第 $0$ 跳自特征通道固定保留，不计入分层预算}
+\ENDFOR
+
+\STATE \textbf{阶段二：交替优化初始化}
+\STATE $W_\phi\leftarrow W_\phi^*$; $\Theta\leftarrow 0$
+
+\FOR{$e=1$ \textbf{to} $T_{\text{epoch}}$}
+  \STATE $\tilde{\Phi}\leftarrow \ell_2$-row-normalize$(\phi(X;W_\phi))$
+
+  \STATE \textbf{Phase $\Theta$：固定 $W_\phi$，更新 $\Theta$}
+  \FORALL{$i\in V$}
+    \STATE \textbf{第 $0$ 跳：自特征通道单变量拟合}
+    \STATE $\tilde{\phi}_i\leftarrow \tilde{\Phi}_{i,:}$
+    ; $\theta_i^{(0)}\leftarrow
+      \operatorname*{arg\,min}_{\alpha\in\mathbb{R}}
+      \left\|
+      \alpha\,\tilde{\phi}_i-H_{i,:}^{*}
+      \right\|_2^2+\tau(i)|\alpha|$
+    ; $r_i^{(0)}\leftarrow H_{i,:}^{*}-\theta_i^{(0)}\tilde{\phi}_i$
+
+    \STATE \textbf{第 $1$ 至 $L$ 跳：邻居环层分层 LARS}
+    \FOR{$l=1$ \textbf{to} $L$}
+      \STATE 取 $\tilde{\Phi}_{\mathcal{R}_l(i)}$ 为 $\tilde{\Phi}$ 在环层 $\mathcal{R}_l(i)$ 上对应行子矩阵，构造第 $l$ 层 Lasso 子问题：
+      \STATE \vspace{-1em} \hspace{2em} $\displaystyle
+      \theta_i^{(l)}
+      =
+      \operatorname*{arg\,min}_{\theta\in\mathbb{R}^{|\mathcal{R}_l(i)|}}
+      \left\|
+      \tilde{\Phi}_{\mathcal{R}_l(i)}^{\top}\theta-r_i^{(l-1)}
+      \right\|_2^2+\tau(i)\|\theta\|_1$
+      \STATE 采用 LARS 求解上述子问题，并令最大迭代步数不超过 $k_i^{(l)}$
+      \STATE $r_i^{(l)}\leftarrow r_i^{(l-1)}-\tilde{\Phi}_{\mathcal{R}_l(i)}^{\top}\theta_i^{(l)}$
+    \ENDFOR
+
+    \STATE $\Theta_{i,i}\leftarrow \theta_i^{(0)}$
+    \FOR{$l=1$ \textbf{to} $L$}
+      \FORALL{$j\in \mathcal{R}_l(i)$}
+        \STATE 将 $\theta_i^{(l)}$ 中与节点 $j$ 对应的分量写入 $\Theta_{j,i}$
+      \ENDFOR
+    \ENDFOR
+    \FORALL{$j\notin C_i$}
+      \STATE $\Theta_{j,i}\leftarrow 0$
+    \ENDFOR
+  \ENDFOR
+
+  \STATE \textbf{Phase $W$：固定 $\Theta$，更新 $W_\phi$}
+  \FOR{$s=1$ \textbf{to} $T_W$}
+    \STATE $\tilde{\Phi}\leftarrow \ell_2$-row-normalize$(\phi(X;W_\phi))$
+    \STATE $\hat{H}\leftarrow \Theta^\top\tilde{\Phi}$
+    \STATE $W_\phi\leftarrow \operatorname{AdamStep}\!\left(W_\phi,\nabla_{W_\phi}\frac{1}{2}\|\hat{H}-H^*\|_F^2,\eta_W\right)$
+  \ENDFOR
+
+  \IF{$\operatorname{EarlyStop}(q)$}
+    \STATE \textbf{break} \COMMENT{验证指标在最近 $q$ 轮内无显著提升}
+  \ENDIF
+\ENDFOR
+
+\RETURN $\Theta,\;W_\phi$
+\end{algorithmic}
+\end{algorithm}
+
+其中，
+\begin{equation}
+  \hat{H}=\Theta^\top\tilde{\Phi}\in\mathbb{R}^{n\times d}.
+  \label{eq:ch5-hhat-matrix}
+\end{equation}
+表示全图稀疏近似表示矩阵。由于节点 $i$ 的稀疏系数向量写入矩阵 $\Theta$ 的第 $i$ 列，因此 $\Theta^\top\tilde{\Phi}$ 的第 $i$ 行恰对应节点 $i$ 的近似表示向量。于是，在固定 $\Theta$ 的条件下，Phase $W$ 通过最小化全图表示逼近目标
+\begin{equation}
+  \frac{1}{2}\|\Theta^\top\tilde{\Phi}-H^*\|_F^2.
+  \label{eq:ch5-phaseW-objective}
+\end{equation}
+更新特征变换参数 $W_\phi$，从而保证 $\Theta$ 与 $W_\phi$ 在每轮外层迭代中按全图口径交替同步。
+
+\begin{algorithm}[htbp]
+\caption{推理期稀疏固化}
+\label{alg:ch5-fixed}
+\begin{algorithmic}[1]
+\setlength{\algorithmicindent}{2em}
+\REQUIRE 训练完成的稀疏权重矩阵 $\Theta=\{\theta_i\}_{i\in V}$；特征变换参数 $W_\phi$；输入特征矩阵 $X$
+\ENSURE 固化稀疏权重矩阵 $\Theta^{\text{fixed}}$；缓存归一化特征矩阵 $\tilde{\Phi}^{\text{cache}}$
+\STATE $\Theta^{\text{fixed}}\leftarrow \Theta$
+\STATE $\tilde{\Phi}^{\text{cache}}\leftarrow \ell_2$-row-normalize$\bigl(\phi(X;W_\phi)\bigr)$
+\RETURN $\Theta^{\text{fixed}},\;\tilde{\Phi}^{\text{cache}}$
+\end{algorithmic}
+\end{algorithm}
+
+需要说明的是，算法~\ref{alg:ch5-main} 与算法~\ref{alg:ch5-fixed} 在流程定位上并不相同。前者在训练阶段同时使用节点级正则系数 $\tau(i)$ 与分层预算配额 $\{k_i^{(l)}\}$，完成稀疏权重矩阵 $\Theta$ 与特征变换参数 $W_\phi$ 的交替优化；后者则在训练结束后执行结构固化，仅将已训练得到的 $\Theta$ 与 $W_\phi$ 转化为推理期可直接调用的 $\Theta^{\text{fixed}}$ 与 $\tilde{\Phi}^{\text{cache}}$。
+
+在结构固化后，MSAS-GNN 的推理过程退化为单次稀疏矩阵乘：
+\begin{equation}
+  \hat{H} = (\Theta^{\text{fixed}})^\top \tilde{\Phi}^{\text{cache}},
+  \qquad
+  \text{其主项复杂度为 } O(m_{\text{sparse}}\,d)=O(n\bar{k}d).
+  \label{eq:ch5-fixed-inference}
+\end{equation}
+其中，$m_{\text{sparse}}$ 表示固化后稀疏权重矩阵中的全图非零元总数，可写为
+\begin{equation}
+  m_{\text{sparse}}:=\sum_{i\in V}\|\theta_i\|_0,
+  \label{eq:ch5-msparse}
+\end{equation}
+相应地，$\bar{k}$ 表示固化后各节点非零权重数的全图平均值，可定义为
+\begin{equation}
+  \bar{k}:=\frac{1}{n}\sum_{i\in V}\|\theta_i\|_0.
+  \label{eq:ch5-kbar}
+\end{equation}
+因此有
+\begin{equation}
+  m_{\text{sparse}} = n\bar{k}.
+  \label{eq:ch5-msparse-kbar}
+\end{equation}
+
+需要说明的是，式~\eqref{eq:ch5-fixed-inference} 对应的是推理阶段的主项复杂度口径，不包含第3章图复杂度指标预处理、第5章交替优化训练以及推理期结构固化等一次性离线开销。各阶段的完整复杂度分析见第~\ref{sec:ch5-time}~节。
+
+\subsection{优化稳定性与实现说明}
+\label{subsec:ch5-convergence}
+
+在固定 $W_\phi$ 的条件下，第 $l$ 个邻居环层对应的子问题可写为带 $\ell_1$ 正则项的凸优化问题；若对该子问题完整执行 LARS，则可得到其对应 Lasso 路径上的精确截断解。然而，本文在 Phase $\Theta$ 中同时引入了候选集限制、残差级联与 \texttt{max\_iter} 截断，因此整阶段更适宜表述为一种分层近似求解过程，而不宜将其理解为对整体 Lasso 问题解路径的精确追踪。
+
+对外层交替优化而言，本文不声称其具有全局收敛保证。更准确地说，当前算法属于“固定 $\Theta$ 更新 $W_\phi$，再固定 $W_\phi$ 更新 $\Theta$”的交替优化框架，其中 Phase $\Theta$ 由分层截断 LARS 实现稀疏近似更新，Phase $W$ 则通过梯度法最小化全图表示逼近目标。已有关于块坐标下降与交替最小化的研究\cite{Tseng2001,Razaviyayn2013}为此类方法的稳定性分析提供了参考视角，但这些结果并不能直接推出本文算法在当前设置下的严格全局收敛结论。
+
+本文对该算法的表述口径限定为经验稳定性：在合理学习率、早停窗口与预算截断设置下，Phase $\Theta$ 与 Phase $W$ 的交替推进在六个数据集上均表现出较为平稳的训练过程，目标函数与验证指标未出现持续振荡或系统性发散现象。至此，节点级正则系数 $\tau(i)$、分层预算配额 $\{k_i^{(l)}\}$ 以及结构固化后的推理接口已经在算法层完成统一整合，固化后推理表达式见式~\eqref{eq:ch5-fixed-inference}，并将在第~\ref{sec:ch5-spectral}~节继续用于后续误差分析。
+
+
+\section{误差分析与适用条件}
+\label{sec:ch5-spectral}
+\label{idx:innov:sigma}
+
+第4章从频率、节点与跳距三个维度给出了自适应稀疏参数的构造规则，但这些设计主要服务于参数分配本身，尚未进一步说明稀疏化结构扰动将如何传递到后续表示逼近误差。为此，本节借鉴经典谱稀疏化中基于拉普拉斯二次型保持的分析框架\cite{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}，引入 $\sigma$-谱相似性作为谱保持度量工具，并在此基础上讨论多项式谱滤波器下的近似误差界及其适用条件。
+
+\subsection{谱相似性与图稀疏化}
+\label{subsec:ch5-spectralsim}
+\label{idx:theme:spectralsim}
+稀疏化过程可视为以边数更少的图 $\hat{G}$ 近似替代原图 $G$。若仅从边数压缩角度刻画这一过程，则无法说明原图谱结构在多大程度上被保留；因此，本文采用基于拉普拉斯二次型的谱相似性度量来刻画稀疏化误差。需要说明的是，经典谱稀疏化文献通常以图拉普拉斯的二次型保持为基础讨论谱近似性质\cite{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification}；本文在此基础上，结合全文统一采用的归一化拉普拉斯记号，给出如下分析口径。
+
+设 $G$ 与 $\hat{G}$ 为定义在同一节点集 $V$ 上的两个图，其归一化拉普拉斯分别记为 $\tilde{\mathcal{L}}_{G}$ 与 $\tilde{\mathcal{L}}_{\hat{G}}$。若存在参数 $\sigma\ge 1$，使得对任意 $x\in\mathbb{R}^{n}$ 都有
+\begin{equation}
+  \frac{1}{\sigma}x^\top \tilde{\mathcal{L}}_{G}x
+  \le
+  x^\top \tilde{\mathcal{L}}_{\hat{G}}x
+  \le
+  \sigma x^\top \tilde{\mathcal{L}}_{G}x,
+  \label{eq:ch5-sigma-sim}
+\end{equation}
+则称 $\hat{G}$ 与 $G$ 在本文的度量口径下满足 $\sigma$-谱相似性。参数 $\sigma$ 越接近 $1$，说明稀疏图对原图拉普拉斯二次型的保持越精确；当 $\sigma$ 偏离 $1$ 较大时，则意味着稀疏化引入了更明显的谱结构扰动。
+
+式~\eqref{eq:ch5-sigma-sim} 的作用在于把“边被删去多少”转化为“图信号能量被扭曲多少”的可分析形式。由于多项式谱滤波器的输出直接依赖于拉普拉斯谱性质，若稀疏化后的图仍能在式~\eqref{eq:ch5-sigma-sim} 意义下较好保持原图的二次型结构，则后续滤波输出与表示误差也更容易得到上界控制\cite{Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}。
+
+需要说明的是，严格意义下的 $\sigma$ 往往需要较高代价的谱信息计算；对小规模图，可通过精确特征分解直接评估；对较大规模图，本文在实验部分采用 Lanczos 代理量 $\widetilde{\sigma}_{\mathrm{proxy}}$ 进行近似估计。基于上述定义，下一节将进一步讨论多项式谱滤波器在 $\sigma$-谱相似条件下的近似误差界。
+\label{idx:theme:specpreserve}
+\subsection{多项式谱滤波器的近似误差界}
+\label{subsec:ch5-polyfilter}
+
+本节在上一小节给出的 $\sigma$-谱相似性度量基础上，进一步讨论多项式谱滤波器下的输出误差。这里关心的问题是：当稀疏图 $\hat{G}$ 与原图 $G$ 在谱意义上足够接近时，同一个谱滤波器分别作用于两张图后，其输出之间的偏差能否被定量控制。需要说明的是，本节结论是一个条件化误差界：它说明“给定谱扰动时，滤波输出误差如何传播”，而不直接说明第4章三维参数设计必然诱导出某个特定的谱相似性参数 $\sigma$。
+
+设 $G$ 的归一化拉普拉斯为
+\begin{equation}
+  \tilde{\mathcal{L}} = U\Lambda U^\top,
+  \label{eq:ch5-L-eig}
+\end{equation}
+其中，$U\in\mathbb{R}^{n\times n}$ 为正交特征向量矩阵，$\Lambda=\mathrm{diag}(\lambda_0,\lambda_1,\ldots,\lambda_{n-1})$ 为特征值对角矩阵。根据谱图理论，归一化拉普拉斯的特征值满足
+\begin{equation}
+  0 \le \lambda_i \le 2,\qquad i=0,1,\ldots,n-1.
+  \label{eq:ch5-L-spectrum}
+\end{equation}
+式~\eqref{eq:ch5-L-spectrum} 的意义在于：后续对谱滤波器的分析可以统一限制在紧区间 $[0,2]$ 上，这也是采用多项式逼近尤其是 Chebyshev 逼近的基础\cite{Chung1997,Hammond2011Wavelets,Shuman2013GSP}。
+
+设 $g:\mathbb{R}\to\mathbb{R}$ 为一个 $K_{\text{poly}}$ 次多项式谱滤波器。其作用于归一化拉普拉斯后的矩阵函数定义为
+\begin{equation}
+  g(\tilde{\mathcal{L}})
+  :=
+  g(U\Lambda U^\top)
+  =
+  U\,\mathrm{diag}\!\bigl(g(\lambda_0),g(\lambda_1),\ldots,g(\lambda_{n-1})\bigr)\,U^\top.
+  \label{eq:ch5-gpoly-def}
+\end{equation}
+式~\eqref{eq:ch5-gpoly-def} 表明，谱滤波器的本质是在谱域上对每个频率分量 $\lambda_i$ 施加响应 $g(\lambda_i)$。若输入特征矩阵记为 $X\in\mathbb{R}^{n\times D}$，则
+\begin{equation}
+  g(\tilde{\mathcal{L}})X.
+  \label{eq:ch5-gpoly-output}
+\end{equation}
+就是滤波器作用于节点特征后的输出，其中 $D$ 为输入特征维度。
+
+由于 Chebyshev 多项式的标准定义区间为 $[-1,1]$，而式~\eqref{eq:ch5-L-spectrum} 中 $\tilde{\mathcal{L}}$ 的谱位于 $[0,2]$，因此先作平移变换
+\begin{equation}
+  \bar{\mathcal{L}}:=\tilde{\mathcal{L}}-I.
+  \label{eq:ch5-barL-def}
+\end{equation}
+由此可得
+\begin{equation}
+  \mathrm{spec}(\bar{\mathcal{L}})\subset[-1,1].
+  \label{eq:ch5-barL-spectrum}
+\end{equation}
+式~\eqref{eq:ch5-barL-spectrum} 说明，$\bar{\mathcal{L}}$ 已被映射到适合 Chebyshev 展开的标准区间；这一步并不改变滤波问题的本质，只是为了后续多项式表示与误差分析更为方便\cite{Hammond2011Wavelets,Shuman2013GSP}。
+
+实现上，$g(\tilde{\mathcal{L}})$ 常写成 Chebyshev 多项式展开；但在误差推导中，更便于使用其在 $\bar{\mathcal{L}}$ 上的单项式表示。记
+\begin{equation}
+  g(\tilde{\mathcal{L}})
+  =
+  p(\bar{\mathcal{L}})
+  =
+  \sum_{r=0}^{K_{\text{poly}}} a_r \bar{\mathcal{L}}^{\,r}.
+  \label{eq:ch5-poly-monomial}
+\end{equation}
+其中，$K_{\text{poly}}$ 为多项式滤波器次数，$\{a_r\}_{r=0}^{K_{\text{poly}}}$ 为由 Chebyshev 展开系数线性换算得到的单项式系数。这里的 $K_{\text{poly}}$ 表示滤波器的阶数，与第3章 Lanczos 近似中使用的 $K_{\text{eig}}$ 含义不同：前者控制谱滤波器的表达复杂度，后者控制谱估计所保留的特征对数量，二者不得混用。
+
+上一小节引入的 $\sigma$-谱相似性，本质上借鉴了经典谱稀疏化中基于拉普拉斯二次型保持的分析框架\cite{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}。为把这种结构扰动传递到滤波输出误差分析中，先定义原图与稀疏图对应平移拉普拉斯之间的算子范数差
+\begin{equation}
+  \eta
+  :=
+  \left\|
+  \bar{\mathcal{L}}_{G}-\bar{\mathcal{L}}_{\hat{G}}
+  \right\|_2
+  =
+  \left\|
+  \tilde{\mathcal{L}}_{G}-\tilde{\mathcal{L}}_{\hat{G}}
+  \right\|_2 .
+  \label{eq:ch5-eta-def}
+\end{equation}
+式~\eqref{eq:ch5-eta-def} 中，$\|\cdot\|_2$ 表示矩阵谱范数，也即最大奇异值；对实对称矩阵而言，它等于特征值绝对值的最大值。参数 $\eta$ 衡量的是原图与稀疏图在拉普拉斯算子层面的直接偏离程度。由于平移不改变差值，可直接验证
+\begin{equation}
+  \bar{\mathcal{L}}_{G}-\bar{\mathcal{L}}_{\hat G}
+  =
+  (\tilde{\mathcal{L}}_{G}-I)-(\tilde{\mathcal{L}}_{\hat G}-I)
+  =
+  \tilde{\mathcal{L}}_{G}-\tilde{\mathcal{L}}_{\hat G}.
+  \label{eq:ch5-shift-invariance}
+\end{equation}
+因此式~\eqref{eq:ch5-eta-def} 中两个谱范数完全相等。
+
+由式~\eqref{eq:ch5-barL-spectrum} 可知，$\bar{\mathcal{L}}_G$ 与 $\bar{\mathcal{L}}_{\hat G}$ 的全部特征值都落在 $[-1,1]$ 中。由于二者都是实对称矩阵，因此有
+\begin{equation}
+  \|\bar{\mathcal{L}}_G\|_2\le 1,
+  \qquad
+  \|\bar{\mathcal{L}}_{\hat G}\|_2\le 1.
+  \label{eq:ch5-barL-norm}
+\end{equation}
+这一步的作用是为后续控制高阶幂差提供统一上界：高阶幂本身不会在谱范数意义下爆炸增长。
+
+下面估计同一阶数下原图与稀疏图的幂差。对任意整数 $r\ge 1$，有经典矩阵恒等式
+\begin{equation}
+  A^r-B^r
+  =
+  \sum_{t=0}^{r-1}A^t(A-B)B^{r-1-t}.
+  \label{eq:ch5-power-diff}
+\end{equation}
+将式~\eqref{eq:ch5-power-diff} 中 $A$ 与 $B$ 分别取为 $\bar{\mathcal{L}}_G$ 与 $\bar{\mathcal{L}}_{\hat G}$，则有
+\begin{equation}
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  =
+  \sum_{t=0}^{r-1}
+  \bar{\mathcal{L}}_G^{\,t}
+  \bigl(\bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat G}\bigr)
+  \bar{\mathcal{L}}_{\hat G}^{\,r-1-t}.
+  \label{eq:ch5-power-diff-inst}
+\end{equation}
+对式~\eqref{eq:ch5-power-diff-inst} 两端取谱范数。注意到谱范数对矩阵求和满足三角不等式，即任意矩阵组 $\{M_t\}_{t=0}^{r-1}$ 满足
+\begin{equation}
+  \left\|
+  \sum_{t=0}^{r-1} M_t
+  \right\|_2
+  \le
+  \sum_{t=0}^{r-1}\|M_t\|_2,
+  \label{eq:ch5-triangle-ineq}
+\end{equation}
+因此，将式~\eqref{eq:ch5-power-diff-inst} 右端的每一项视为矩阵
+\begin{equation}
+  M_t
+  :=
+  \bar{\mathcal{L}}_G^{\,t}
+  \bigl(\bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat G}\bigr)
+  \bar{\mathcal{L}}_{\hat G}^{\,r-1-t},
+  \qquad t=0,1,\ldots,r-1,
+  \label{eq:ch5-Mt-def}
+\end{equation}
+便可得到
+\begin{equation}
+  \left\|
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  \right\|_2
+  \le
+  \sum_{t=0}^{r-1}
+  \left\|
+  \bar{\mathcal{L}}_G^{\,t}
+  \bigl(\bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat G}\bigr)
+  \bar{\mathcal{L}}_{\hat G}^{\,r-1-t}
+  \right\|_2 .
+  \label{eq:ch5-power-diff-step1}
+\end{equation}
+进一步地，谱范数对矩阵乘法满足次乘性，即对任意维度相容的矩阵 $A,B,C$，都有
+\begin{equation}
+  \|ABC\|_2
+  \le
+  \|A\|_2\,\|B\|_2\,\|C\|_2.
+  \label{eq:ch5-submultiplicative-abc}
+\end{equation}
+将式~\eqref{eq:ch5-submultiplicative-abc} 应用于式~\eqref{eq:ch5-power-diff-step1} 中求和号内的每一项，可得
+\begin{equation}
+  \left\|
+  \bar{\mathcal{L}}_G^{\,t}
+  \bigl(\bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat G}\bigr)
+  \bar{\mathcal{L}}_{\hat G}^{\,r-1-t}
+  \right\|_2
+  \le
+  \|\bar{\mathcal{L}}_G\|_2^{\,t}
+  \left\|
+  \bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat G}
+  \right\|_2
+  \|\bar{\mathcal{L}}_{\hat G}\|_2^{\,r-1-t}.
+  \label{eq:ch5-power-diff-step2}
+\end{equation}
+结合式~\eqref{eq:ch5-eta-def} 与式~\eqref{eq:ch5-barL-norm}，上式右端可进一步上界为
+\begin{equation}
+  \|\bar{\mathcal{L}}_G\|_2^{\,t}
+  \left\|
+  \bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat G}
+  \right\|_2
+  \|\bar{\mathcal{L}}_{\hat G}\|_2^{\,r-1-t}
+  \le
+  1\cdot \eta \cdot 1
+  =
+  \eta.
+  \label{eq:ch5-power-diff-step3}
+\end{equation}
+由于求和项共有 $r$ 项，于是得到
+\begin{equation}
+  \left\|
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  \right\|_2
+  \le
+  r\,\eta.
+  \label{eq:ch5-power-diff-bound}
+\end{equation}
+式~\eqref{eq:ch5-power-diff-bound} 的含义是：当拉普拉斯算子本身的扰动大小为 $\eta$ 时，$r$ 阶多项式项的误差至多按阶数 $r$ 线性放大，而不会出现更高阶的爆炸式增长。
+
+在此基础上，可以估计滤波器输出的整体误差。由式~\eqref{eq:ch5-poly-monomial} 可知，
+\begin{equation}
+  g(\tilde{\mathcal{L}}_{G})X-g(\tilde{\mathcal{L}}_{\hat G})X
+  =
+  \sum_{r=0}^{K_{\text{poly}}}
+  a_r\bigl(
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  \bigr)X.
+  \label{eq:ch5-poly-diff-expand}
+\end{equation}
+当 $r=0$ 时，有
+\begin{equation}
+  \bar{\mathcal{L}}_G^{\,0}-\bar{\mathcal{L}}_{\hat G}^{\,0}
+  =
+  I-I
+  =
+  0,
+  \label{eq:ch5-zero-order-cancel}
+\end{equation}
+因此常数项不贡献误差。于是式~\eqref{eq:ch5-poly-diff-expand} 可简化为
+\begin{equation}
+  g(\tilde{\mathcal{L}}_{G})X-g(\tilde{\mathcal{L}}_{\hat G})X
+  =
+  \sum_{r=1}^{K_{\text{poly}}}
+  a_r\bigl(
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  \bigr)X.
+  \label{eq:ch5-poly-diff-expand2}
+\end{equation}
+对式~\eqref{eq:ch5-poly-diff-expand2} 两端取 Frobenius 范数，并利用三角不等式，可得
+\begin{equation}
+  \left\|
+  g(\tilde{\mathcal{L}}_{G})X-g(\tilde{\mathcal{L}}_{\hat G})X
+  \right\|_F
+  \le
+  \sum_{r=1}^{K_{\text{poly}}}
+  |a_r|
+  \left\|
+  \bigl(
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  \bigr)X
+  \right\|_F.
+  \label{eq:ch5-poly-bound-step1}
+\end{equation}
+再利用矩阵乘积的范数不等式
+\begin{equation}
+  \|MX\|_F\le \|M\|_2\|X\|_F,
+  \label{eq:ch5-frobenius-submult}
+\end{equation}
+可进一步得到
+\begin{equation}
+  \left\|
+  g(\tilde{\mathcal{L}}_{G})X-g(\tilde{\mathcal{L}}_{\hat G})X
+  \right\|_F
+  \le
+  \sum_{r=1}^{K_{\text{poly}}}
+  |a_r|
+  \left\|
+  \bar{\mathcal{L}}_G^{\,r}-\bar{\mathcal{L}}_{\hat G}^{\,r}
+  \right\|_2
+  \|X\|_F.
+  \label{eq:ch5-poly-bound-step2}
+\end{equation}
+最后，将式~\eqref{eq:ch5-power-diff-bound} 代入式~\eqref{eq:ch5-poly-bound-step2}，即可得到
+\begin{equation}
+  \left\|
+  g(\tilde{\mathcal{L}}_{G})X-g(\tilde{\mathcal{L}}_{\hat G})X
+  \right\|_F
+  \le
+  \eta
+  \left(
+  \sum_{r=1}^{K_{\text{poly}}} r|a_r|
+  \right)\|X\|_F.
+  \label{eq:ch5-poly-eta-bound}
+\end{equation}
+这就是本节的第一条核心结论。式~\eqref{eq:ch5-poly-eta-bound} 表明：谱滤波输出误差由三部分共同决定，分别是图结构扰动大小 $\eta$、滤波器系数权重和输入特征规模 $\|X\|_F$。其中，
+\begin{equation}
+  \sum_{r=1}^{K_{\text{poly}}} r|a_r|.
+  \label{eq:ch5-poly-coeff-weight}
+\end{equation}
+反映的是滤波器对高阶项的敏感程度；若高阶项权重越大，则同样大小的结构扰动会被放大得更多。
+
+为了进一步把上一小节定义的 $\sigma$-谱相似性参数与式~\eqref{eq:ch5-poly-eta-bound} 联系起来，本文借鉴经典谱稀疏化中基于拉普拉斯二次型保持的分析框架\cite{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}，将如下 $\sigma$-谱相似性条件作为后续误差分析的前提：
+\begin{equation}
+  \frac{1}{\sigma}\tilde{\mathcal{L}}_G
+  \preceq
+  \tilde{\mathcal{L}}_{\hat G}
+  \preceq
+  \sigma \tilde{\mathcal{L}}_G,
+  \qquad \sigma\ge 1.
+  \label{eq:ch5-sigma-loewner}
+\end{equation}
+式~\eqref{eq:ch5-sigma-loewner} 中，符号 $\preceq$ 表示 Loewner 半序；也即，对称矩阵 $A\preceq B$ 表示 $B-A$ 半正定。由式~\eqref{eq:ch5-sigma-loewner} 左右两侧分别减去 $\tilde{\mathcal{L}}_G$，可得
+\begin{equation}
+  \tilde{\mathcal{L}}_{\hat G}-\tilde{\mathcal{L}}_G
+  \preceq
+  (\sigma-1)\tilde{\mathcal{L}}_G,
+  \label{eq:ch5-sigma-leftshift}
+\end{equation}
+以及
+\begin{equation}
+  \tilde{\mathcal{L}}_G-\tilde{\mathcal{L}}_{\hat G}
+  \preceq
+  \left(1-\frac{1}{\sigma}\right)\tilde{\mathcal{L}}_G.
+  \label{eq:ch5-sigma-rightshift}
+\end{equation}
+又因为对任意 $\sigma\ge 1$ 都有
+\begin{equation}
+  1-\frac{1}{\sigma}\le \sigma-1,
+  \label{eq:ch5-sigma-ineq}
+\end{equation}
+所以由式~\eqref{eq:ch5-sigma-leftshift} 与式~\eqref{eq:ch5-sigma-rightshift} 可统一写成保守上界
+\begin{equation}
+  -(\sigma-1)\tilde{\mathcal{L}}_G
+  \preceq
+  \tilde{\mathcal{L}}_{\hat G}-\tilde{\mathcal{L}}_G
+  \preceq
+  (\sigma-1)\tilde{\mathcal{L}}_G.
+  \label{eq:ch5-sigma-diff-order}
+\end{equation}
+令
+\begin{equation}
+  \Delta_{\mathcal{L}}
+  :=
+  \tilde{\mathcal{L}}_{\hat G}-\tilde{\mathcal{L}}_G,
+  \qquad
+  M
+  :=
+  (\sigma-1)\tilde{\mathcal{L}}_G.
+  \label{eq:ch5-DM-def}
+\end{equation}
+则式~\eqref{eq:ch5-sigma-diff-order} 可改写为
+\begin{equation}
+  -M \preceq \Delta_{\mathcal{L}} \preceq M.
+  \label{eq:ch5-D-bounded-by-M}
+\end{equation}
+由于 $G$ 与 $\hat G$ 均为无向图，其归一化拉普拉斯矩阵 $\tilde{\mathcal{L}}_G$ 与 $\tilde{\mathcal{L}}_{\hat G}$ 都是实对称矩阵；而实对称矩阵在减法与实数倍运算下仍保持实对称性，因此
+\begin{equation}
+  \Delta_{\mathcal{L}}
+  :=
+  \tilde{\mathcal{L}}_{\hat G}-\tilde{\mathcal{L}}_G,
+\end{equation}
+与
+\begin{equation}
+  M
+  :=
+  (\sigma-1)\tilde{\mathcal{L}}_G.
+\end{equation}
+也都是实对称矩阵。这里参数 $\sigma$ 是乘性谱相似因子：当 $\sigma=1$ 时表示两图在该度量下完全一致，而谱扰动增大时只能表现为对原图拉普拉斯二次型的乘性放缩，因此必须有 $\sigma\ge 1$；这也与经典谱稀疏化中常见的乘性近似框架一致\cite{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}。又因为归一化拉普拉斯矩阵 $\tilde{\mathcal{L}}_G$ 是半正定矩阵\cite{Chung1997}，且由 $\sigma\ge 1$ 可知 $\sigma-1\ge 0$，故对任意 $x\in\mathbb{R}^n$ 都有
+\begin{equation}
+  x^\top M x
+  =
+  (\sigma-1)x^\top \tilde{\mathcal{L}}_G x
+  \ge 0,
+  \label{eq:ch5-M-psd-proof}
+\end{equation}
+从而 $M\succeq 0$。
+
+由式~\eqref{eq:ch5-D-bounded-by-M} 可知，
+\begin{equation}
+  -M \preceq \Delta_{\mathcal{L}} \preceq M.
+\end{equation}
+Loewner 半序的定义表明，上式等价于对任意 $x\in\mathbb{R}^n$ 都有
+\begin{equation}
+  -x^\top M x
+  \le
+  x^\top \Delta_{\mathcal{L}} x
+  \le
+  x^\top M x.
+  \label{eq:ch5-D-quadratic-bound}
+\end{equation}
+又由于 $M$ 是实对称半正定矩阵，其任意方向上的二次型均不超过最大特征值与向量范数平方的乘积\cite{HornJohnson2012,Parlett1998}，因此对任意 $x\in\mathbb{R}^n$ 都有
+\begin{equation}
+  x^\top M x
+  \le
+  \lambda_{\max}(M)\|x\|_2^2.
+  \label{eq:ch5-M-rayleigh-bound}
+\end{equation}
+于是进一步有
+\begin{equation}
+  -\lambda_{\max}(M)\|x\|_2^2
+  \le
+  x^\top \Delta_{\mathcal{L}} x
+  \le
+  \lambda_{\max}(M)\|x\|_2^2.
+  \label{eq:ch5-D-rayleigh-bound}
+\end{equation}
+现在取 $x=v$ 为 $\Delta_{\mathcal{L}}$ 的任意单位特征向量，对应特征值记为 $\mu$，即
+\begin{equation}
+  \Delta_{\mathcal{L}}v=\mu v,
+  \qquad
+  \|v\|_2=1.
+  \label{eq:ch5-D-eigpair}
+\end{equation}
+将其代入式~\eqref{eq:ch5-D-rayleigh-bound}，便得到
+\begin{equation}
+  -\lambda_{\max}(M)
+  \le
+  v^\top \Delta_{\mathcal{L}} v
+  =
+  \mu
+  \le
+  \lambda_{\max}(M).
+  \label{eq:ch5-D-eig-bound}
+\end{equation}
+因此，$\Delta_{\mathcal{L}}$ 的全部特征值均落在区间
+\begin{equation}
+  \left[-\lambda_{\max}(M),\,\lambda_{\max}(M)\right].
+  \label{eq:ch5-D-eig-interval}
+\end{equation}
+再由实对称矩阵的谱范数等于其特征值绝对值最大值这一标准性质\cite{HornJohnson2012}，可得
+\begin{equation}
+  \|\Delta_{\mathcal{L}}\|_2
+  \le
+  \lambda_{\max}(M)
+  =
+  \|M\|_2.
+  \label{eq:ch5-DM-norm}
+\end{equation}
+将式~\eqref{eq:ch5-DM-def} 代入式~\eqref{eq:ch5-DM-norm}，便有
+\begin{equation}
+  \eta
+  =
+  \|\tilde{\mathcal{L}}_{G}-\tilde{\mathcal{L}}_{\hat G}\|_2
+  \le
+  (\sigma-1)\|\tilde{\mathcal{L}}_G\|_2.
+  \label{eq:ch5-eta-from-sigma-step}
+\end{equation}
+再利用归一化拉普拉斯的谱范数上界
+\begin{equation}
+  \|\tilde{\mathcal{L}}_G\|_2\le 2,
+  \label{eq:ch5-L-norm2}
+\end{equation}
+即可得到
+\begin{equation}
+  \eta
+  \le
+  2(\sigma-1).
+  \label{eq:ch5-sigma-to-eta}
+\end{equation}
+将式~\eqref{eq:ch5-sigma-to-eta} 代入式~\eqref{eq:ch5-poly-eta-bound}，便有
+\begin{equation}
+  \left\|
+  g(\tilde{\mathcal{L}}_{G})X-g(\tilde{\mathcal{L}}_{\hat G})X
+  \right\|_F
+  \le
+  2(\sigma-1)
+  \left(
+  \sum_{r=1}^{K_{\text{poly}}} r|a_r|
+  \right)\|X\|_F.
+  \label{eq:ch5-poly-sigma-bound}
+\end{equation}
+这就是本节的第二条核心结论。式~\eqref{eq:ch5-poly-sigma-bound} 给出了一个非常直观的参数化解释：当稀疏图 $\hat G$ 相对原图 $G$ 的谱结构偏差越小，即 $\sigma$ 越接近 $1$ 时，多项式谱滤波器输出的误差也越小；误差常数则由滤波器自身的多项式系数决定。
+
+需要强调的是，式~\eqref{eq:ch5-poly-sigma-bound} 的逻辑方向是“若满足 $\sigma$-谱相似性，则可推出滤波输出误差上界”，而不是“第4章三维参数设计自动保证某个给定的 $\sigma$”。也就是说，本节证明的是谱扰动到滤波误差的传播关系，而不是第4章参数设计到谱扰动大小的严格封闭定理。后者在本文中主要通过实验部分结合 Lanczos 代理量 $\widetilde{\sigma}_{\mathrm{proxy}}$ 进行经验验证。
+
+从方法论上看，经典谱稀疏化理论表明，在适当的重加权采样构造下，可以用近线性规模的边数获得良好的谱保持性质\cite{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}；但本文的 MSAS-GNN 属于基于节点级自适应预算的稀疏分解框架，并不与经典加权谱 sparsifier 的构造完全等同。因此，本节的正式误差分析以式~\eqref{eq:ch5-poly-eta-bound} 与式~\eqref{eq:ch5-poly-sigma-bound} 为准，而第4章三维参数对谱扰动的影响，将在第6章中结合代理量进行实验验证。
+
+至此，谱相似性参数与多项式谱滤波输出误差之间的关系已经建立。下一节将转入复杂度分析，讨论预处理、训练与固化推理三类开销之间的口径区别。
+
+% % ---- 图~\ref{fig:ch5-ablation}~占位符 ----
+% \begin{figure}[htbp]
+%   \centering
+%         \includegraphics[width=1\linewidth]{5-3.pdf}
+%   % \setlength{\fboxsep}{1.2em}
+%   % \fbox{\parbox{0.88\textwidth}{\small\centering
+%   %   \textbf{【占位图~\ref{fig:ch5-ablation}~】}\\[0.6em]
+%   %   图题：$\tau_{\text{base}}$反向设计结果与经验值对比（多数据集）。横轴为理论推导的$\tau_{\text{base}}^{\text{practical}}$（对数刻度），纵轴为实测$\sigma$值；目标线$\sigma=1+\varepsilon_{\text{total}}=1.1$；颜色区分$\gamma=1/2$与$\gamma=1$两条实验线。
+%   % }}
+%   \caption{$\tau_{\text{base}}$反向设计结果与经验值的对比（多数据集）}
+%   \label{fig:ch5-ablation}
+% \end{figure}
+
+% 式~\eqref{eq:ch5-tau-grace}与式~\eqref{eq:ch5-budget-lagrange}共同构成本章的误差分析依据，$\sigma$ 将作为第6章§6.3的验证度量之一；三类开销的效率分析见下一节。
+
+\section{复杂度分析}
+\label{sec:ch5-time}
+
+第~\ref{sec:ch5-spectral}~节给出了谱扰动到滤波输出误差的条件化分析；本节进一步分析推理、训练与预处理三类开销，并说明线性规模推理复杂度成立的条件。需要强调的是，三类开销须严格区分：本文关于“推理高效”的主张，仅针对结构固化且缓存就绪后的单次稀疏矩阵乘主项，而不包含训练期优化与一次性预处理成本。
+
+就推理期复杂度而言，结构固化后的推理过程为
+\begin{equation}
+  \hat{H} = (\Theta^{\text{fixed}})^\top \tilde{\Phi}^{\text{cache}},
+  \label{eq:ch5-prop31}
+\end{equation}
+其中，$\Theta^{\text{fixed}}\in\mathbb{R}^{n\times n}$ 为固化后的稀疏权重矩阵，$\tilde{\Phi}^{\text{cache}}\in\mathbb{R}^{n\times d}$ 为缓存后的归一化特征矩阵，$d$ 为隐藏表示维度。若记 $\mathrm{nnz}(\Theta^{\text{fixed}})=m_{\text{sparse}}$ 为固化稀疏矩阵的非零元总数，则式~\eqref{eq:ch5-prop31} 的推理主项复杂度为
+\begin{equation}
+  O(m_{\text{sparse}}\,d).
+  \label{eq:ch5-infer-msparse}
+\end{equation}
+进一步地，若记
+\begin{equation}
+  \bar{k}
+  :=
+  \frac{1}{n}\sum_{i\in V}\|\theta_i\|_0,
+  \label{eq:ch5-kbar-time}
+\end{equation}
+表示固化后各节点非零权重数的全图平均值，则有 $m_{\text{sparse}}=n\bar{k}$，从而推理主项复杂度可写为
+\begin{equation}
+  O(n\bar{k}d).
+  \label{eq:ch5-infer-nkbd}
+\end{equation}
+式~\eqref{eq:ch5-infer-nkbd} 表明，推理阶段只需遍历固化后保留下来的非零连接，复杂度与传播层数 $L$ 不再显式相关；层级信息已经被编码到 $\theta_i$ 的支撑集结构中，具体体现为第 $0$ 跳自特征系数与不同跳距邻居环层上的系数组合结构。
+
+若以缓存就绪后的聚合主项作为比较口径，则其理论聚合加速比与第3章给出的推理评价指标保持一致。由结构固化后推理主项复杂度 $O(n\bar{k}d)$ 与 $L$ 层标准 GCN 聚合主项复杂度 $O(Ln\bar{d}d)$ 对比可得
+\begin{equation}
+  \text{Speedup}_{\text{aggregate}}
+  =
+  \frac{L\bar{d}}{\bar{k}},
+  \label{eq:ch5-prop31b}
+\end{equation}
+该式与第3章中的式~\eqref{eq:ch3-speedup} 在比较口径上保持一致，其中，$\bar{d}$ 表示图的平均邻居数，$\bar{k}$ 表示固化后各节点非零权重数的全图平均值。需要说明的是，式~\eqref{eq:ch5-prop31b} 仅比较“消息聚合主项”本身，不包含特征变换、缓存构建以及训练期优化开销；因此，它反映的是结构固化后稀疏聚合相对于标准逐层邻域聚合的理论压缩收益，而不是端到端总运行时间的严格比值。
+
+训练期与预处理方面，MSAS-GNN 的主要计算瓶颈位于 Phase $\Theta$。在当前实现中，Phase $\Theta$ 由两部分组成：首先对第 $0$ 跳自特征通道求解一个单变量稀疏子问题；随后对第 $1$ 至 $L$ 跳邻居环层执行分层 LARS。因而，在 full-batch 口径下，若按每个节点、每个环层子问题的稠密线性代数主项作保守估计，则单轮外层迭代中，Phase $\Theta$ 的复杂度可写为
+\begin{equation}
+  \sum_{i\in V}
+  O(d)
+  +
+  \sum_{i\in V}\sum_{l=1}^{L}
+  O\!\left(|\mathcal{R}_l(i)|^3 + |\mathcal{R}_l(i)|^2 d\right).
+  \label{eq:ch5-phase-theta-layerwise}
+\end{equation}
+
+式~\eqref{eq:ch5-phase-theta-layerwise} 中，第一项对应第 $0$ 跳自特征通道的一维稀疏拟合开销。由于该子问题仅包含一个标量变量，但需要与 $d$ 维目标表示进行匹配，因此其单节点复杂度可记为 $O(d)$。
+第二项对应第 $1$ 至 $L$ 跳邻居环层上的分层 LARS 开销。为说明其来源，记节点 $i$ 的第 $l$ 个邻居环层大小为
+\begin{equation}
+  s_{i,l}:=|\mathcal{R}_l(i)|.
+  \label{eq:ch5-sil-def}
+\end{equation}
+则第 $l$ 层子问题可视为一个变量维度为 $s_{i,l}$、响应维度为 $d$ 的稀疏回归问题。若按稠密实现作保守估计，其主要代价可分为两部分。
+
+第一部分是活跃集更新过程中涉及的小规模线性系统求解或等价矩阵分解代价。由于该部分的核心矩阵规模由候选变量数 $s_{i,l}$ 决定，因此其主项可按
+\begin{equation}
+  O(s_{i,l}^3),
+  \label{eq:ch5-theta-cubic}
+\end{equation}
+估计。这里的三次项并不是指 LARS 每一步都严格执行一次立方复杂度运算，而是指：若把该环层子问题按稠密线性代数主项统一上界，则与候选变量数相关的最保守主导项可写为三次量级。
+
+第二部分是候选变量与 $d$ 维目标表示之间的相关性计算、残差匹配以及路径更新中的矩阵--向量交互代价。由于候选变量之间的两两关系规模约为 $s_{i,l}^2$，而每次交互又需要在 $d$ 维表示空间上进行累积，因此这一部分可按
+\begin{equation}
+  O(s_{i,l}^2 d),
+  \label{eq:ch5-theta-quadratic}
+\end{equation}
+估计。这里的二次乘 $d$ 项反映的不是额外独立的优化变量，而是候选变量相关结构与 $d$ 维目标表示之间的耦合成本。
+
+将式~\eqref{eq:ch5-theta-cubic} 与式~\eqref{eq:ch5-theta-quadratic} 合并，并代回 $s_{i,l}=|\mathcal{R}_l(i)|$，即可得到单个环层子问题的保守复杂度上界
+\begin{equation}
+  O\!\left(|\mathcal{R}_l(i)|^3 + |\mathcal{R}_l(i)|^2 d\right).
+  \label{eq:ch5-phase-theta-subproblem}
+\end{equation}
+再对全部节点与全部邻居环层求和，便得到式~\eqref{eq:ch5-phase-theta-layerwise}。
+
+若仅从候选集尺度给出同量级近似，则也可将 Phase $\Theta$ 的复杂度简写为
+\begin{equation}
+  \sum_{i\in V}
+  O\!\left(|C_i|^3 + |C_i|^2 d\right).
+  \label{eq:ch5-phase-theta-candidate}
+\end{equation}
+其中，$C_i$ 为节点 $i$ 的候选集。式~\eqref{eq:ch5-phase-theta-candidate} 不再区分第 $0$ 跳自特征通道与各邻居环层，而是从节点级整体候选规模出发给出同量级近似。上述写法反映的是：当候选集规模增大时，节点级稀疏求解成本会以超线性方式增长，因此第4章的预算控制不仅影响表示质量，也直接影响训练成本。
+
+Phase $W$ 在每轮外层迭代中包含特征重算与稀疏聚合两部分。若每轮执行 $T_W$ 次梯度更新，则其复杂度可写为
+\begin{equation}
+  O\!\bigl(T_W(nDd+n\bar{k}d)\bigr),
+  \label{eq:ch5-phase-w}
+\end{equation}
+其中，$D$ 为输入特征维度，$d$ 为隐藏表示维度。式~\eqref{eq:ch5-phase-w} 中，$nDd$ 对应特征变换 $\phi(X;W_\phi)$ 的重算主项，$n\bar{k}d$ 对应固定 $\Theta$ 后的稀疏聚合主项。
+
+一次性预处理主要包括谱量估计、节点指标计算、候选集构建与预算分配四部分，其复杂度分别可写为
+\begin{equation}
+  O(mK_{\text{eig}}),
+  \label{eq:ch5-pre-spec}
+\end{equation}
+\begin{equation}
+  O(m+nK_{\text{eig}}),
+  \label{eq:ch5-pre-index}
+\end{equation}
+\begin{equation}
+  O\!\left(\sum_{i\in V}|C_i|\right),
+  \label{eq:ch5-pre-candidate}
+\end{equation}
+以及
+\begin{equation}
+  O(nL).
+  \label{eq:ch5-pre-budget}
+\end{equation}
+这些步骤只执行一次，因此不计入单次推理开销，但在完整训练流程中不可忽略。各方法综合复杂度对比见表~\ref{tab:ch5-5-6}。
+
+最后说明线性规模推理复杂度 $O(n\bar{k}d)$ 成立所依赖的条件。其一，平均保留规模满足 $\bar{k}\ll\bar{d}$，即固化后各节点的平均非零权重数显著小于原图平均邻居数；否则稀疏化无法带来实质性的聚合压缩收益；其二，固化后的稀疏权重矩阵 $\Theta^{\text{fixed}}$ 仍需保持整体稀疏，即其非零元总数满足 $\mathrm{nnz}(\Theta^{\text{fixed}})=n\bar{k}$，从而避免极少数高连接节点在局部引入过多非零项并削弱总体压缩效果；其三，第 $0$ 跳自特征通道虽固定保留，但每个节点至多仅额外引入一个非零项，因此只会在非零元总数中带来 $O(n)$ 级增量，不改变式~\eqref{eq:ch5-infer-nkbd} 的主阶；其四，推理阶段要求图结构与缓存特征保持静态，即 $\Theta^{\text{fixed}}$ 与 $\tilde{\Phi}^{\text{cache}}$ 可直接复用，这一前提更适用于 Transductive 设定；若进入 Inductive 场景并出现新节点或图结构变化，则缓存特征与固化结构通常需要重新构造，相应扩展留待后续工作。
+
+% ---- 图~\ref{fig:ch5-complexity-boundary}~占位符 ----
+\begin{figure}[htbp]
+  \centering
+        \includegraphics[width=1\linewidth]{5-2.pdf}
+  % \setlength{\fboxsep}{1.2em}
+  % \fbox{\parbox{0.88\textwidth}{\small\centering
+  %   \textbf{【占位图~\ref{fig:ch5-complexity-boundary}~】}\\[0.6em]
+  %   图题：第5章复杂度分解与适用边界示意图。表达内容：左侧以堆叠条形图比较预处理、Phase $\Theta$、Phase $W$ 与推理期四类开销；右侧以条件框列出“缓存已就绪”“$\bar{k}\ll\bar{d}$”“静态图/Transductive”三项适用前提，并用虚线标示超出条件后复杂度结论不再直接成立。 
+  % }}
+  \caption{复杂度分解与线性推理适用边界示意图}
+  \label{fig:ch5-complexity-boundary}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{threeparttable}
+  \caption{各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm{nnz}(A)$，$m_{\text{sparse}}=n\bar{k}$，$K_{\text{eig}}\in[50,100]$ 视为常数）}
+  \label{tab:ch5-5-6}
+  \begin{tabular}{@{}>{\centering\arraybackslash}m{1.8cm}>{\centering\arraybackslash}m{2.8cm}>{\centering\arraybackslash}m{4.4cm}>{\centering\arraybackslash}m{1.8cm}>{\centering\arraybackslash}m{2.7cm}@{}}
+    \toprule
+    \textbf{方法} & \textbf{预处理（一次）} & \textbf{训练/epoch} & \textbf{推理} & \textbf{备注} \\
+    \midrule
+    GCN 
+    & — 
+    & $O(Lmd)$ 
+    & $O(Lmd)$ 
+    & 全图 $L$ 层消息传递 \\[3pt]
+
+    SDGNN 
+    & $\text{Cost}_{\text{cand}}$ 
+    & $\sum_i O(|C_i|^3+|C_i|^2 d)$ 
+    & $O(n\bar{k}d)$ 
+    & 候选集级稠密子问题上界；训练后固化 $\Theta$ \\[3pt]
+
+    \textbf{MSAS-GNN} 
+    & $O(mK_{\text{eig}})+O(m+nK_{\text{eig}})+\text{Cost}_{\text{cand}}+O(nL)$ 
+    & Phase $\Theta$：$\sum_i O(d)+\sum_i\sum_{l=1}^{L} O(|\mathcal{R}_l(i)|^3+|\mathcal{R}_l(i)|^2 d)$；\newline
+      Phase $W$：$O\!\bigl(T_W(nDd+n\bar{k}d)\bigr)$ 
+    & $\boldsymbol{O(n\bar{k}d)}$ 
+    & 第 $0$ 跳单变量拟合；推理无显式 $L$ 因子；训练瓶颈在 Phase $\Theta$ \\[3pt]
+    \bottomrule
+  \end{tabular}
+  \end{threeparttable}
+\end{table}
+
+\section{本章小结}
+\label{sec:ch5-summary}
+
+本章完成了从三维自适应参数到可执行算法的整体整合。第~\ref{sec:ch5-lars}~节以 LARS 为核心求解器，通过“第 $0$ 跳自特征通道单变量拟合 + 第 $1$ 至 $L$ 跳邻居环层残差级联”的分层稀疏分解流程，将节点级正则系数 $\tau(i)$ 与跳距预算配额 $k_i^{(l)}$ 整合为端到端交替优化主循环（算法~\ref{alg:ch5-main}）；训练完成后，再通过算法~\ref{alg:ch5-fixed} 将结果固化为稀疏权重矩阵 $\Theta^{\text{fixed}}$ 与缓存特征矩阵 $\tilde{\Phi}^{\text{cache}}$，使推理阶段退化为单次稀疏矩阵乘（式~\eqref{eq:ch5-fixed-inference}），其主项复杂度为 $O(n\bar{k}d)$。
+
+第~\ref{sec:ch5-spectral}~节在经典谱稀疏化的分析框架下，引入 $\sigma$-谱相似性作为结构扰动度量，并据此建立多项式谱滤波器的条件化误差界。具体而言，先给出基于算子扰动大小 $\eta$ 的滤波输出误差界（式~\eqref{eq:ch5-poly-eta-bound}），再在 $\sigma$-谱相似性条件下将其进一步写成关于 $\sigma$ 的参数化上界（式~\eqref{eq:ch5-poly-sigma-bound}）。这些结果说明：当稀疏图与原图在谱意义上越接近时，多项式图滤波输出的偏差越小；但这里给出的仍是“谱扰动到滤波误差”的条件化分析，而非第4章三维参数设计到误差上界的封闭端到端严格定理。
+
+第~\ref{sec:ch5-time}~节进一步区分了推理、训练与预处理三类复杂度口径：推理阶段在结构固化且缓存就绪后，其主项复杂度为 $O(n\bar{k}d)$，且不再显式依赖传播层数 $L$；训练阶段的主要瓶颈位于 Phase $\Theta$，其量级由节点级候选规模与分层 LARS 子问题共同决定；一次性预处理则额外引入谱量估计、节点指标计算、候选集构建与预算分配等成本。与此同时，本节还说明了线性规模推理复杂度成立所依赖的条件，包括平均保留规模远小于原图平均邻居数、固化稀疏矩阵保持整体稀疏、第 $0$ 跳自特征通道仅带来低阶增量，以及推理阶段要求图结构与缓存特征保持静态等。
+
+本章的主要局限在于：第4章自适应系数设计仍建立在若干工程性近似之上，第5章的误差分析属于条件化谱扰动分析，尚未形成从三维参数设计到最终表示误差的封闭严格理论；此外，当前推理复杂度分析依赖于静态图与缓存复用前提，因此更适用于 Transductive 场景，对 Inductive 场景的扩展仍有待后续工作进一步研究。
+
+综上，本章的核心输出一方面是结构固化后的稀疏权重矩阵 $\Theta^{\text{fixed}}$ 及缓存特征矩阵 $\tilde{\Phi}^{\text{cache}}$，它们共同构成第6章效率实验的直接对象；另一方面是以 $\sigma$-谱相似性为核心的谱质量分析口径，它将作为第6章谱保持与误差验证的重要理论参照。二者共同支撑后续章节对 MSAS-GNN 效率与精度表现的综合评估。
+

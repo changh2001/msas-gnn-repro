@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>图3.1 第3章整体流程图：从图输入到四类复杂度指标输出</title>
+<script>
+MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},
+  options:{skipHtmlTags:['script','noscript','style','textarea']},
+  startup:{typeset:false}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:transparent;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:8px;
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:11px;
+}
+.fig{width:880px;}
+
+/* ── 顶部输入栏（深蓝底，与底部输出区原风格对调） ── */
+.input-bar{
+  background:#1c3a6a;border:1.2px solid #2a5088;border-radius:7px;
+  padding:7px 14px;margin-bottom:3px;
+  display:flex;align-items:center;gap:12px;
+}
+.input-icon{
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,0.14);border:0.6px solid rgba(255,255,255,0.22);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.input-icon svg{width:18px;height:18px;}
+.input-label{
+  background:rgba(255,255,255,0.12);border:0.8px solid rgba(255,255,255,0.32);border-radius:4px;
+  padding:3px 12px;font-size:11.5px;font-weight:700;color:#e8f0ff;
+  white-space:nowrap;flex-shrink:0;
+}
+.input-attrs{display:flex;gap:6px;flex:1;flex-wrap:wrap;}
+.attr-chip{
+  background:rgba(255,255,255,0.08);border:0.7px solid rgba(255,255,255,0.2);border-radius:10px;
+  font-size:9.5px;color:#c8daf0;padding:2px 9px;white-space:nowrap;
+}
+.input-assumption{
+  font-size:8.5px;color:#8aa4c8;border-left:2px solid rgba(255,255,255,0.22);padding-left:6px;
+  white-space:nowrap;
+}
+
+/* ── 竖向连接箭头 ── */
+.connector{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;margin:0;height:20px;position:relative;
+}
+.connector svg{width:880px;height:20px;overflow:visible;}
+
+/* ── 第二层：双分支容器 ── */
+.layer2{display:flex;gap:6px;margin-bottom:3px;}
+
+/* ── 分支通用 ── */
+.branch{flex:1;border-radius:6px;overflow:hidden;border:1.1px solid;}
+
+/* Lanczos 分支（蓝） */
+.br-lanczos{border-color:#7aaad4;background:#edf4fc;}
+.br-hdr-blue{background:#1c4890;color:#fff;font-size:10.5px;font-weight:700;
+  padding:5px 10px;display:flex;align-items:center;gap:7px;line-height:1.3;}
+.br-badge{
+  background:rgba(255,255,255,0.18);border:0.5px solid rgba(255,255,255,0.35);
+  border-radius:10px;font-size:8.5px;padding:1px 7px;white-space:nowrap;
+}
+.br-body{padding:6px 8px 7px;display:flex;flex-direction:column;gap:4px;}
+.br-row{display:flex;gap:6px;align-items:center;}
+.br-step{
+  flex:1;background:#fff;border:0.6px solid #9ab8d4;border-radius:4px;
+  padding:4px 7px;text-align:center;
+}
+.br-step-title{font-size:9px;color:#1a3a60;font-weight:700;margin-bottom:1px;}
+.br-step-fml{font-size:10.5px;color:#1a1a1a;line-height:1.7;}
+.br-step-sub{font-size:8.5px;color:#5a7090;margin-top:1px;}
+.br-arr{font-size:13px;color:#6090b8;flex-shrink:0;}
+
+.br-out{
+  background:#deeaf8;border:0.7px solid #7aaad4;border-radius:4px;
+  padding:4px 8px;text-align:center;
+}
+.br-out-title{font-size:9px;color:#1c4890;font-weight:700;margin-bottom:2px;}
+.br-out-fml{font-size:10.5px;color:#0e2a5a;line-height:1.7;}
+.complexity-chip{
+  display:inline-block;background:#1c4890;color:#d0e8ff;
+  border-radius:3px;font-size:8.5px;padding:1px 7px;margin-top:3px;
+}
+
+/* 邻接遍历分支（青绿） */
+.br-adj{border-color:#70bca8;background:#edf8f4;}
+.br-hdr-teal{background:#0a7060;color:#fff;font-size:10.5px;font-weight:700;
+  padding:5px 10px;display:flex;align-items:center;gap:7px;line-height:1.3;}
+.br-adj .br-step{border-color:#80c0a8;}
+.br-adj .br-step-title{color:#0a4030;}
+.br-adj .br-arr{color:#50a088;}
+.br-adj .br-out{background:#d4f0e4;border-color:#70c0a0;}
+.br-adj .br-out-title{color:#0a5040;}
+.br-adj .br-out-fml{color:#083828;}
+.br-adj .complexity-chip{background:#0a7060;color:#d0f8ec;}
+
+/* 同配系数辅助框 */
+.homophily-bar{
+  background:#fff8ee;border:0.9px dashed #d4b878;border-radius:5px;
+  padding:5px 10px;margin-bottom:3px;
+  display:flex;align-items:center;gap:10px;
+}
+.h-label{
+  background:#fef0cc;border:0.7px solid #d8b060;border-radius:4px;
+  font-size:9.5px;font-weight:700;color:#8a5010;padding:2px 9px;
+  white-space:nowrap;flex-shrink:0;
+}
+.h-content{flex:1;font-size:9px;color:#7a5030;line-height:1.55;}
+.h-arrow-tip{font-size:10px;color:#c09040;white-space:nowrap;flex-shrink:0;}
+
+/* ── 第三层：四指标模块 ── */
+.layer3{display:flex;gap:5px;margin-bottom:3px;}
+
+.indicator{
+  flex:1;border-radius:6px;overflow:hidden;border:1.1px solid;
+  display:flex;flex-direction:column;
+}
+
+/* 模块颜色方案 */
+/* ①谱间隙 蓝 */
+.ind-gap{border-color:#7aaad4;background:#edf4fc;}
+.ind-gap .ind-hdr{background:#1c4890;color:#fff;}
+.ind-gap .ind-badge-src{background:#deeaf8;color:#1c4890;border-color:#9ab8d4;}
+.ind-gap .ind-fml-box{background:#d8eaf8;border-color:#7aaad4;}
+.ind-gap .ind-iface{background:#c8e0f4;border-color:#6898cc;color:#0e2a5a;}
+
+/* ②谱能量 青绿 */
+.ind-energy{border-color:#70bca8;background:#edf8f4;}
+.ind-energy .ind-hdr{background:#0a7060;color:#fff;}
+.ind-energy .ind-badge-src{background:#d4f0e4;color:#0a5040;border-color:#70c0a0;}
+.ind-energy .ind-fml-box{background:#c8ecd8;border-color:#60b090;}
+.ind-energy .ind-iface{background:#b8e4d0;border-color:#50a880;color:#083828;}
+
+/* ③局部图熵 紫 */
+.ind-entropy{border-color:#b8aaec;background:#f5f2fe;}
+.ind-entropy .ind-hdr{background:#4838a0;color:#fff;}
+.ind-entropy .ind-badge-src{background:#e8e4f8;color:#4838a0;border-color:#b0a0e0;}
+.ind-entropy .ind-fml-box{background:#e0d8f8;border-color:#a898e0;}
+.ind-entropy .ind-iface{background:#ccc4f0;border-color:#9888d8;color:#2a1880;}
+
+/* ④节点中心性 金 */
+.ind-cent{border-color:#d4b878;background:#fdf6e8;}
+.ind-cent .ind-hdr{background:#b87828;color:#fff;}
+.ind-cent .ind-badge-src{background:#feecd0;color:#8a5010;border-color:#d8b060;}
+.ind-cent .ind-fml-box{background:#fde8c0;border-color:#d0a040;}
+.ind-cent .ind-iface{background:#f8d8a0;border-color:#c09030;color:#6a3800;}
+
+.ind-hdr{
+  font-size:10px;font-weight:700;padding:5px 7px;
+  display:flex;align-items:center;gap:4px;line-height:1.3;
+}
+.ind-num{
+  background:rgba(255,255,255,0.22);border:0.5px solid rgba(255,255,255,0.35);
+  border-radius:9px;font-size:8px;padding:1px 6px;flex-shrink:0;
+}
+.ind-body{padding:5px 7px 6px;flex:1;display:flex;flex-direction:column;gap:3px;}
+
+.ind-badge-src{
+  border-radius:3px;border:0.6px solid;font-size:8px;
+  padding:1.5px 5px;font-weight:700;text-align:center;
+}
+.ind-fml-box{
+  border-radius:3px;border:0.6px solid;
+  padding:3px 5px;text-align:center;font-size:10px;line-height:1.65;color:#1a1a1a;
+}
+.ind-iface{
+  border-radius:3px;border:0.6px solid;
+  font-size:8.5px;font-weight:700;text-align:center;
+  padding:2px 4px;margin-top:2px;line-height:1.4;
+}
+
+/* ── 底部输出接口总表（浅色卡片，与分支/指标模块一致） ── */
+.output-bar{
+  background:#fff;border:1.2px solid #b0c4dc;border-radius:7px;overflow:hidden;
+  margin-bottom:3px;
+}
+.output-bar-hdr{
+  background:#1c4890;color:#fff;font-size:10.5px;font-weight:700;
+  padding:5px 14px;letter-spacing:.05em;
+  display:flex;align-items:center;gap:10px;
+}
+.output-bar-hdr span{font-size:8.5px;font-weight:400;opacity:.92;}
+.output-table-wrap{padding:6px 8px 7px;background:#edf4fc;}
+.output-table{width:100%;border-collapse:collapse;font-size:9px;color:#1a3060;}
+.output-table th{
+  background:#deeaf8;color:#1c4890;font-weight:700;
+  padding:3px 8px;text-align:left;font-size:8.5px;
+  border-bottom:0.5px solid #9ab8d4;
+}
+.output-table td{padding:3px 8px;border-bottom:0.4px solid #c8d8e8;line-height:1.5;color:#2c4a70;}
+.output-table tr:last-child td{border-bottom:none;}
+.output-table tr:nth-child(even) td{background:rgba(255,255,255,0.65);}
+.tag-blue{display:inline-block;background:#2a5caa;color:#c0d8f8;border-radius:3px;font-size:8px;padding:1px 5px;}
+.tag-teal{display:inline-block;background:#0a6050;color:#c0f0e0;border-radius:3px;font-size:8px;padding:1px 5px;}
+.tag-purple{display:inline-block;background:#4030a0;color:#d0c8f8;border-radius:3px;font-size:8px;padding:1px 5px;}
+.tag-gold{display:inline-block;background:#a06820;color:#f8dca8;border-radius:3px;font-size:8px;padding:1px 5px;}
+
+/* ── 底部复杂度条 ── */
+.complexity-bar{
+  display:flex;gap:5px;
+}
+.cs{
+  flex:1;background:#f0f4f8;border:0.7px solid #b0c8e0;border-radius:5px;
+  padding:5px 8px;font-size:8.5px;color:#1a1a1a;line-height:1.55;
+  text-align:center;
+}
+.cs-hdr{font-size:8.5px;font-weight:700;color:#2c5888;margin-bottom:2px;
+  border-bottom:0.5px solid #c0d4e8;padding-bottom:2px;}
+.cs-main{font-size:12px;font-weight:700;color:#1c4890;line-height:1.4;}
+
+/* ── 分隔箭头SVG连接 ── */
+.arrow-row{
+  display:flex;margin:0;height:18px;align-items:center;
+  position:relative;
+}
+.arrow-row svg{width:100%;height:18px;overflow:visible;}
+</style>
+</head>
+<body>
+<div class="fig">
+
+<!-- ════════ 层0：图输入 ════════ -->
+<div class="input-bar">
+  <div class="input-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#c8e0ff" stroke-width="2" stroke-linecap="round">
+      <circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/>
+      <circle cx="12" cy="12" r="2"/>
+      <line x1="7" y1="12" x2="10" y2="12"/>
+      <line x1="14" y1="12" x2="17" y2="6"/>
+      <line x1="14" y1="12" x2="17" y2="18"/>
+    </svg>
+  </div>
+  <div class="input-label">图输入 \(G=(V,E,X)\)</div>
+  <div class="input-attrs">
+    <div class="attr-chip">\(n = |V|\) 个节点</div>
+    <div class="attr-chip">\(m = \mathrm{nnz}(A) = 2|E|\) 条边</div>
+    <div class="attr-chip">特征矩阵 \(X\in\mathbb{R}^{n\times D}\)</div>
+    <div class="attr-chip">归一化拉普拉斯 \(\tilde{\mathcal{L}}=I-\mathbf{D}^{-1/2}A\mathbf{D}^{-1/2}\)</div>
+  </div>
+  <div class="input-assumption">假设：图结构静态可信（§3.1）</div>
+</div>
+
+<!-- 连接箭头 -->
+<div class="arrow-row">
+  <svg viewBox="0 0 880 18" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <marker id="arrowBlue" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <polygon points="0 0, 7 3.5, 0 7" fill="#5a90c8"/>
+      </marker>
+    </defs>
+    <!-- 左分支箭头 -->
+    <line x1="220" y1="0" x2="220" y2="14" stroke="#5a90c8" stroke-width="1.2" marker-end="url(#arrowBlue)"/>
+    <!-- 右分支箭头 -->
+    <line x1="660" y1="0" x2="660" y2="14" stroke="#5a90c8" stroke-width="1.2" marker-end="url(#arrowBlue)"/>
+    <!-- 分叉横线 -->
+    <line x1="220" y1="0" x2="660" y2="0" stroke="#5a90c8" stroke-width="1.2"/>
+    <line x1="440" y1="0" x2="440" y2="0" stroke="#5a90c8" stroke-width="1.2"/>
+    <!-- 文字 -->
+    <text x="440" y="10" text-anchor="middle" font-size="8" font-weight="normal" font-family="'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif" fill="#8090a8">离线预计算分支</text>
+  </svg>
+</div>
+
+<!-- ════════ 层1：两大计算分支 ════════ -->
+<div class="layer2">
+
+  <!-- 左支：Lanczos谱分解 -->
+  <div class="branch br-lanczos">
+    <div class="br-hdr-blue">
+      <span>Lanczos 谱分解</span>
+      <span class="br-badge">复杂度 \(\mathcal{O}(mK_{\text{eig}})\)</span>
+    </div>
+    <div class="br-body">
+      <div class="br-row">
+        <div class="br-step">
+          <div class="br-step-title">初始化随机向量</div>
+          <div class="br-step-fml">\(v_1\sim\mathcal{N}(0,I),\ \|v_1\|=1\)</div>
+          <div class="br-step-sub">3次项递推 + 选择性重正交</div>
+        </div>
+        <div class="br-arr">→</div>
+        <div class="br-step">
+          <div class="br-step-title">三对角矩阵特征分解</div>
+          <div class="br-step-fml">\(T_{K_{\text{eff}}}\) 升序分解</div>
+          <div class="br-step-sub">收敛容差 \(\tau_{\text{tol}}=10^{-10}\)</div>
+        </div>
+        <div class="br-arr">→</div>
+        <div class="br-out">
+          <div class="br-out-title">输出：前 \(K_{\text{pair}}\) 个特征对</div>
+          <div class="br-out-fml">\(\{(\lambda_k,\, u_k)\}_{k=1}^{K_{\text{pair}}}\)</div>
+          <div class="br-out-fml">\(K_{\text{eig}}=50\)（默认）</div>
+          <div><span class="complexity-chip">\(\mathcal{O}(mK_{\text{eig}})\)</span></div>
+        </div>
+      </div>
+      <div style="background:#deeaf8;border:0.6px solid #7aaad4;border-radius:3px;padding:3px 7px;font-size:8.5px;color:#1a3060;line-height:1.55;text-align:center;">
+        谱间隙近似值 \(\hat{\lambda}_{\text{gap}}\leftarrow\mu_1\)（三对角矩阵第二小特征值）&nbsp;·&nbsp;
+        特征向量 \(u_r\leftarrow[v_1,\ldots,v_{K_\text{eff}}]\,z_r\)
+      </div>
+    </div>
+  </div>
+
+  <!-- 右支：邻接遍历 -->
+  <div class="branch br-adj">
+    <div class="br-hdr-teal">
+      <span>邻接结构遍历</span>
+      <span class="br-badge" style="background:rgba(255,255,255,0.18);border:0.5px solid rgba(255,255,255,0.35);border-radius:10px;font-size:8.5px;padding:1px 7px;">复杂度 \(\mathcal{O}(m)\)</span>
+    </div>
+    <div class="br-body">
+      <div class="br-row">
+        <div class="br-step" style="border-color:#80c0a8;">
+          <div class="br-step-title" style="color:#0a4030;">度序列统计</div>
+          <div class="br-step-fml">\(\{d_i\}_{i=1}^n\)</div>
+          <div class="br-step-sub" style="color:#3a6050;">度中心性 \(C_{\text{deg}}(i)=d_i/(n-1)\)</div>
+        </div>
+        <div class="br-arr" style="color:#50a088;">→</div>
+        <div class="br-step" style="border-color:#80c0a8;">
+          <div class="br-step-title" style="color:#0a4030;">k-core 分解</div>
+          <div class="br-step-fml">\(\{\mathrm{core}(i)\}_{i=1}^n\)</div>
+          <div class="br-step-sub" style="color:#3a6050;">Batagelj-Zaversnik 算法</div>
+        </div>
+        <div class="br-arr" style="color:#50a088;">→</div>
+        <div class="br-out" style="background:#d4f0e4;border-color:#70c0a0;">
+          <div class="br-out-title" style="color:#0a5040;">输出：结构属性</div>
+          <div class="br-out-fml" style="color:#083828;">\(\{d_i\},\ \{C_{\text{deg}}(i)\}\)</div>
+          <div class="br-out-fml" style="color:#083828;">\(\{\mathrm{core}(i)\}\)</div>
+          <div><span class="complexity-chip" style="background:#0a7060;color:#d0f8ec;">\(\mathcal{O}(m)\)</span></div>
+        </div>
+      </div>
+      <div style="background:#d4f0e4;border:0.6px solid #70c0a0;border-radius:3px;padding:3px 7px;font-size:8.5px;color:#0a3020;line-height:1.55;text-align:center;">
+        局部图熵边权：uniform \(w_{ij}=1\)，或 Gaussian \(w_{ij}=\exp(-\gamma\|x_i-x_j\|^2)\)，\(\mathcal{O}(mD)\)
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 同配系数辅助框 -->
+<div class="homophily-bar">
+  <div class="h-label">同配系数辅助输入</div>
+  <div class="h-content">
+    <b>边级：</b>\(h_{\text{edge}}=|\{(u,v)\in E:y_u=y_v\}|/|E|\)（\(\mathcal{O}(m)\)，全图宏观量）&nbsp;&nbsp;
+    <b>节点级：</b>\(h_i=|\{j\in\mathcal{N}(i):y_j=y_i\}|/|\mathcal{N}(i)|\)（节点局部量，孤立节点取0）；&nbsp;
+    由式(3.2)–(3.3)计算，用训练集标签避免标签泄漏；在第4章§4.1节作为辅助背景动机，频率维采用等权实例化（\(w_k=1/K_{\text{eig}}\)）
+  </div>
+  <div class="h-arrow-tip">→ 辅助模块②</div>
+</div>
+
+<!-- 连接箭头：层1→层3 -->
+<div class="arrow-row">
+  <svg viewBox="0 0 880 18" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <marker id="arr2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <polygon points="0 0, 7 3.5, 0 7" fill="#7090b8"/>
+      </marker>
+    </defs>
+    <!-- 四个模块的箭头落点大约在：110, 330, 550, 770 -->
+    <line x1="220" y1="0" x2="110" y2="0" stroke="#7090b8" stroke-width="1"/>
+    <line x1="220" y1="0" x2="330" y2="0" stroke="#7090b8" stroke-width="1"/>
+    <line x1="220" y1="0" x2="220" y2="0" stroke="#7090b8" stroke-width="1"/>
+    <line x1="660" y1="0" x2="550" y2="0" stroke="#7090b8" stroke-width="1"/>
+    <line x1="660" y1="0" x2="770" y2="0" stroke="#7090b8" stroke-width="1"/>
+    <line x1="110" y1="0" x2="110" y2="14" stroke="#7090b8" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="330" y1="0" x2="330" y2="14" stroke="#7090b8" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="550" y1="0" x2="550" y2="14" stroke="#7090b8" stroke-width="1" marker-end="url(#arr2)"/>
+    <line x1="770" y1="0" x2="770" y2="14" stroke="#7090b8" stroke-width="1" marker-end="url(#arr2)"/>
+    <!-- 来源标注 -->
+    <text x="220" y="10" text-anchor="middle" font-size="7.5" font-weight="normal" font-family="'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif" fill="#7090b8">Lanczos输出</text>
+    <text x="660" y="10" text-anchor="middle" font-size="7.5" font-weight="normal" font-family="'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif" fill="#7090b8">邻接遍历输出</text>
+  </svg>
+</div>
+
+<!-- ════════ 层2：四类指标并行模块 ════════ -->
+<div class="layer3">
+
+  <!-- ① 谱间隙 -->
+  <div class="indicator ind-gap">
+    <div class="ind-hdr">
+      <span class="ind-num">①</span>
+      <span>谱间隙估计</span>
+    </div>
+    <div class="ind-body">
+      <div class="ind-badge-src">来源：Lanczos输出 \(\mu_1\)</div>
+      <div class="ind-fml-box">
+        \(\hat{\lambda}_{\text{gap}}=\lambda_2-\lambda_1\)<br>
+        <span style="font-size:8.5px;color:#3a5888;">第二小特征值，刻画<br>图全局连通强度</span>
+      </div>
+      <div style="font-size:8px;color:#3a5888;line-height:1.5;padding:2px 0;">
+        Cheeger 不等式：<br>
+        \(\phi(G)^2/2\leq\lambda_{\text{gap}}\leq 2\phi(G)\)
+      </div>
+      <div class="ind-iface">→ 第4章§4.3.2节<br>分层跳距保留率策略</div>
+    </div>
+  </div>
+
+  <!-- ② 节点谱能量 -->
+  <div class="indicator ind-energy">
+    <div class="ind-hdr">
+      <span class="ind-num">②</span>
+      <span>节点谱能量</span>
+    </div>
+    <div class="ind-body">
+      <div class="ind-badge-src">来源：Lanczos（等权实例化 \(w_k=1/K_{\text{eig}}\)）</div>
+      <div class="ind-fml-box">
+        \(E_\text{spectral}(i)=\displaystyle\sum_{k=1}^{K_{\text{pair}}}\frac{1}{K_{\text{eig}}}\lambda_k|U_{ik}|^2\)<br>
+        <span style="font-size:8.5px;color:#0a4030;">等权实例化，第4章§4.1节</span>
+      </div>
+      <div style="font-size:8px;color:#0a4030;line-height:1.5;padding:2px 0;">
+        默认等权 \(w_k(i)=1/K_{\text{eig}}\)，跳过 \(k=0\) 平凡项<br>
+        精细频率感知扩展接口留待后续工作
+      </div>
+      <div class="ind-iface">→ 第4章§4.2节节点维 \(\tau(i)\) 谱输入</div>
+    </div>
+  </div>
+
+  <!-- ③ 局部图熵 -->
+  <div class="indicator ind-entropy">
+    <div class="ind-hdr">
+      <span class="ind-num">③</span>
+      <span>局部图熵</span>
+    </div>
+    <div class="ind-body">
+      <div class="ind-badge-src">来源：邻接遍历 \(w_{ij}\)</div>
+      <div class="ind-fml-box">
+        \(H(i)=-\displaystyle\sum_{j\in\mathcal{N}(i)}p_{ij}\ln p_{ij}\)<br>
+        \(H_{\text{norm}}(i)=H(i)/\ln|\mathcal{N}(i)|\in[0,1]\)<br>
+        <span style="font-size:8.5px;color:#3a2898;">\(|\mathcal{N}(i)|\le1\) 时取0</span>
+      </div>
+      <div style="font-size:8px;color:#3a2898;line-height:1.5;padding:2px 0;">
+        均匀邻域→熵上界；单邻居主导→下界0<br>
+        刻画邻域消息流均匀性与多样性
+      </div>
+      <div class="ind-iface">→ 第4章§4.2.2节<br>多因子融合公式</div>
+    </div>
+  </div>
+
+  <!-- ④ 节点中心性 -->
+  <div class="indicator ind-cent">
+    <div class="ind-hdr">
+      <span class="ind-num">④</span>
+      <span>节点中心性</span>
+    </div>
+    <div class="ind-body">
+      <div class="ind-badge-src">来源：邻接遍历 + k-core</div>
+      <div class="ind-fml-box">
+        \(C_{\text{deg}}(i)=d_i/(n-1)\)<br>
+        \(\mathrm{core}(i)=\max\{k\mid i\in G_k\}\)<br>
+        <span style="font-size:8.5px;color:#7a4010;">度中心性 + k-core 指数互补</span>
+      </div>
+      <div style="font-size:8px;color:#7a4010;line-height:1.5;padding:2px 0;">
+        度中心性：\(\mathcal{O}(n)\) 或 \(\mathcal{O}(m)\)<br>
+        k-core：\(\mathcal{O}(m)\)，刻画子图稠密层级
+      </div>
+      <div class="ind-iface">→ 第4章§4.2.2节<br>多因子融合公式</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 连接箭头→汇总 -->
+<div class="arrow-row">
+  <svg viewBox="0 0 880 18" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <marker id="arr3" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <polygon points="0 0, 7 3.5, 0 7" fill="#2a4070"/>
+      </marker>
+    </defs>
+    <line x1="110" y1="0" x2="440" y2="14" stroke="#2a4070" stroke-width="1" marker-end="url(#arr3)"/>
+    <line x1="330" y1="0" x2="440" y2="14" stroke="#2a4070" stroke-width="1"/>
+    <line x1="550" y1="0" x2="440" y2="14" stroke="#2a4070" stroke-width="1"/>
+    <line x1="770" y1="0" x2="440" y2="14" stroke="#2a4070" stroke-width="1"/>
+  </svg>
+</div>
+
+<!-- ════════ 层3：输出接口汇总表 ════════ -->
+<div class="output-bar">
+  <div class="output-bar-hdr">
+    图复杂度指标体系输出接口
+    <span>（以下指标均为离线预计算结果，缓存后供第4、5章使用）</span>
+  </div>
+  <div class="output-table-wrap">
+    <table class="output-table">
+      <tr>
+        <th style="width:18%;">指标名称</th>
+        <th style="width:20%;">公式符号</th>
+        <th style="width:12%;">计算复杂度</th>
+        <th style="width:22%;">第4章接口</th>
+        <th style="width:28%;">含义说明</th>
+      </tr>
+      <tr>
+        <td><span class="tag-blue">①谱间隙</span></td>
+        <td>\(\hat{\lambda}_{\text{gap}}=\lambda_2-\lambda_1\)</td>
+        <td>\(\mathcal{O}(mK_{\text{eig}})\)</td>
+        <td>§4.3.2节 分层跳距保留率</td>
+        <td>全图连通强度；与图 conductance 关联</td>
+      </tr>
+      <tr>
+        <td><span class="tag-teal">②节点谱能量</span></td>
+        <td>\(E_{\text{spectral}}(i)\)</td>
+        <td>\(\mathcal{O}(nK_{\text{eig}})\)</td>
+        <td>§4.2节 \(\tau(i)\) 谱输入（等权实例化）</td>
+        <td>节点在各频率成分上的参与强度（默认等权）</td>
+      </tr>
+      <tr>
+        <td><span class="tag-purple">③局部图熵</span></td>
+        <td>\(H_{\text{norm}}(i)\in[0,1]\)</td>
+        <td>\(\mathcal{O}(m)\) 或 \(\mathcal{O}(mD)\)</td>
+        <td>§4.2.2节 多因子融合公式</td>
+        <td>邻域消息流均匀性；均匀→高熵，单主导→低熵</td>
+      </tr>
+      <tr>
+        <td><span class="tag-gold">④节点中心性</span></td>
+        <td>\(C_{\text{deg}}(i),\ \mathrm{core}(i)\)</td>
+        <td>\(\mathcal{O}(m)\)</td>
+        <td>§4.2.2节 多因子融合公式</td>
+        <td>枢纽性（度中心性）+ 子图稠密层级（k-core）</td>
+      </tr>
+      <tr>
+        <td><span style="display:inline-block;background:#6a6a6a;color:#f8f8f8;border-radius:3px;font-size:8px;padding:1px 5px;">辅助</span>&nbsp;同配系数</td>
+        <td>\(h_{\text{edge}},\ h_i\)</td>
+        <td>\(\mathcal{O}(m)\)</td>
+        <td>辅助背景量（频率维等权实例化，不作强制输入）</td>
+        <td>全图/节点同配性；作为频率接口设计的背景动机</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════ 底部：总复杂度 + 优化目标摘要 ════════ -->
+<div class="complexity-bar">
+  <div class="cs">
+    <div class="cs-hdr">预计算总复杂度</div>
+    <div class="cs-main">\(\mathcal{O}(mK_{\text{eig}}+nK_{\text{eig}}+m)\)</div>
+    <div style="font-size:8px;color:#555;margin-top:2px;">uniform 模式；Gaussian 模式加 \(\mathcal{O}(mD)\) 项</div>
+  </div>
+  <div class="cs">
+    <div class="cs-hdr">统一优化目标（§3.1.2节）</div>
+    <div style="font-size:10px;color:#1a1a1a;line-height:1.65;">
+      \(\min_{W_\phi,\Theta}\tfrac{1}{2}\|\Theta^\top\tilde{\Phi}-H^*\|_F^2+\sum_i\tau(i)\|\theta_i\|_1\)<br>
+      s.t. \(\mathrm{supp}(\theta_i)\subseteq\mathcal{N}_L(i),\ \|\theta_i\|_0\leq k_{\max}\)
+    </div>
+  </div>
+  <div class="cs">
+    <div class="cs-hdr">三项设计准则</div>
+    <div style="font-size:8.5px;color:#1a1a1a;line-height:1.6;text-align:left;">
+      <b style="color:#1c4890;">准则1 性能保持：</b>\(\mathcal{E}_{\text{approx}}\leq\varepsilon_0\)<br>
+      <b style="color:#0a7060;">准则2 显著加速：</b>\(\text{Speedup}\approx L\bar{d}/\bar{k}\)<br>
+      <b style="color:#4838a0;">准则3 自适应性：</b>\(\mathrm{CV}(\{k_i\})>0.3\)
+    </div>
+  </div>
+  <div class="cs" style="background:#eaf2fd;border-left:3px solid #1c4890;">
+    <div class="cs-hdr">章间接口说明</div>
+    <div style="font-size:8.5px;color:#1a1a1a;line-height:1.6;text-align:left;">
+      本章输出为<b>离线缓存指标</b><br>
+      → 第4章：\(\tau(i)\) 参数化设计<br>
+      → 第5章：算法整合与理论保证<br>
+      → 第6章：实验验证（§6.x）
+    </div>
+  </div>
+</div>
+
+</div><!-- /fig -->
+<script>
+window.addEventListener('load',function(){
+  if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetPromise();}
+});
+</script>
+</body>
+</html>

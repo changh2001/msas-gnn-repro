@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>图3.2 SDGNN全局统一稀疏预算失效示意图</title>
+<script>
+MathJax={tex:{
+  inlineMath:[['\\(','\\)']],
+  displayMath:[['$$','$$'],['\\[','\\]']]
+},
+  options:{skipHtmlTags:['script','noscript','style','textarea']},
+  startup:{typeset:false}
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:transparent;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:8px;
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:11px;
+}
+.fig{
+  width:880px;
+  --flow-caption-shift:0px;
+}
+
+.fig-header{
+  position:relative;
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border:1px solid #d0daea;border-radius:6px 6px 0 0;
+  padding:6px 10px;margin-bottom:0;border-bottom:none;
+  min-height:36px;
+}
+.fig-badge{
+  background:#ddeaf8;color:#1c4890;font-size:10px;font-weight:700;
+  border-radius:3px;padding:5px 10px;line-height:1.35;
+  width:fit-content;max-width:100%;
+  flex-shrink:0;
+}
+.fig-flow-caption{
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(calc(-50% + var(--flow-caption-shift)),-50%);
+  display:flex;flex-direction:row;align-items:center;justify-content:center;
+  gap:3px;padding:0 4px;white-space:nowrap;
+  pointer-events:none;z-index:1;
+  max-width:calc(100% - 240px);overflow:hidden;text-overflow:ellipsis;
+}
+.fig-flow-caption .flow-arrow{font-size:15px;font-weight:400;color:#9ab4cc;line-height:1;}
+.fig-flow-caption .flow-text{font-size:8px;font-weight:600;color:#8898aa;line-height:1.15;white-space:nowrap;}
+.fig-subtitle{font-size:10px;color:#5a6a7a;flex:1;min-width:0;text-align:right;}
+
+.fig-main-wrap{
+  background:#f8fbff;
+  border:1px solid #cdd7e8;border-top:1px solid #e2eaf5;
+  border-radius:0 0 6px 6px;overflow:hidden;
+}
+
+.main-body{
+  padding:0 10px 6px;
+  display:flex;flex-direction:row;align-items:flex-start;gap:4px;
+}
+
+.panel{flex:1;display:flex;flex-direction:column;gap:4px;}
+.panel-hdr{
+  display:flex;align-items:center;gap:6px;
+  background:#fff;border:0.8px solid #c8d4e6;border-radius:4px 4px 0 0;
+  padding:4px 8px;min-height:36px;
+}
+.panel-tag{font-size:9px;font-weight:700;color:#fff;border-radius:3px;padding:1px 7px;white-space:nowrap;}
+.panel-tag-blue{background:#ddeaf8;color:#1c4890;}
+.panel-tag-red{background:#fde8e8;color:#8a2020;}
+.panel-label{font-size:10.5px;font-weight:700;color:#1a2c50;}
+.panel-desc{font-size:9.5px;color:#5a6a7a;flex:1;}
+.panel-canvas{
+  background:#fff;border:0.8px solid #c8d4e6;border-radius:0 0 4px 4px;
+  border-top:none;display:block;max-width:100%;
+}
+
+.note-bar{
+  margin-top:6px;
+  background:#fff;border:0.7px solid #c8d4e6;border-radius:4px;
+  padding:5px 10px;display:flex;gap:14px;align-items:flex-start;
+}
+.note-item{display:flex;gap:5px;align-items:flex-start;font-size:9.5px;color:#445566;line-height:1.5;}
+.note-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:2px;}
+.note-section{
+  font-size:9px;color:#5a6a7a;border-top:0.5px solid #dde6f0;margin-top:4px;padding-top:3px;
+}
+.panel-canvas-wrap{position:relative;display:inline-block;vertical-align:top;line-height:0;}
+.panel-canvas-wrap .panel-canvas{display:block;}
+.cv-math-layer{
+  position:absolute;inset:0;pointer-events:none;z-index:1;
+  font-size:9px;line-height:1.45;color:#333;
+}
+.cv-math-layer mjx-container{font-size:1.08em!important;}
+.cv-math-banner{
+  position:absolute;left:8px;top:6px;width:404px;height:28px;display:flex;
+  align-items:center;justify-content:center;text-align:center;
+  font-weight:700;font-size:10px;color:#1c3060;
+}
+.cv-math-y-label{
+  position:absolute;left:0;top:18px;width:48px;height:260px;display:flex;
+  align-items:center;justify-content:center;
+}
+.cv-math-y-label-inner{
+  transform:rotate(-90deg);font-weight:700;font-size:10px;color:#2c4060;white-space:nowrap;
+}
+.cv-math-x-label{
+  position:absolute;left:56px;top:298px;width:346px;text-align:center;
+  font-weight:700;font-size:10.5px;color:#2c4060;
+}
+.panel-hdr mjx-container,.note-bar mjx-container,.fig-subtitle mjx-container{font-size:1.06em!important;}
+/* 右图三处说明：与 canvas roundRect 同尺寸，避免文字溢出背景 */
+.cv-r-callout{
+  position:absolute;box-sizing:border-box;padding:1px 3px;margin:0;
+  line-height:1.18;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;
+}
+.cv-r-callout .t,.cv-r-callout .b{display:block;width:100%;}
+.cv-r-callout .t{font-weight:700;font-size:8px;}
+.cv-r-callout .b{font-size:7.25px;}
+.panel-canvas-wrap .cv-math-layer .cv-r-callout mjx-container{font-size:0.98em!important;}
+</style>
+</head>
+<body>
+<div class="fig">
+<!--
+  【图3.2 源文件注释｜不渲染】最终稀疏解 θ_i（因而 k_i:=||θ_i||_0）在一般情形下由
+  τ(i)、max_iter、支持集/候选集 N_L(i)、特征字典 \tilde{Φ}、教师目标 h_i^*（及可选 Top-k 后处理等）共同决定：
+  τ(i) 为软稀疏压力，max_iter 为硬上界，支持集限定“能选谁”，\tilde{Φ} 与 h_i^* 刻画重构需求。
+  在 max_iter、N_L(i)、\tilde{Φ}、h_i^* 相对固定的前提下，本图强调统一全局稀疏预算规则下
+  不同度数节点的 k_i/d_i 结构性差异；宜在答辩中说明此为可比条件下的节点间对比口径，而非单一参数穷尽解释。
+-->
+
+  <div class="fig-header">
+    <div class="fig-badge">SDGNN 全局统一稀疏预算失效示意图</div>
+    <div class="fig-flow-caption">
+      <span class="flow-arrow">→</span>
+      <span class="flow-text">系统性覆盖率失衡</span>
+    </div>
+    <div class="fig-subtitle">§3.1 问题动机 | Barabási–Albert 合成图，\(n{=}500\)，\(m{=}1500\)</div>
+  </div>
+
+  <div class="fig-main-wrap">
+    <div class="main-body">
+
+    <!-- 左面板：拓扑示意图 -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-tag panel-tag-blue">左图</div>
+        <div class="panel-label">合成图局部拓扑示意</div>
+        <div class="panel-desc">统一全局稀疏预算规则下各节点实际稀疏结果（\(k_i{:=}\|\theta_i\|_0\)）的覆盖率差异</div>
+      </div>
+      <div class="panel-canvas-wrap">
+      <canvas id="cvLeft" width="420" height="330" class="panel-canvas"></canvas>
+      <div class="cv-math-layer" aria-hidden="true">
+        <div style="position:absolute;left:124px;top:176px;width:48px;text-align:center;font-size:8.5px;color:#fff;">\(d=36\)</div>
+        <div style="position:absolute;left:294px;top:175px;width:48px;text-align:center;font-size:5.5px;color:#fff;">\(d=3\)</div>
+        <div style="position:absolute;left:58px;top:264px;width:148px;height:48px;padding:2px 4px;box-sizing:border-box;line-height:1.2;">
+          <span style="color:#8a1010;font-weight:700;font-size:8px;">枢纽节点（\(d=36\)）</span><br>
+          <span style="font-size:7.5px;">选中边数 \(k_i\approx 4\)（蓝色实线）</span><br>
+          <span style="color:#c04040;font-weight:700;font-size:8px;">相对覆盖率 \(k_i/d_i\approx 11\%\)</span><br>
+          <span style="color:#666;font-size:7px;">约 89% 邻域信息被丢弃</span>
+        </div>
+        <div style="position:absolute;left:266px;top:264px;width:142px;height:48px;padding:2px 4px;box-sizing:border-box;line-height:1.2;">
+          <span style="color:#7a4a00;font-weight:700;font-size:8px;">外围节点（\(d=3\)）</span><br>
+          <span style="font-size:7.5px;">选中边数 \(k_i=3\)（橙色实线）</span><br>
+          <span style="color:#c07020;font-weight:700;font-size:8px;">相对覆盖率 \(k_i/d_i=100\%\)</span><br>
+          <span style="color:#666;font-size:7px;">稀疏潜力未释放，连接全部保留</span>
+        </div>
+        <div class="cv-math-banner">统一稀疏预算规则（同一全局正则）\(\to\) 差异化 \(k_i/d_i\)：枢纽\(\approx 11\%\)，外围\(\approx 100\%\)</div>
+        <div style="position:absolute;left:30px;top:38px;font-size:9px;color:#1c4890;">选中邻居（\(k_i\) 条）</div>
+        <div style="position:absolute;left:30px;top:51px;font-size:9px;color:#667788;">截断邻居（丢失信息）</div>
+        <div style="position:absolute;left:30px;top:64px;font-size:9px;color:#7a4a00;">冗余保留边（稀疏浪费）</div>
+      </div>
+      </div>
+    </div>
+
+    <!-- 右面板：相对覆盖率散点图 -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-tag panel-tag-red">右图</div>
+        <div class="panel-label">相对覆盖率 \(k_i/d_i\) vs. 节点度数</div>
+        <div class="panel-desc">横轴对数刻度；相对覆盖率与度数负相关，\(\rho{\approx}{-}0.78\)</div>
+      </div>
+      <div class="panel-canvas-wrap">
+      <canvas id="cvRight" width="420" height="330" class="panel-canvas"></canvas>
+      <div class="cv-math-layer" aria-hidden="true">
+        <div style="position:absolute;left:72px;top:20px;font-size:8.5px;color:rgba(0,100,60,0.85);">\(k_i/d_i=1\)（全邻居保留）</div>
+        <div class="cv-r-callout" style="left:59px;top:80px;width:74px;height:40px;">
+          <span class="t" style="color:#1c4890;">外围低度节点</span>
+          <span class="b" style="color:#445566;">\(k_i/d_i\approx 0.80\text{–}1.00\)</span>
+          <span class="b" style="color:#445566;">几乎全部邻居保留</span>
+          <span class="b" style="color:#445566;">稀疏潜力冗余浪费</span>
+        </div>
+        <div class="cv-r-callout" style="left:300px;top:218px;width:102px;height:50px;">
+          <span class="t" style="color:#8a1010;">枢纽高度节点</span>
+          <span class="b" style="color:#552222;">\(k_i/d_i\approx 0.05\text{–}0.25\)</span>
+          <span class="b" style="color:#552222;">大量邻域信息被丢弃</span>
+          <span class="b" style="color:#552222;">相对损失约为低度节点</span>
+          <span class="b" style="color:#552222;">\(6\text{–}15\) 倍</span>
+        </div>
+        <div class="cv-r-callout" style="left:294px;top:30px;width:108px;height:36px;">
+          <span class="t" style="color:#6a4400;font-size:7.25px;line-height:1.15;">统一稀疏预算 \(\to\) 覆盖率系统性失衡</span>
+          <span class="b" style="color:#444;">相对覆盖率与节点度负相关</span>
+          <span class="b" style="color:#b87828;font-weight:700;">Pearson \(\rho\approx -0.78\)</span>
+        </div>
+        <div class="cv-math-x-label">节点度数 \(d_i\)（对数刻度）</div>
+        <div class="cv-math-y-label"><div class="cv-math-y-label-inner">相对覆盖率 \(k_i/d_i\)</div></div>
+        <div style="position:absolute;left:77px;top:203px;font-size:9.5px;color:#333;">低度节点（\(d&lt;10\)）</div>
+        <div style="position:absolute;left:77px;top:215px;font-size:9.5px;color:#333;">中度节点（\(10\le d\le 40\)）</div>
+        <div style="position:absolute;left:77px;top:227px;font-size:9.5px;color:#333;">高度节点（\(d&gt;40\)）</div>
+        <div style="position:absolute;left:77px;top:239px;font-size:9.5px;color:#333;">覆盖率趋势（Pearson 拟合）</div>
+      </div>
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- 底部注释 -->
+  <div class="note-bar">
+    <div style="flex:1;">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div class="note-item">
+          <div class="note-dot" style="background:#c04040;border:1.5px solid #8a2020;"></div>
+          <span><b>枢纽节点</b>（\(d_i{\gg}1\)）：统一稀疏预算规则下 \(k_i\) 相对较小，相对覆盖率 \(k_i/d_i\) 极低，大量关键邻域信息被丢弃</span>
+        </div>
+        <div class="note-item">
+          <div class="note-dot" style="background:#6090c8;border:1.5px solid #3a60a0;"></div>
+          <span><b>外围节点</b>（\(d_i{\approx}2{-}4\)）：相同全局规则下 \(k_i{\geq}d_i\)，相对覆盖率趋近 100%，稀疏潜力冗余浪费</span>
+        </div>
+        <div class="note-item">
+          <div class="note-dot" style="background:#0a7060;border:1.5px solid #065048;"></div>
+          <span><b>关键发现</b>：\(k_i/d_i\) 与 \(d_i\) 呈显著负相关（\(\rho{\approx}{-}0.78\)），说明统一稀疏预算造成结构性覆盖率失衡</span>
+        </div>
+      </div>
+      <div class="note-section">
+        数据说明：\(k_i{:=}\|\theta_i\|_0\) 为 SDGNN 在统一全局稀疏预算规则下各节点学得的实际非零权重数；相对覆盖率定义为 \(k_i/d_i\)，其中 \(d_i\) 为节点 \(i\) 的度数。
+        在 \(\texttt{max_iter}\)、\(\mathcal{N}_L(i)\)、\(\tilde{\Phi}\)、\(h_i^*\) 相对固定的对比口径下，本图突出统一预算所导致的 \(k_i/d_i\) 随度数分化；一般情形下 \(k_i\) 仍由 \(\tau(i)\) 与上述因素共同决定。
+        合成图采用 Barabási–Albert 模型；统计口径为 10 次随机种子均值。覆盖率失衡验证“统一稀疏预算对不同拓扑角色节点产生截然不同的稀疏化效应”。
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function setupFigCanvas(cv, cssW, cssH){
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  cv.style.width = cssW + 'px';
+  cv.style.height = cssH + 'px';
+  cv.width = Math.round(cssW * dpr);
+  cv.height = Math.round(cssH * dpr);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (ctx.imageSmoothingEnabled !== undefined) ctx.imageSmoothingEnabled = true;
+  if (ctx.imageSmoothingQuality !== undefined) ctx.imageSmoothingQuality = 'high';
+  return { ctx, W: cssW, H: cssH, dpr };
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+
+/* ══════════════════════════════════════════════
+   左图：局部拓扑示意（展示 k_i/d_i 差异，不画固定预算圆）
+══════════════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('cvLeft');
+  const { ctx, W, H } = setupFigCanvas(cv, 420, 330);
+
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,W,H);
+
+  const rng = (()=>{let s=42;return()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;};})();
+
+  // ── 枢纽节点（Hub，左半区）
+  const hub = {x:148, y:175};
+  const hubR = 18;
+  // Hub 有36条边，选中其中约4条（k_i/d_i ≈ 11%）
+  const hubNeighbors = [];
+  for(let i=0;i<36;i++){
+    const ang = (i/36)*Math.PI*2;
+    const dist = 68 + rng()*36;
+    const selected = i < 4; // 仅4条被选中
+    hubNeighbors.push({
+      x: hub.x + Math.cos(ang)*dist,
+      y: hub.y + Math.sin(ang)*dist,
+      selected
+    });
+  }
+
+  // ── 外围小节点（Peripheral，右半区）
+  const peri = {x:318, y:175};
+  const periR = 10;
+  // Peripheral 有3条边，全部选中（k_i/d_i = 100%，冗余）
+  const periNeighbors = [];
+  const periAngles = [-Math.PI*0.3, Math.PI*0.15, Math.PI*0.6];
+  periAngles.forEach((ang, i)=>{
+    const dist = 52 + rng()*16;
+    periNeighbors.push({
+      x: peri.x + Math.cos(ang)*dist,
+      y: peri.y + Math.sin(ang)*dist,
+      selected: true
+    });
+  });
+
+  // 中间分割线（虚线）
+  ctx.save();
+  ctx.setLineDash([4,4]);
+  ctx.strokeStyle='#d0daea';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(235,16);ctx.lineTo(235,320);ctx.stroke();
+  ctx.restore();
+
+  // ── Hub：先画截断边（灰色虚线）
+  ctx.save();
+  ctx.setLineDash([2,2]);
+  ctx.strokeStyle='#c0c8d0';ctx.lineWidth=0.7;
+  hubNeighbors.filter(n=>!n.selected).forEach(n=>{
+    ctx.beginPath();ctx.moveTo(hub.x,hub.y);ctx.lineTo(n.x,n.y);ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── Hub：画选中边（蓝色实线，加粗）
+  ctx.save();
+  ctx.strokeStyle='#1c4890';ctx.lineWidth=1.6;
+  hubNeighbors.filter(n=>n.selected).forEach(n=>{
+    ctx.beginPath();ctx.moveTo(hub.x,hub.y);ctx.lineTo(n.x,n.y);ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── Hub：邻居节点
+  hubNeighbors.forEach(n=>{
+    ctx.beginPath();ctx.arc(n.x,n.y,n.selected?5:3.5,0,Math.PI*2);
+    if(n.selected){
+      ctx.fillStyle='#8ab0d8';ctx.fill();
+      ctx.strokeStyle='#3a70a8';ctx.lineWidth=0.8;ctx.stroke();
+    } else {
+      ctx.fillStyle='#e0e4ea';ctx.fill();
+      ctx.strokeStyle='#a0a8b4';ctx.lineWidth=0.5;ctx.stroke();
+    }
+  });
+
+  // ── Hub 节点本体
+  const grad1 = ctx.createRadialGradient(hub.x-4,hub.y-4,2,hub.x,hub.y,hubR);
+  grad1.addColorStop(0,'#e84040');grad1.addColorStop(1,'#9a1010');
+  ctx.beginPath();ctx.arc(hub.x,hub.y,hubR,0,Math.PI*2);
+  ctx.fillStyle=grad1;ctx.fill();
+  ctx.strokeStyle='#6a0808';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Hub',hub.x,hub.y-3);
+
+  // ── Hub 标注框（公式由 HTML 覆盖层 MathJax 渲染）
+  ctx.save();
+  const hbx=58, hby=264;
+  ctx.fillStyle='rgba(252,242,242,0.95)';
+  roundRect(ctx,hbx,hby,148,48,3);ctx.fill();
+  ctx.strokeStyle='#c04040';ctx.lineWidth=0.8;
+  roundRect(ctx,hbx,hby,148,48,3);ctx.stroke();
+  ctx.restore();
+
+  // ── Peripheral：边（全部选中，橙色，冗余标记）
+  ctx.save();
+  ctx.strokeStyle='#c07020';ctx.lineWidth=1.6;
+  periNeighbors.forEach(n=>{
+    ctx.beginPath();ctx.moveTo(peri.x,peri.y);ctx.lineTo(n.x,n.y);ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── Peripheral 邻居节点
+  periNeighbors.forEach(n=>{
+    ctx.beginPath();ctx.arc(n.x,n.y,5,0,Math.PI*2);
+    ctx.fillStyle='#f0d090';ctx.fill();
+    ctx.strokeStyle='#c07020';ctx.lineWidth=0.8;ctx.stroke();
+  });
+
+  // ── Peripheral 节点本体
+  const grad2 = ctx.createRadialGradient(peri.x-3,peri.y-3,1,peri.x,peri.y,periR);
+  grad2.addColorStop(0,'#5090d0');grad2.addColorStop(1,'#1c4890');
+  ctx.beginPath();ctx.arc(peri.x,peri.y,periR,0,Math.PI*2);
+  ctx.fillStyle=grad2;ctx.fill();
+  ctx.strokeStyle='#0c2860';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 7px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Peri',peri.x,peri.y-2);
+
+  // ── Peripheral 标注框（公式由 HTML 覆盖层）
+  ctx.save();
+  const pbx=266, pby=264;
+  ctx.fillStyle='rgba(255,248,235,0.95)';
+  roundRect(ctx,pbx,pby,142,48,3);ctx.fill();
+  ctx.strokeStyle='#c07020';ctx.lineWidth=0.8;
+  roundRect(ctx,pbx,pby,142,48,3);ctx.stroke();
+  ctx.restore();
+
+  // ── 同一控制强度标注（文字由 HTML）
+  ctx.save();
+  ctx.fillStyle='rgba(235,242,255,0.96)';
+  roundRect(ctx,8,6,404,28,3);ctx.fill();
+  ctx.strokeStyle='#9ab8d8';ctx.lineWidth=0.8;
+  roundRect(ctx,8,6,404,28,3);ctx.stroke();
+  ctx.restore();
+
+  // ── 图例线段（说明文字由 HTML）
+  ctx.save();
+  const lgX=8, lgY=36;
+  ctx.strokeStyle='#1c4890';ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(lgX,lgY+6);ctx.lineTo(lgX+18,lgY+6);ctx.stroke();
+  ctx.save();ctx.setLineDash([2,2]);
+  ctx.strokeStyle='#a0a8b4';ctx.lineWidth=0.7;
+  ctx.beginPath();ctx.moveTo(lgX,lgY+19);ctx.lineTo(lgX+18,lgY+19);ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle='#c07020';ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(lgX,lgY+32);ctx.lineTo(lgX+18,lgY+32);ctx.stroke();
+  ctx.restore();
+
+})();
+
+/* ══════════════════════════════════════════════
+   右图：相对覆盖率 k_i/d_i vs 节点度数（对数横轴）
+   口径：在 max_iter、N_L(i)、\tilde{\Phi}、h_i^* 相对固定的对比前提下，展示统一稀疏控制下
+   k_i/d_i 随度数的分化；一般情形下 k_i 仍由 τ(i) 与上述因素共同决定（与页面 <div class="fig"> 下 HTML 注释一致）。
+══════════════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('cvRight');
+  const { ctx, W, H } = setupFigCanvas(cv, 420, 330);
+
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,W,H);
+
+  const L=56, R=18, T=18, B=52;
+  const plotW = W-L-R, plotH = H-T-B;
+
+  const xMin=0, xMax=Math.log10(220);
+  const yMin=0, yMax=1.05;
+  const toX = d => L + (Math.log10(Math.max(d,1))-xMin)/(xMax-xMin)*plotW;
+  const toY = v => T+plotH - (v-yMin)/(yMax-yMin)*plotH;
+
+  // ── 生成模拟数据：k_i/d_i 随 d_i 增大而下降
+  const rng = (()=>{let s=137;return()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;};})();
+  const pts = [];
+
+  // 低度节点 d=1~9：k_i ≈ d_i（全部或接近全部选中），覆盖率 0.8~1.0
+  for(let i=0;i<80;i++){
+    const d = Math.max(1, Math.floor(1+rng()*8));
+    const cov = Math.min(1.0, 0.82 + rng()*0.16);
+    pts.push({d, cov, type:'low'});
+  }
+  // 中度节点 d=10~40：k_i 约为 d_i 的 30~70%，覆盖率中等
+  for(let i=0;i<90;i++){
+    const d = 10+Math.floor(rng()*31);
+    const base = 0.60 - (d-10)/30*0.30;
+    const cov = Math.max(0.12, base + (rng()-0.5)*0.12);
+    pts.push({d, cov, type:'mid'});
+  }
+  // 高度节点 d=41~200：k_i 相对 d_i 很小，覆盖率 0.05~0.25
+  for(let i=0;i<60;i++){
+    const d = 41+Math.floor(rng()*159);
+    const base = 0.22 - (Math.log10(d)-Math.log10(41))/(Math.log10(200)-Math.log10(41))*0.17;
+    const cov = Math.max(0.04, base + (rng()-0.5)*0.06);
+    pts.push({d, cov, type:'high'});
+  }
+
+  // ── 背景（低度区浅蓝，高度区浅红）
+  const dMidX = toX(15);
+  ctx.fillStyle='rgba(220,235,255,0.30)';
+  ctx.fillRect(L, T, dMidX-L, plotH);
+  ctx.fillStyle='rgba(255,225,225,0.22)';
+  ctx.fillRect(dMidX, T, L+plotW-dMidX, plotH);
+
+  // ── 参考线：y=1.0（相对覆盖率上限）
+  ctx.save();
+  ctx.setLineDash([6,4]);
+  ctx.strokeStyle='rgba(80,140,80,0.5)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(L,toY(1.0));ctx.lineTo(L+plotW,toY(1.0));ctx.stroke();
+  ctx.restore();
+
+  // ── 网格线
+  ctx.save();
+  ctx.strokeStyle='#dde6f0';ctx.lineWidth=0.6;
+  [0.2,0.4,0.6,0.8].forEach(v=>{
+    const y=toY(v);
+    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+plotW,y);ctx.stroke();
+  });
+  [1,2,5,10,20,50,100,200].forEach(d=>{
+    const x=toX(d);
+    ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+plotH);ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── 散点
+  pts.forEach(p=>{
+    const x=toX(p.d), y=toY(p.cov);
+    ctx.beginPath();ctx.arc(x,y,2.8,0,Math.PI*2);
+    if(p.type==='low'){ctx.fillStyle='rgba(60,110,200,0.55)';}
+    else if(p.type==='mid'){ctx.fillStyle='rgba(100,160,100,0.55)';}
+    else{ctx.fillStyle='rgba(200,50,50,0.60)';}
+    ctx.fill();
+  });
+
+  // ── 趋势线（负相关）
+  ctx.save();
+  ctx.setLineDash([4,3]);
+  ctx.strokeStyle='rgba(150,50,50,0.75)';ctx.lineWidth=1.5;
+  ctx.beginPath();
+  const trendPts=[{d:1.2,c:0.96},{d:3,c:0.90},{d:8,c:0.75},{d:15,c:0.52},{d:30,c:0.35},{d:60,c:0.20},{d:120,c:0.12},{d:200,c:0.08}];
+  trendPts.forEach((tp,i)=>{
+    const x=toX(tp.d),y=toY(tp.c);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.restore();
+
+  // ── 坐标轴外框
+  ctx.save();
+  ctx.strokeStyle='#8898aa';ctx.lineWidth=1.2;
+  ctx.strokeRect(L,T,plotW,plotH);
+  ctx.restore();
+
+  // ── X轴刻度
+  ctx.save();
+  ctx.fillStyle='#445566';ctx.font='8px Arial';ctx.textAlign='center';ctx.textBaseline='top';
+  [1,2,5,10,20,50,100,200].forEach(d=>{
+    const x=toX(d);
+    ctx.beginPath();ctx.moveTo(x,T+plotH);ctx.lineTo(x,T+plotH+4);ctx.strokeStyle='#8898aa';ctx.lineWidth=0.8;ctx.stroke();
+    ctx.fillText(d,x,T+plotH+6);
+  });
+  ctx.restore();
+
+  // ── Y轴刻度
+  ctx.save();
+  ctx.fillStyle='#445566';ctx.font='8px Arial';ctx.textAlign='right';ctx.textBaseline='middle';
+  [0,0.2,0.4,0.6,0.8,1.0].forEach(v=>{
+    const y=toY(v);
+    ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L-4,y);ctx.strokeStyle='#8898aa';ctx.lineWidth=0.8;ctx.stroke();
+    ctx.fillText(v.toFixed(1),L-6,y);
+  });
+  ctx.restore();
+
+  // ── 图例（色点与趋势线；文字由 HTML；与原「外围低度节点」框位置互换）
+  ctx.save();
+  const lgX=L+8, lgY=T+plotH-78;
+  [
+    {color:'rgba(60,110,200,0.7)'},
+    {color:'rgba(100,160,100,0.7)'},
+    {color:'rgba(200,50,50,0.7)'},
+  ].forEach((item,i)=>{
+    ctx.beginPath();ctx.arc(lgX+5,lgY+12*i+5,4,0,Math.PI*2);ctx.fillStyle=item.color;ctx.fill();
+  });
+  ctx.save();
+  ctx.setLineDash([4,3]);
+  ctx.strokeStyle='rgba(150,50,50,0.8)';ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(lgX+1,lgY+41);ctx.lineTo(lgX+9,lgY+41);ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+
+  // ── 三处说明背景（最后绘制，保证与 HTML 覆盖层尺寸一致且不被盖住）
+  ctx.save();
+  ctx.fillStyle='rgba(230,240,255,0.92)';
+  roundRect(ctx,L+3,T+62,74,40,3);ctx.fill();
+  ctx.strokeStyle='#6090c8';ctx.lineWidth=0.6;roundRect(ctx,L+3,T+62,74,40,3);ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle='rgba(255,234,234,0.92)';
+  roundRect(ctx,L+plotW-102,T+plotH-60,102,50,3);ctx.fill();
+  ctx.strokeStyle='#c06060';ctx.lineWidth=0.7;roundRect(ctx,L+plotW-102,T+plotH-60,102,50,3);ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle='rgba(250,248,240,0.97)';
+  roundRect(ctx,L+plotW-108,T+12,108,36,3);ctx.fill();
+  ctx.strokeStyle='#b87828';ctx.lineWidth=0.8;roundRect(ctx,L+plotW-108,T+12,108,36,3);ctx.stroke();
+  ctx.restore();
+
+})();
+
+window.addEventListener('load',function(){
+  if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetPromise();}
+});
+</script>
+</body>
+</html>

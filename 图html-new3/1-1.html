@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>图1.1 示意图</title>
+<script>
+MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},options:{skipHtmlTags:['script','noscript','style','textarea']},startup:{typeset:false}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:transparent;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:10px;
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:11px;
+}
+.fig{width:800px;}
+
+/* ── 主体框 ── */
+.main{
+  border:1px solid #c8d4e6;
+  border-radius:6px;
+  background:#f8fbff;
+  padding:10px;
+  display:flex;flex-direction:column;gap:8px;
+}
+
+/* ── 问题标语条 ── */
+.problem-bar{
+  background:#fef6ec;border:1px solid #e8d0a4;border-radius:4px;
+  padding:5px 12px;font-size:10.5px;color:#6a4010;text-align:center;line-height:1.6;
+}
+.problem-bar b{color:#a06010;}
+
+/* ── 左右双栏 ── */
+.dual{display:flex;gap:0;align-items:stretch;}
+
+/* ── 单侧面板 ── */
+.panel{flex:1;display:flex;flex-direction:column;gap:0;}
+
+.panel-hdr{
+  border-radius:4px 4px 0 0;
+  color:#fff;font-size:11px;font-weight:700;
+  text-align:center;padding:5px 8px;letter-spacing:.03em;line-height:1.4;
+}
+.panel-body{
+  flex:1;display:flex;flex-direction:column;gap:5px;
+  border:1.2px solid;border-top:none;border-radius:0 0 4px 4px;
+  padding:8px;background:#fff;
+}
+
+/* SDGNN 侧（左） */
+.sdgnn-hdr{background:#7a2020;}
+.sdgnn-border{border-color:#c88080;}
+
+/* MSAS 侧（右） */
+.msas-hdr{background:#0a5848;}
+.msas-border{border-color:#60b09a;}
+
+/* ── 中间分隔 ── */
+.divider{
+  width:60px;flex-shrink:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:4px;padding:4px 2px;
+}
+.div-arrow{font-size:22px;color:#8090a8;line-height:1;}
+.div-label{
+  writing-mode:vertical-rl;text-orientation:mixed;
+  font-size:9.5px;color:#4a6080;font-weight:700;
+  background:#e8eef8;border:0.6px solid #b8cce0;border-radius:3px;
+  padding:8px 3px;letter-spacing:.08em;text-align:center;
+}
+
+/* ── 节点场景画布区 ── */
+.scene-wrap{
+  display:flex;gap:6px;justify-content:center;
+  padding:4px 0;
+}
+canvas{
+  border-radius:4px;
+  display:block;
+  /* 由脚本按 devicePixelRatio 设置实际像素，避免高 DPI 下模糊 */
+}
+.scene-canvas-wrap{
+  position:relative;
+  line-height:0;
+}
+.scene-math{
+  position:absolute;
+  left:0;right:0;
+  display:flex;justify-content:center;align-items:center;
+  pointer-events:none;
+}
+.scene-math .scene-math-box{
+  padding:0;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+}
+.scene-math mjx-container{
+  font-size:.82em!important;
+}
+.scene-math mjx-container[display="true"]{
+  margin:0!important;
+}
+.scene-math.sdgnn-hub,
+.scene-math.sdgnn-leaf{
+  color:#7a2020;
+}
+.scene-math.msas-hub,
+.scene-math.msas-leaf{
+  color:#0a5848;
+}
+.scene-math.sdgnn-hub{left:68px;right:auto;top:98px;width:56px;}
+.scene-math.sdgnn-leaf{left:62px;right:auto;top:98px;width:60px;}
+.scene-math.msas-hub{left:77px;right:auto;top:106px;width:42px;}
+.scene-math.msas-leaf{left:72px;right:auto;top:80px;width:42px;}
+
+/* ── 场景标签 ── */
+.scene-label{
+  font-size:9.5px;font-weight:700;text-align:center;
+  padding:2px 0 1px;
+}
+.scene-label.sdgnn{color:#7a2020;}
+.scene-label.msas{color:#0a5848;}
+
+/* ── 注释行 ── */
+.anno{
+  font-size:9.5px;line-height:1.45;padding:3px 7px;border-radius:3px;
+  border-left:2.5px solid;margin-top:1px;
+}
+.anno-red{background:#fff5f5;border-color:#c04040;color:#7a1818;}
+.anno-orange{background:#fff9f0;border-color:#e08030;color:#7a4010;}
+.anno-teal{background:#f0faf7;border-color:#30a888;color:#0a5040;}
+.anno-teal2{background:#e8f8f3;border-color:#20a060;color:#0a4838;}
+
+/* ── 底部结论框 ── */
+.conclusion{
+  border-radius:3px;padding:5px 9px;
+  font-size:10px;line-height:1.55;font-weight:600;text-align:center;
+  margin-top:12px;
+}
+.conclusion.sdgnn{background:#fff0f0;border:0.8px solid #d09090;color:#6a1c1c;}
+.conclusion.msas{background:#edf8f4;border:0.8px solid #70c0a0;color:#0a4838;}
+
+/* ── 底部对比条 ── */
+.compare-bar{
+  background:#1c3a6e;color:#c8daf0;
+  border-radius:4px;padding:5px 0;
+  display:flex;
+}
+.cmp-sec{
+  flex:1;text-align:center;padding:3px 8px;
+  border-right:1px solid #3a5888;font-size:10px;line-height:1.55;
+}
+.cmp-sec:last-child{border-right:none;}
+.cmp-hdr{color:#a8ccf0;font-weight:700;font-size:9.5px;margin-bottom:1px;}
+
+/* ── 公式行 ── */
+.fml{
+  background:#f2f6fe;border:0.5px solid #b8cce4;border-radius:3px;
+  padding:3px 8px;font-size:10.5px;color:#1a1a1a;text-align:center;
+  line-height:1.7;margin:2px 0;
+}
+.fml.teal{background:#eef8f4;border-color:#90d0b8;}
+.fml .eqn-title{
+  font-size:9.5px;font-weight:700;letter-spacing:.02em;
+  color:#314a72;line-height:1.45;
+}
+.fml.teal .eqn-title{color:#0a5c48;}
+.fml .eqn-note{
+  font-size:9.3px;color:#4c5f7f;line-height:1.5;
+}
+.fml.teal .eqn-note{color:#24594a;}
+.fml mjx-container[display="true"]{
+  margin:.2em 0!important;
+}
+.eqn-block{
+  display:block;
+  margin:1px 0 2px;
+}
+
+/* ── 小标签 ── */
+.stag{display:inline-block;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700;border:0.5px solid;white-space:nowrap;}
+.stag-red{background:#fff0f0;color:#9a2020;border-color:#d09090;}
+.stag-orange{background:#fff7ee;color:#9a5010;border-color:#e0b080;}
+.stag-teal{background:#eaf7f3;color:#0a5840;border-color:#70c0a0;}
+.stag-blue{background:#eaf0fe;color:#1c4890;border-color:#90b8e8;}
+</style>
+</head>
+<body>
+<div class="fig">
+
+<div class="main">
+
+  <!-- ══ 问题引导条 ══ -->
+  <div class="problem-bar">
+    <b>核心矛盾：</b>全局统一正则系数 \(\lambda_1\) 对所有节点施加相同稀疏压力，
+    而真实图中枢纽节点与外围节点的拓扑异质性要求<b>差异化</b>的稀疏预算分配
+  </div>
+
+  <!-- ══ 左右双栏主体 ══ -->
+  <div class="dual">
+
+    <!-- ──────────── 左侧：SDGNN ──────────── -->
+    <div class="panel">
+      <div class="panel-hdr sdgnn-hdr">SDGNN：全局统一稀疏控制强度 \(\lambda_1\)</div>
+      <div class="panel-body sdgnn-border">
+
+        <div class="fml">
+          <div class="eqn-title">统一稀疏控制关系</div>
+          <span class="eqn-block">$$\lambda_1=\mathrm{const}, \qquad k_i := \|\theta_i\|_0$$</span>
+          <div class="eqn-note">
+            LARS 求解器对所有节点施加同一稀疏压力，实际稀疏结果随拓扑异质性显著分化
+          </div>
+        </div>
+
+        <!-- 场景行：两节点示意 -->
+        <div style="display:flex;gap:6px;">
+          <!-- 枢纽节点 -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <div class="scene-label sdgnn">枢纽节点 &nbsp;\(d_i = 80\)</div>
+            <div class="scene-canvas-wrap">
+              <canvas id="c-hub-sdgnn" width="160" height="130"></canvas>
+              <div class="scene-math sdgnn-hub"><div class="scene-math-box">$$\frac{k_i}{d_i}\ll 1$$</div></div>
+            </div>
+            <div class="anno anno-red">
+              <span class="stag stag-red">相对覆盖率 \(k_i/d_i\) 极低</span><br>
+              同一稀疏压力下枢纽节点 \(k_i\) 相对度数 \(d_i\) 极小，大量关键邻域信息被丢弃，枢纽影响力被严重低估
+            </div>
+          </div>
+          <!-- 外围节点 -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <div class="scene-label sdgnn">外围节点 &nbsp;\(d_i = 3\)</div>
+            <div class="scene-canvas-wrap">
+              <canvas id="c-leaf-sdgnn" width="160" height="130"></canvas>
+              <div class="scene-math sdgnn-leaf"><div class="scene-math-box">$$\frac{k_i}{d_i}\approx 1$$</div></div>
+            </div>
+            <div class="anno anno-orange">
+              <span class="stag stag-orange">相对覆盖率 \(k_i/d_i \approx 1\)（趋近全保留）</span><br>
+              同一稀疏压力下外围节点 \(k_i \geq d_i\)，稀疏化收益大幅削弱，计算资源浪费于冗余连接
+            </div>
+          </div>
+        </div>
+
+        <div class="conclusion sdgnn">
+          同一 \(\lambda_1\) 无法感知节点拓扑异质性——枢纽节点欠稀疏化、外围节点过稀疏化的失配同时存在
+        </div>
+      </div>
+    </div>
+
+    <!-- ──────────── 中间分隔 ──────────── -->
+    <div class="divider">
+      <div class="div-arrow">⟵</div>
+      <div class="div-label">本&ensp;文&ensp;核&ensp;心&ensp;改&ensp;进&ensp;方&ensp;向</div>
+      <div class="div-arrow">⟶</div>
+    </div>
+
+    <!-- ──────────── 右侧：MSAS-GNN ──────────── -->
+    <div class="panel">
+      <div class="panel-hdr msas-hdr">MSAS-GNN：谱驱动差异化预算分配</div>
+      <div class="panel-body msas-border">
+
+        <div class="fml teal">
+          <div class="eqn-title">节点级自适应映射</div>
+          <span class="eqn-block">$$\tau(i)=f\!\left(E_{\text{spectral}}(i)\right)$$</span>
+          <span class="eqn-block">$$E_{\text{spectral}}(i)\uparrow \Rightarrow \tau(i)\downarrow,\qquad E_{\text{spectral}}(i)\downarrow \Rightarrow \tau(i)\uparrow$$</span>
+          <div class="eqn-note">
+            谱能量高的节点采用更保守的稀疏化，谱能量低的节点采用更激进的稀疏化
+          </div>
+        </div>
+
+        <!-- 场景行：两节点示意 -->
+        <div style="display:flex;gap:6px;">
+          <!-- 枢纽节点 -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <div class="scene-label msas">枢纽节点 &nbsp;\(d_i = 80\)</div>
+            <div class="scene-canvas-wrap">
+              <canvas id="c-hub-msas" width="160" height="130"></canvas>
+              <div class="scene-math msas-hub"><div class="scene-math-box">$$\tau(i)\downarrow$$</div></div>
+            </div>
+            <div class="anno anno-teal">
+              <span class="stag stag-teal">\(\tau(i)\downarrow\)，保守稀疏化</span><br>
+              覆盖圈自适应扩大，保留更多关键邻居，枢纽影响力在稀疏表示中得到充分保持
+            </div>
+          </div>
+          <!-- 外围节点 -->
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <div class="scene-label msas">外围节点 &nbsp;\(d_i = 3\)</div>
+            <div class="scene-canvas-wrap">
+              <canvas id="c-leaf-msas" width="160" height="130"></canvas>
+              <div class="scene-math msas-leaf"><div class="scene-math-box">$$\tau(i)\uparrow$$</div></div>
+            </div>
+            <div class="anno anno-teal2">
+              <span class="stag stag-teal">\(\tau(i)\uparrow\)，激进稀疏化</span><br>
+              覆盖圈精准收窄，有效压缩冗余连接，推理代价集中于真正有用的局部结构
+            </div>
+          </div>
+        </div>
+
+        <div class="conclusion msas">
+          节点级 \(\tau(i)\) 由等权谱能量 \(E_{\text{spectral}}(i)\) 驱动差异化分配——同配图与异配图均具备可追溯的设计依据
+        </div>
+      </div>
+    </div>
+
+  </div><!-- dual end -->
+
+  <!-- ══ 关键机制说明行 ══ -->
+  <div style="display:flex;gap:6px;">
+    <div style="flex:1;background:#fef4f4;border:0.7px solid #d8b0b0;border-radius:3px;padding:5px 9px;">
+      <div style="font-size:9.5px;font-weight:700;color:#8a1818;margin-bottom:2px;">▌ SDGNN 失配根源</div>
+      <div style="font-size:9.5px;color:#555;line-height:1.5;">
+        <div style="margin:1px 0 2px;text-align:center;">$$\hat{H}=\Theta^\top\tilde{\Phi}$$</div>
+        \(\Theta\) 由全局 Lasso 求解，正则系数 \(\lambda_1\) 为标量常数，所有节点接受相同稀疏压力，
+        忽略了度分布偏斜、同/异配比例差异等拓扑信息。
+      </div>
+    </div>
+    <div style="flex:1;background:#eef8f3;border:0.7px solid #80c8a8;border-radius:3px;padding:5px 9px;">
+      <div style="font-size:9.5px;font-weight:700;color:#0a5040;margin-bottom:2px;">▌ MSAS-GNN 改进路径</div>
+      <div style="font-size:9.5px;color:#555;line-height:1.5;">
+        <div style="margin:1px 0 2px;text-align:center;">$$E_{\text{spectral}}(i)\rightarrow \tau(i)\rightarrow \text{差异化预算}$$</div>
+        从图谱理论出发，提取节点谱能量 \(E_{\text{spectral}}(i)\)（等权实例化）、局部图熵与节点中心性等可计算指标，
+        建立“指标 → 自适应参数 \(\tau(i)\) → 差异化预算”的三段式推导链（详见第 3–4 章）。
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 底部对比结论条 ══ -->
+  <div class="compare-bar">
+    <div class="cmp-sec">
+      <div class="cmp-hdr">共同推理口径</div>
+      \(\mathcal{O}(n\bar{k}d)\)，\(\bar{k}\ll\bar{d}^L\)<br>
+      稀疏优势完整保留
+    </div>
+    <div class="cmp-sec">
+      <div class="cmp-hdr">SDGNN 参数粒度</div>
+      全局标量 \(\lambda_1\)<br>
+      节点级差异完全被屏蔽
+    </div>
+    <div class="cmp-sec">
+      <div class="cmp-hdr">MSAS-GNN 参数粒度</div>
+      节点级向量 \(\{\tau(i)\}_{i=1}^n\)<br>
+      谱能量一对一驱动
+    </div>
+    <div class="cmp-sec">
+      <div class="cmp-hdr">设计依据</div>
+      启发式调参（SDGNN）<br>
+      <span style="color:#7ad8b8">→</span> 谱论可追溯（MSAS-GNN）
+    </div>
+  </div>
+
+  <!-- 图注 -->
+  <div style="font-size:9px;color:#7a8898;text-align:center;line-height:1.5;padding-top:1px;">
+    注：本图为概念示意图，覆盖圆半径与节点大小均为示意性比例，不出现具体公式编号与算法步骤。详细机制见第 3–4 章。
+  </div>
+
+</div><!-- main end -->
+</div><!-- fig end -->
+
+<script>
+/* ================================================================
+   Canvas 绘制：节点场景
+   绘制函数签名：drawScene(canvasId, mode, nodeType)
+     mode     : 'sdgnn' | 'msas'
+     nodeType : 'hub' | 'leaf'
+================================================================ */
+/** 逻辑尺寸（CSS 像素）；backing store = 逻辑尺寸 × DPR，保证高 DPI 清晰 */
+const SCENE_LOGICAL_W = 160;
+const SCENE_LOGICAL_H = 130;
+
+function prepareHiDPICanvas(canvas) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.style.width = SCENE_LOGICAL_W + 'px';
+  canvas.style.height = SCENE_LOGICAL_H + 'px';
+  canvas.width = Math.round(SCENE_LOGICAL_W * dpr);
+  canvas.height = Math.round(SCENE_LOGICAL_H * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (ctx.imageSmoothingEnabled !== undefined) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+  }
+  return ctx;
+}
+
+function drawScene(canvasId, mode, nodeType) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = prepareHiDPICanvas(canvas);
+  const W = SCENE_LOGICAL_W, H = SCENE_LOGICAL_H;
+  ctx.clearRect(0, 0, W, H);
+
+  // ── 背景 ──
+  ctx.fillStyle = mode === 'sdgnn' ? '#fff8f8' : '#f4fbf8';
+  roundRect(ctx, 0, 0, W, H, 4);
+  ctx.fill();
+
+  // ── 颜色方案 ──
+  const isHub  = nodeType === 'hub';
+  const isMSAS = mode === 'msas';
+
+  const centerX = W / 2;
+  const centerY = H / 2 - 10;
+
+  // 邻居节点分布
+  const hubNeighbors  = makeNeighbors(centerX, centerY, isHub ? 26 : 38, isHub ? 18 : 8, isHub ? 14 : 3);
+  const leafNeighbors = isHub ? makeNeighbors(centerX, centerY, 26, 18, 14) : makeNeighbors(centerX, centerY, 38, 8, 3);
+  const neighbors = isHub ? hubNeighbors : leafNeighbors;
+
+  // 覆盖圆半径
+  let coverR;
+  if (isHub) {
+    coverR = isMSAS ? 42 : 24; // MSAS 枢纽：扩大；SDGNN 枢纽：固定偏小
+  } else {
+    coverR = isMSAS ? 16 : 24; // MSAS 外围：缩小；SDGNN 外围：固定偏大
+  }
+
+  // 绘制边（先画）
+  neighbors.forEach(nb => {
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY);
+    ctx.lineTo(nb.x, nb.y);
+    const inCover = dist(centerX, centerY, nb.x, nb.y) <= coverR;
+    if (inCover) {
+      ctx.strokeStyle = isMSAS ? 'rgba(30,150,110,0.4)' : 'rgba(160,60,60,0.32)';
+      ctx.lineWidth = 1.35;
+    } else {
+      ctx.strokeStyle = 'rgba(160,160,170,0.32)';
+      ctx.lineWidth = 1;
+    }
+    ctx.stroke();
+  });
+
+  // 绘制覆盖圆
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, coverR, 0, Math.PI * 2);
+  if (isMSAS) {
+    ctx.strokeStyle = isHub ? '#1a9870' : '#0a7850';
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 1.65;
+  } else {
+    ctx.strokeStyle = isHub ? '#cc3030' : '#e07030';
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 1.65;
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // 覆盖圆填色
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, coverR, 0, Math.PI * 2);
+  ctx.fillStyle = isMSAS
+    ? (isHub ? 'rgba(20,180,130,0.06)' : 'rgba(10,150,100,0.06)')
+    : (isHub ? 'rgba(200,50,50,0.05)'  : 'rgba(220,120,30,0.05)');
+  ctx.fill();
+
+  // 绘制邻居节点
+  neighbors.forEach(nb => {
+    const inCover = dist(centerX, centerY, nb.x, nb.y) <= coverR;
+    ctx.beginPath();
+    ctx.arc(nb.x, nb.y, nb.r, 0, Math.PI * 2);
+    if (inCover) {
+      ctx.fillStyle = isMSAS ? '#6ac8a8' : (isHub ? '#e09090' : '#e0a878');
+      ctx.strokeStyle = isMSAS ? '#1a9870' : (isHub ? '#c04040' : '#c07030');
+    } else {
+      ctx.fillStyle = '#d4d8e0';
+      ctx.strokeStyle = '#a8adb8';
+    }
+    ctx.lineWidth = 1;
+    ctx.fill();
+    ctx.stroke();
+  });
+
+  // 绘制中心节点
+  const mainR = isHub ? 14 : 9;
+  // 光晕
+  const grad = ctx.createRadialGradient(centerX, centerY, mainR * 0.3, centerX, centerY, mainR * 1.8);
+  if (isHub) {
+    grad.addColorStop(0, isMSAS ? 'rgba(10,160,110,0.18)' : 'rgba(190,40,40,0.18)');
+    grad.addColorStop(1, 'transparent');
+  } else {
+    grad.addColorStop(0, isMSAS ? 'rgba(10,120,90,0.12)' : 'rgba(220,110,30,0.12)');
+    grad.addColorStop(1, 'transparent');
+  }
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, mainR * 1.8, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, mainR, 0, Math.PI * 2);
+  if (isHub) {
+    ctx.fillStyle = isMSAS ? '#0a9070' : '#c03030';
+    ctx.strokeStyle = isMSAS ? '#066050' : '#8a1818';
+  } else {
+    ctx.fillStyle = isMSAS ? '#208060' : '#c07020';
+    ctx.strokeStyle = isMSAS ? '#0a5038' : '#8a4810';
+  }
+  ctx.lineWidth = 1.65;
+  ctx.fill();
+  ctx.stroke();
+
+  // 中心节点文字（略低于圆心，避免与汇聚边线抢读）
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${isHub ? 10 : 9}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const labelHubLeafY = centerY + (isHub ? 4 : 3);
+  ctx.fillText(isHub ? 'Hub' : 'Leaf', centerX, labelHubLeafY);
+
+  // ── 底部标注：置于覆盖圆之下，避免与圆内节点/边重叠 ──
+  const lineY = centerY + coverR + 7;
+  const endX  = centerX + coverR;
+  ctx.beginPath();
+  ctx.moveTo(centerX, lineY);
+  ctx.lineTo(endX, lineY);
+  ctx.strokeStyle = isMSAS ? '#1a9870' : (isHub ? '#c04040' : '#e07030');
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 2]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // 小端头
+  [centerX, endX].forEach(x => {
+    ctx.beginPath();
+    ctx.moveTo(x, lineY - 3);
+    ctx.lineTo(x, lineY + 3);
+    ctx.strokeStyle = isMSAS ? '#1a9870' : (isHub ? '#c04040' : '#e07030');
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+}
+
+function dist(x1, y1, x2, y2) {
+  return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+}
+
+function makeNeighbors(cx, cy, minR, spread, count) {
+  // 确定性伪随机，保证每次渲染一致
+  const seed = cx * 100 + cy + count;
+  const rng = seededRNG(seed);
+  const pts = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + rng() * 0.6 - 0.3;
+    const r = minR + rng() * spread;
+    pts.push({
+      x: cx + Math.cos(angle) * r,
+      y: cy + Math.sin(angle) * r,
+      r: 3 + rng() * 3
+    });
+  }
+  return pts;
+}
+
+function seededRNG(seed) {
+  let s = seed % 2147483647;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+window.addEventListener('load', function() {
+  drawScene('c-hub-sdgnn',  'sdgnn', 'hub');
+  drawScene('c-leaf-sdgnn', 'sdgnn', 'leaf');
+  drawScene('c-hub-msas',   'msas',  'hub');
+  drawScene('c-leaf-msas',  'msas',  'leaf');
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise();
+  }
+});
+</script>
+</body>
+</html>

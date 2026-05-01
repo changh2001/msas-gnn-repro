@@ -1,0 +1,5 @@
+\contentsline {algorithm}{\numberline {3.1}{\ignorespaces 图复杂度指标预处理（含谱估计、节点谱能量与局部图熵批量计算）}}{24}{algorithm.3.1}%
+\contentsline {algorithm}{\numberline {4.1}{\ignorespaces 节点级自适应正则系数批量计算流程}}{31}{algorithm.4.1}%
+\contentsline {algorithm}{\numberline {5.1}{\ignorespaces MSAS-GNN三维自适应稀疏分解主循环（完整交替优化版）}}{43}{algorithm.5.1}%
+\contentsline {algorithm}{\numberline {5.2}{\ignorespaces 推理期稀疏固化}}{44}{algorithm.5.2}%
+\contentsfinish 

@@ -1,0 +1,18 @@
+\contentsline {figure}{\numberline {1.1}{\ignorespaces SDGNN全局统一稀疏预算局限与MSAS-GNN谱驱动自适应改进示意图}}{1}{figure.caption.19}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces 本文技术路线与章节接口示意图}}{7}{figure.caption.20}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces 本章三条文献脉络与后续方法章节的对应关系}}{8}{figure.caption.21}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces 消息传递GNN感受野扩张与在线推理瓶颈示意图}}{10}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces 三大研究空白与本文方法链的对应关系图}}{14}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces 第3章整体流程图：从图输入到四类复杂度指标输出}}{16}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces SDGNN全局统一稀疏预算失效示意图}}{17}{figure.caption.27}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces 第4章三维自适应稀疏机制整体框架图}}{27}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces 节点级正则系数 $\mittau (i)$ 的三维自适应框架示意图}}{28}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces 层级维度——分层跳距预算分配示意图}}{32}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces 跳距预算衰减分配示意图（策略1 vs 策略2）}}{36}{figure.caption.38}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces 共享目标与残差级联两种分层 LARS 方案对比}}{42}{figure.caption.41}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces 复杂度分解与线性推理适用边界示意图}}{55}{figure.caption.42}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces 关键超参数敏感性分析（Cora）}}{66}{figure.caption.57}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces 节点级自适应稀疏参数$\mittau (i)$分布分析（Cora）}}{68}{figure.caption.62}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces t-SNE节点表示可视化对比（Cora，7类）}}{69}{figure.caption.63}%
+\contentsfinish 
+\contentsfinish 

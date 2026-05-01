@@ -1,0 +1,288 @@
+\begin{thebibliography}{42}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax\else
+  \urlstyle{same}\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \DeclareUrlCommand\doi{\urlstyle{rm}}
+  \def\eprint#1#2{#2}
+\else
+  \def\doi#1{\href{https://doi.org/#1}{\nolinkurl{#1}}}
+  \let\eprint\href
+\fi
+
+\bibitem[吴博\ 等(2022)吴博, 梁循, 张树森, and 徐睿]{JSJX202201003}
+吴博, 梁循, 张树森, 等.
+\newblock 图神经网络前沿进展与应用\allowbreak[J].
+\newblock 计算机学报, 2022, 45\allowbreak (01): 35-68.
+
+\bibitem[Hu et~al.(2025)Hu, Zeng, Zhang, Rumiantsev, Ma, Zhang, and Coates]{Hu2024SDGNN}
+Hu Y, Zeng M, Zhang G, et~al.
+\newblock Sparse decomposition of graph neural networks\allowbreak[J/OL].
+\newblock Transactions on Machine Learning Research, 2025.
+\newblock \url{https://openreview.net/forum?id=xdWP1d8BxI}.
+
+\bibitem[Gilmer et~al.(2017)Gilmer, Schoenholz, Riley, Vinyals, and Dahl]{Gilmer2017MPNN}
+Gilmer J, Schoenholz S~S, Riley P~F, et~al.
+\newblock Neural message passing for quantum chemistry\allowbreak[C/OL]//\allowbreak
+Proceedings of the 34th International Conference on Machine Learning (ICML).
+\newblock Sydney, Australia: PMLR, 2017: 1263-1272.
+\newblock \url{https://arxiv.org/abs/1704.01212}.
+
+\bibitem[Kipf et~al.(2017)Kipf and Welling]{Kipf2017GCN}
+Kipf T~N, Welling M.
+\newblock Semi-supervised classification with graph convolutional networks\allowbreak[C/OL]//\allowbreak
+Proceedings of the 5th International Conference on Learning Representations (ICLR).
+\newblock Toulon, France, 2017.
+\newblock \url{https://arxiv.org/abs/1609.02907}.
+
+\bibitem[Velickovic et~al.(2018)Velickovic, Cucurull, Casanova, Romero, Lio, and Bengio]{Velickovic2018GAT}
+Velickovic P, Cucurull G, Casanova A, et~al.
+\newblock Graph attention networks\allowbreak[C/OL]//\allowbreak
+Proceedings of the 6th International Conference on Learning Representations (ICLR).
+\newblock Vancouver, Canada, 2018.
+\newblock \url{https://arxiv.org/abs/1710.10903}.
+
+\bibitem[Xu et~al.(2019)Xu, Hu, Leskovec, and Jegelka]{Xu2019GIN}
+Xu K, Hu W, Leskovec J, et~al.
+\newblock How powerful are graph neural networks?\allowbreak[C/OL]//\allowbreak
+Proceedings of the 7th International Conference on Learning Representations (ICLR).
+\newblock New Orleans, USA, 2019.
+\newblock \url{https://arxiv.org/abs/1810.00826}.
+
+\bibitem[Li et~al.(2018)Li, Han, and Wu]{Li2018OverSmoothing}
+Li Q, Han Z, Wu X~M.
+\newblock Deeper insights into graph convolutional networks for semi-supervised classification\allowbreak[C/OL]//\allowbreak
+Proceedings of the 32nd AAAI Conference on Artificial Intelligence (AAAI).
+\newblock New Orleans, USA: AAAI Press, 2018: 3538-3545.
+\newblock \url{https://arxiv.org/abs/1801.07606}.
+
+\bibitem[Alon et~al.(2021)Alon and Yahav]{Alon2021OverSquashing}
+Alon U, Yahav E.
+\newblock On the bottleneck of graph neural networks and its practical implications\allowbreak[C/OL]//\allowbreak
+Proceedings of the 9th International Conference on Learning Representations (ICLR).
+\newblock Vienna, Austria, 2021.
+\newblock \url{https://arxiv.org/abs/2006.05205}.
+
+\bibitem[Hamilton et~al.(2017)Hamilton, Ying, and Leskovec]{Hamilton2017GraphSAGE}
+Hamilton W~L, Ying Z, Leskovec J.
+\newblock Inductive representation learning on large graphs\allowbreak[C/OL]//\allowbreak
+Advances in Neural Information Processing Systems (NeurIPS): volume~30.
+\newblock Long Beach, USA: Curran Associates, 2017: 1024-1034.
+\newblock \url{https://arxiv.org/abs/1706.02216}.
+
+\bibitem[Chen et~al.(2018)Chen, Ma, and Xiao]{Chen2018FastGCN}
+Chen J, Ma T, Xiao C.
+\newblock {FastGCN}: Fast learning with graph convolutional networks via importance sampling\allowbreak[C/OL]//\allowbreak
+Proceedings of the 6th International Conference on Learning Representations (ICLR).
+\newblock Vancouver, Canada, 2018.
+\newblock \url{https://arxiv.org/abs/1801.10247}.
+
+\bibitem[Zeng et~al.(2020)Zeng, Zhou, Srivastava, Kannan, and Prasanna]{Zeng2020GraphSAINT}
+Zeng H, Zhou H, Srivastava A, et~al.
+\newblock {GraphSAINT}: Graph sampling based inductive learning method\allowbreak[C/OL]//\allowbreak
+Proceedings of the 8th International Conference on Learning Representations (ICLR).
+\newblock Addis Ababa, Ethiopia, 2020.
+\newblock \url{https://arxiv.org/abs/1907.04931}.
+
+\bibitem[Wu et~al.(2019)Wu, Souza, Zhang, Fifty, Yu, and Weinberger]{Wu2019SGC}
+Wu F, Souza A~H, Zhang T, et~al.
+\newblock Simplifying graph convolutional networks\allowbreak[C/OL]//\allowbreak
+Proceedings of the 36th International Conference on Machine Learning (ICML).
+\newblock Long Beach, USA: PMLR, 2019: 6861-6871.
+\newblock \url{https://arxiv.org/abs/1902.07153}.
+
+\bibitem[Klicpera et~al.(2019)Klicpera, Bojchevski, and G{\"u}nnemann]{Gasteiger2019APPNP}
+Klicpera J, Bojchevski A, G{\"u}nnemann S.
+\newblock Predict then propagate: Graph neural networks meet personalized {PageRank}\allowbreak[C/OL]//\allowbreak
+Proceedings of the 7th International Conference on Learning Representations (ICLR).
+\newblock New Orleans, USA, 2019.
+\newblock \url{https://arxiv.org/abs/1810.05997}.
+
+\bibitem[Frasca et~al.(2020)Frasca, Rossi, Eynard, Chamberlain, Bronstein, and Monti]{Frasca2020SIGN}
+Frasca F, Rossi E, Eynard D, et~al.
+\newblock {SIGN}: Scalable inception graph neural networks\allowbreak[A/OL].
+\newblock 2020.
+\newblock arXiv: \eprint{https://arxiv.org/abs/2004.11198}{2004.11198}.
+\newblock \url{https://arxiv.org/abs/2004.11198}.
+
+\bibitem[Pei et~al.(2020)Pei, Wei, Chang, Lei, and Yang]{Pei2020GeomGCN}
+Pei H, Wei B, Chang K~C~C, et~al.
+\newblock {Geom-GCN}: Geometric graph convolutional networks\allowbreak[C/OL]//\allowbreak
+Proceedings of the 8th International Conference on Learning Representations (ICLR).
+\newblock Addis Ababa, Ethiopia, 2020.
+\newblock \url{https://arxiv.org/abs/2002.05287}.
+
+\bibitem[Zhu et~al.(2020)Zhu, Yan, Zhao, Heimann, Akoglu, and Koutra]{Zhu2020H2GCN}
+Zhu J, Yan Y, Zhao L, et~al.
+\newblock Beyond homophily in graph neural networks: Current limitations and effective designs\allowbreak[C/OL]//\allowbreak
+Advances in Neural Information Processing Systems (NeurIPS): volume~33.
+\newblock Vancouver, Canada: Curran Associates, 2020: 7793-7804.
+\newblock \url{https://arxiv.org/abs/2006.11468}.
+
+\bibitem[Chien et~al.(2021)Chien, Peng, Li, and Milenkovic]{Chien2021GPRGNN}
+Chien E, Peng J, Li P, et~al.
+\newblock Adaptive universal generalized {PageRank} graph neural network\allowbreak[C/OL]//\allowbreak
+Proceedings of the 9th International Conference on Learning Representations (ICLR).
+\newblock Vienna, Austria, 2021.
+\newblock \url{https://arxiv.org/abs/2006.07988}.
+
+\bibitem[Bo et~al.(2021)Bo, Wang, Shi, and Shen]{Bo2021FAGCN}
+Bo D, Wang X, Shi C, et~al.
+\newblock Beyond low-frequency information in graph convolutional networks\allowbreak[C/OL]//\allowbreak
+Proceedings of the 35th AAAI Conference on Artificial Intelligence (AAAI).
+\newblock AAAI Press, 2021: 3950-3957.
+\newblock \url{https://arxiv.org/abs/2101.00797}.
+
+\bibitem[Lim et~al.(2021)Lim, Li, Hohne, and Lim]{Lim2021LINKX}
+Lim D, Li X, Hohne F, et~al.
+\newblock Large scale learning on non-homophilous graphs: New benchmarks and strong simple methods\allowbreak[C/OL]//\allowbreak
+Advances in Neural Information Processing Systems (NeurIPS): volume~34.
+\newblock Curran Associates, 2021: 20887-20902.
+\newblock \url{https://arxiv.org/abs/2110.14446}.
+
+\bibitem[Bojchevski et~al.(2020)Bojchevski, Gasteiger, Perozzi, Kapoor, Blais, R{\'o}zemberczki, Lukasik, and G{\"u}nnemann]{Bojchevski2020PPRGo}
+Bojchevski A, Gasteiger J, Perozzi B, et~al.
+\newblock Scaling graph neural networks with approximate {PageRank}\allowbreak[C/OL]//\allowbreak
+Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining.
+\newblock New York, NY, USA: ACM, 2020: 2464-2473.
+\newblock \url{https://arxiv.org/abs/2007.01570}.
+\newblock DOI: \doi{10.1145/3394486.3403296}.
+
+\bibitem[Zhang et~al.(2022)Zhang, Liu, Sun, and Shah]{Zhang2022GLNN}
+Zhang S, Liu Y, Sun Y, et~al.
+\newblock Graph-less neural networks: Teaching old {MLP}s new tricks via distillation\allowbreak[C/OL]//\allowbreak
+Proceedings of the 10th International Conference on Learning Representations (ICLR).
+\newblock 2022.
+\newblock \url{https://arxiv.org/abs/2110.08727}.
+
+\bibitem[Li et~al.(2022)Li, Zhu, Cheng, Shan, Luo, Li, and Qian]{Li2022GloGNN}
+Li X, Zhu R, Cheng Y, et~al.
+\newblock Finding global homophily in graph neural networks when meeting heterophily\allowbreak[C/OL]//\allowbreak
+Proceedings of the 39th International Conference on Machine Learning (ICML).
+\newblock Baltimore, USA: PMLR, 2022: 13242-13256.
+\newblock \url{https://arxiv.org/abs/2205.07308}.
+
+\bibitem[Anderson et~al.(1985)Anderson and Morley]{anderson1985eigenvalues}
+Anderson W~N, Morley T~D.
+\newblock Eigenvalues of the laplacian of a graph\allowbreak[J].
+\newblock Linear and Multilinear Algebra, 1985, 18\allowbreak (2): 141-145.
+
+\bibitem[Efron et~al.(2004)Efron, Hastie, Johnstone, and Tibshirani]{Efron2004LARS}
+Efron B, Hastie T, Johnstone I, et~al.
+\newblock Least angle regression\allowbreak[J/OL].
+\newblock The Annals of Statistics, 2004, 32\allowbreak (2): 407-499.
+\newblock DOI: \doi{10.1214/009053604000000067}.
+
+\bibitem[Alon et~al.(1985)Alon and Milman]{AlonMilman1985}
+Alon N, Milman V~D.
+\newblock $\lambda_1$, isoperimetric inequalities for graphs, and superconcentrators\allowbreak[J/OL].
+\newblock Journal of Combinatorial Theory, Series B, 1985, 38\allowbreak (1): 73-88.
+\newblock DOI: \doi{10.1016/0095-8956(85)90092-9}.
+
+\bibitem[Chung(1997)]{Chung1997}
+Chung F~R~K.
+\newblock Cbms regional conference series in mathematics: number~92\quad spectral graph theory\allowbreak[M].
+\newblock Providence: American Mathematical Society, 1997.
+
+\bibitem[Shuman et~al.(2013)Shuman, Narang, Frossard, Ortega, and Vandergheynst]{Shuman2013GSP}
+Shuman D~I, Narang S~K, Frossard P, et~al.
+\newblock The emerging field of signal processing on graphs\allowbreak[J/OL].
+\newblock IEEE Signal Processing Magazine, 2013, 30\allowbreak (3): 83-98.
+\newblock DOI: \doi{10.1109/MSP.2012.2235192}.
+
+\bibitem[Ortega et~al.(2018)Ortega, Frossard, Kova{\v{c}}evi{\'{c}}, Moura, and Vandergheynst]{Ortega2018GSP}
+Ortega A, Frossard P, Kova{\v{c}}evi{\'{c}} J, et~al.
+\newblock Graph signal processing: Overview, challenges, and applications\allowbreak[J/OL].
+\newblock Proceedings of the IEEE, 2018, 106\allowbreak (5): 808-828.
+\newblock DOI: \doi{10.1109/JPROC.2018.2820126}.
+
+\bibitem[Lanczos(1950)]{Lanczos1950}
+Lanczos C.
+\newblock An iteration method for the solution of the eigenvalue problem of linear differential and integral operators\allowbreak[J/OL].
+\newblock Journal of Research of the National Bureau of Standards, 1950, 45\allowbreak (4): 255-282.
+\newblock DOI: \doi{10.6028/jres.045.026}.
+
+\bibitem[Batagelj et~al.(2003)Batagelj and Zaver{\v{s}}nik]{BatageljZaversnik2003}
+Batagelj V, Zaver{\v{s}}nik M.
+\newblock An $o(m)$ algorithm for cores decomposition of networks\allowbreak[EB/OL].
+\newblock 2003.
+\newblock \url{https://arxiv.org/abs/cs/0310049}.
+\newblock DOI: \doi{10.48550/arXiv.cs/0310049}.
+
+\bibitem[Tseng(2001)]{Tseng2001}
+Tseng P.
+\newblock Convergence of a block coordinate descent method for nondifferentiable minimization\allowbreak[J/OL].
+\newblock Journal of Optimization Theory and Applications, 2001, 109\allowbreak (3): 475-494.
+\newblock DOI: \doi{10.1023/A:1017501703105}.
+
+\bibitem[Razaviyayn et~al.(2013)Razaviyayn, Hong, and Luo]{Razaviyayn2013}
+Razaviyayn M, Hong M, Luo Z~Q.
+\newblock A unified convergence analysis of block successive minimization methods for nonsmooth optimization\allowbreak[J/OL].
+\newblock SIAM Journal on Optimization, 2013, 23\allowbreak (2): 1126-1153.
+\newblock DOI: \doi{10.1137/120891009}.
+
+\bibitem[Spielman et~al.(2011)Spielman and Srivastava]{Spielman2011EffectiveResistances}
+Spielman D~A, Srivastava N.
+\newblock Graph sparsification by effective resistances\allowbreak[J/OL].
+\newblock SIAM Journal on Computing, 2011, 40\allowbreak (6): 1913-1926.
+\newblock DOI: \doi{10.1137/080734029}.
+
+\bibitem[Spielman et~al.(2011)Spielman and Teng]{Spielman2011SpectralSparsification}
+Spielman D~A, Teng S~H.
+\newblock Spectral sparsification of graphs\allowbreak[J/OL].
+\newblock SIAM Journal on Computing, 2011, 40\allowbreak (4): 981-1025.
+\newblock DOI: \doi{10.1137/08074489X}.
+
+\bibitem[Batson et~al.(2013)Batson, Spielman, Srivastava, and Teng]{Batson2013SpectralSparsificationSurvey}
+Batson J~D, Spielman D~A, Srivastava N, et~al.
+\newblock Spectral sparsification of graphs: Theory and algorithms\allowbreak[J/OL].
+\newblock Communications of the ACM, 2013, 56\allowbreak (8): 87-94.
+\newblock DOI: \doi{10.1145/2492007.2492029}.
+
+\bibitem[Hammond et~al.(2011)Hammond, Vandergheynst, and Gribonval]{Hammond2011Wavelets}
+Hammond D~K, Vandergheynst P, Gribonval R.
+\newblock Wavelets on graphs via spectral graph theory\allowbreak[J/OL].
+\newblock Applied and Computational Harmonic Analysis, 2011, 30\allowbreak (2): 129-150.
+\newblock DOI: \doi{10.1016/j.acha.2010.04.005}.
+
+\bibitem[Horn et~al.(2012)Horn and Johnson]{HornJohnson2012}
+Horn R~A, Johnson C~R.
+\newblock Matrix analysis\allowbreak[M/OL].
+\newblock 2nd ed.
+\newblock Cambridge University Press, 2012.
+\newblock DOI: \doi{10.1017/CBO9781139020411}.
+
+\bibitem[Parlett(1998)]{Parlett1998}
+Parlett B~N.
+\newblock The symmetric eigenvalue problem\allowbreak[M/OL].
+\newblock SIAM, 1998.
+\newblock DOI: \doi{10.1137/1.9781611971163}.
+
+\bibitem[Wilcoxon(1945)]{Wilcoxon1945Ranking}
+Wilcoxon F.
+\newblock Individual comparisons by ranking methods\allowbreak[J/OL].
+\newblock Biometrics Bulletin, 1945, 1\allowbreak (6): 80-83.
+\newblock DOI: \doi{10.2307/3001968}.
+
+\bibitem[Hu et~al.(2020)Hu, Fey, Zitnik, Dong, Ren, Liu, Catasta, and Leskovec]{Hu2020OGB}
+Hu W, Fey M, Zitnik M, et~al.
+\newblock Open graph benchmark: Datasets for machine learning on graphs\allowbreak[C/OL]//\allowbreak
+Advances in Neural Information Processing Systems (NeurIPS): volume~33.
+\newblock Curran Associates, 2020.
+\newblock \url{https://arxiv.org/abs/2005.00687}.
+
+\bibitem[Akiba et~al.(2019)Akiba, Sano, Yanase, Ohta, and Koyama]{Akiba2019Optuna}
+Akiba T, Sano S, Yanase T, et~al.
+\newblock Optuna: A next-generation hyperparameter optimization framework\allowbreak[C/OL]//\allowbreak
+Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining.
+\newblock New York, NY, USA: ACM, 2019: 2623-2631.
+\newblock DOI: \doi{10.1145/3292500.3330701}.
+
+\bibitem[Bergstra et~al.(2011)Bergstra, Bardenet, Bengio, and K{\'e}gl]{Bergstra2011TPE}
+Bergstra J, Bardenet R, Bengio Y, et~al.
+\newblock Algorithms for hyper-parameter optimization\allowbreak[C]//\allowbreak
+Advances in Neural Information Processing Systems (NeurIPS): volume~24.
+\newblock 2011: 2546-2554.
+
+\end{thebibliography}

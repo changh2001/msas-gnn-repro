@@ -1,0 +1,168 @@
+% !TeX root = ../main.tex
+
+\begin{denotation}[4.0cm]
+
+  %% ──────────────────────────────────────────────
+  %% 一、模型、统计检验与通用缩略语
+  %% ──────────────────────────────────────────────
+  \item[MSAS-GNN] 多尺度自适应稀疏图神经网络（Multi-Scale Adaptive Sparse Graph Neural Network，本文提出）
+  \item[SDGNN] 稀疏分解图神经网络（Sparse Decomposition of Graph Neural Networks，Hu等，2024）
+  \item[GNN] 图神经网络（Graph Neural Network）
+  \item[GCN] 图卷积网络（Graph Convolutional Network）
+  \item[GAT] 图注意力网络（Graph Attention Network）
+  \item[GIN] 图同构网络（Graph Isomorphism Network）
+  \item[SGC] 简单图卷积（Simple Graph Convolution）
+  \item[MPNN] 消息传递神经网络（Message Passing Neural Network）
+  \item[APPNP] 近似个性化 PageRank 传播图网络（Approximate Personalized PageRank Propagation of Neural Predictions）
+  \item[SIGN] 可扩展 Inception 图神经网络（Scalable Inception Graph Neural Network）
+  \item[FAGCN] 频率自适应图卷积网络（Frequency Adaptive Graph Convolution Network）
+  \item[GPR-GNN] 广义 PageRank 图神经网络（Generalized PageRank Graph Neural Network）
+  \item[H2GCN] 面向异配图的图卷积网络（Beyond Homophily Graph Convolutional Network）
+  \item[Geom-GCN] 几何聚合图卷积网络（Geometric Graph Convolutional Network）
+  \item[GLNN] 无图神经网络（Graph-less Neural Network）
+  \item[GloGNN] 全局同配建模图神经网络（Global Homophily based Graph Neural Network）
+  \item[LINKX] 面向大规模异配图的线性图学习方法（Linear Graph Model for Heterophilous Graphs）
+  \item[FastGCN] 快速采样图卷积网络（Fast Graph Convolutional Network）
+  \item[GraphSAGE] 归纳式大规模图表示学习方法（Graph Sample and Aggregate）
+  \item[GraphSAINT] 基于图采样的归纳学习方法（Graph Sampling Based Inductive Learning Method）
+  \item[DropEdge] 随机边丢弃正则化方法（DropEdge）
+  \item[PPRGo] 基于近似 Personalized PageRank 的可扩展图神经网络（Scaling Graph Neural Networks with Approximate PageRank）
+  \item[LARS] 最小角回归（Least Angle Regression）
+  \item[MLP] 多层感知机（Multilayer Perceptron）
+  \item[GSP] 图信号处理（Graph Signal Processing）
+  \item[OGB] 开放图基准（Open Graph Benchmark）
+  \item[Wilcoxon] Wilcoxon 符号秩检验（Wilcoxon Signed-Rank Test）
+  \item[$t$-SNE] $t$ 分布随机近邻嵌入（$t$-distributed Stochastic Neighbor Embedding）
+
+  %% ──────────────────────────────────────────────
+  %% 二、图结构与基础任务符号
+  %% ──────────────────────────────────────────────
+  \item[$G=(V,E,X)$] 属性图，$V$ 为节点集，$E$ 为边集，$X$ 为节点特征矩阵
+  \item[$n$] 节点总数，$n=|V|$
+  \item[$m$] 邻接矩阵非零元数，统一记为 $m:=\mathrm{nnz}(A)=2|E|$
+  \item[$D$] 节点输入特征维度
+  \item[$d$] 节点嵌入维度或隐藏维度
+  \item[$C$] 下游任务类别数
+  \item[$A$] 图邻接矩阵
+  \item[$D_{\mathrm{deg}}$] 度矩阵，对角元素为节点度数
+  \item[$d_i$] 节点 $i$ 的度
+  \item[$\bar{d}$] 全图平均度，$\bar{d}=m/n$
+  \item[$V_{\mathrm{train}}$] 训练节点集合，满足 $V_{\mathrm{train}}\subseteq V$
+  \item[$f_{\mathrm{cls}}(\cdot;W_{\mathrm{cls}})$] 节点分类头或下游分类映射
+  \item[$W_{\mathrm{cls}}$] 分类头参数
+  \item[$\hat{y}_i$] 节点 $i$ 的预测类别分布，$\hat{y}_i\in\Delta^{C-1}$
+  \item[$\Delta^{C-1}$] $C$ 维概率单纯形
+  \item[$\mathcal{N}(i)$] 节点 $i$ 的一跳邻域
+  \item[$\mathcal{N}_l(i)$] 节点 $i$ 的 $l$ 跳邻域
+  \item[$\mathcal{N}_L(i)$] 节点 $i$ 的 $L$ 跳感受野邻域
+  \item[$\mathcal{R}_l(i)$] 节点 $i$ 的第 $l$ 跳邻居环层，$\mathcal{R}_l(i)=\mathcal{N}_l(i)\setminus \mathcal{N}_{l-1}(i)$
+  \item[$d_G(i,j)$] 图 $G$ 上节点 $i$ 与 $j$ 的最短路径距离
+
+  %% ──────────────────────────────────────────────
+  %% 三、谱图理论与离线预处理符号
+  %% ──────────────────────────────────────────────
+  \item[$\tilde{\mathcal{L}}$] 归一化图拉普拉斯矩阵，$\tilde{\mathcal{L}}=I-D_{\mathrm{deg}}^{-1/2}AD_{\mathrm{deg}}^{-1/2}$
+  \item[$U,\Lambda$] $\tilde{\mathcal{L}}$ 的谱分解矩阵，$\tilde{\mathcal{L}}=U\Lambda U^\top$
+  \item[$\lambda_k$] 归一化拉普拉斯的第 $k$ 个特征值，满足 $0\le \lambda_k\le 2$
+  \item[$\lambda_{\mathrm{gap}}$] 谱间隙，即最小非零特征值；在连通图上有 $\lambda_{\mathrm{gap}}=\lambda_1$
+  \item[$\hat{\lambda}_{\mathrm{gap}}$] 由 Lanczos 预处理得到的谱间隙近似值
+  \item[$K_{\mathrm{eig}}$] Lanczos 迭代中保留的特征对数量
+  \item[$K_{\mathrm{pair}}$] 预处理中实际返回并用于后续计算的特征对数量
+  \item[$K_{\mathrm{eff}}$] Lanczos 迭代的有效终止步数
+  \item[$\tau_{\mathrm{tol}}$] Lanczos 迭代提前停止所用数值容差
+  \item[$T_{K_{\mathrm{eff}}}$] Lanczos 过程生成的三对角矩阵
+  \item[$g(\tilde{\mathcal{L}})$] 作用于归一化拉普拉斯的谱滤波器
+  \item[$K_{\mathrm{poly}}$] 多项式谱滤波器的阶数
+  \item[$\bar{\mathcal{L}}$] 平移后的拉普拉斯矩阵，$\bar{\mathcal{L}}:=\tilde{\mathcal{L}}-I$
+  \item[$a_r$] 多项式谱滤波器单项式展开的第 $r$ 阶系数
+  \item[$\mu_\star(P)$] 传播算子 $P$ 在 $\mathbf{1}^{\perp}$ 子空间上的第二谱半径
+  \item[$\sigma$] 原图与稀疏图之间的谱相似性参数，$\sigma\ge 1$
+  \item[$\widetilde{\sigma}_{\mathrm{proxy}}$] 基于 Lanczos 的 $\sigma$-谱相似性代理估计量
+  \item[$K_{\mathrm{Lanczos}}$] 估计 $\widetilde{\sigma}_{\mathrm{proxy}}$ 时采用的 Lanczos 固定步数
+  \item[$\eta$] 原图与稀疏图平移拉普拉斯之差的谱范数，$\eta=\|\bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat{G}}\|_2$
+
+  %% ──────────────────────────────────────────────
+  %% 四、图复杂度指标体系
+  %% ──────────────────────────────────────────────
+  \item[$w_k(i)$] 节点 $i$ 对第 $k$ 个频率分量的权重；正文主线取等权形式
+  \item[$E_{\mathrm{spectral}}(i)$] 节点谱能量，衡量节点在各谱分量上的参与强度
+  \item[$H(i)$] 节点 $i$ 的局部图熵
+  \item[$H_{\mathrm{norm}}(i)$] 节点 $i$ 的归一化局部图熵，$H_{\mathrm{norm}}(i)\in[0,1]$
+  \item[$C_{\mathrm{deg}}(i)$] 节点 $i$ 的度中心性
+  \item[$\operatorname{core}(i)$] 节点 $i$ 的 $k$-core 指数
+  \item[$k_{\max}$] 全图节点 $k$-core 指数的最大值，$k_{\max}=\max_{j\in V}\operatorname{core}(j)$
+  \item[$w_{ij}$] 构造局部图熵时节点 $i$ 与 $j$ 之间的边权
+  \item[$Z_i$] 节点 $i$ 局部熵计算中的归一化常数，$Z_i=\sum_{j\in \mathcal{N}(i)}w_{ij}$
+  \item[$\hat{\sigma}^2$] 高斯核边权中使用的经验带宽估计
+  \item[$\gamma_x$] 高斯核带宽参数，满足 $w_{ij}=\exp(-\gamma_x\|x_i-x_j\|_2^2)$
+  \item[$\mathrm{CV}(\{k_i\})$] 节点稀疏预算分布的变异系数，用于辅助分析节点间差异性
+
+  %% ──────────────────────────────────────────────
+  %% 五、MSAS-GNN 稀疏分解与优化目标
+  %% ──────────────────────────────────────────────
+  \item[$L$] 图传播层数或最大跳数
+  \item[$H^{(l)}$] 第 $l$ 层节点表示矩阵，$H^{(l)}\in\mathbb{R}^{n\times d}$
+  \item[$H^*$] 教师 GNN 的目标表示矩阵，$H^*\in\mathbb{R}^{n\times d}$
+  \item[$h_i^*$] 教师 GNN 在节点 $i$ 处的目标表示向量
+  \item[$\phi(\cdot;W_\phi)$] 节点特征变换函数
+  \item[$W_\phi$] 特征变换函数的可学习参数
+  \item[$W_\phi^*$] 交替优化初始化时使用的预训练特征变换参数
+  \item[$\Phi=\phi(X;W_\phi)$] 特征变换后的节点表示矩阵
+  \item[$\tilde{\Phi}$] 行 $\ell_2$ 归一化后的特征变换矩阵
+  \item[$\tilde{\Phi}^{\mathrm{cache}}$] 推理期缓存的归一化特征变换矩阵
+  \item[$\theta_i$] 节点 $i$ 对应的稀疏权重向量
+  \item[$\Theta$] 全图稀疏权重矩阵，$\Theta=\{\theta_i\}_{i\in V}$
+  \item[$\Theta^{\mathrm{fixed}}$] 推理期固化后的稀疏权重矩阵
+  \item[$\hat{h}(i)$] 节点 $i$ 的稀疏推理表示
+  \item[$\hat{H}$] 稀疏分解推理输出矩阵，$\hat{H}=\Theta^\top\tilde{\Phi}$
+  \item[$m_{\mathrm{sparse}}$] 稀疏结构的非零元数，$m_{\mathrm{sparse}}:=\mathrm{nnz}(\Theta)$
+  \item[$k_i$] 节点 $i$ 最终保留的非零邻居数，常记为 $k_i=\|\theta_i\|_0$
+  \item[$\bar{k}$] 全图平均稀疏预算，$\bar{k}=\frac{1}{n}\sum_{i=1}^n k_i^{\mathrm{total}}$
+  \item[$\lambda_W$] 特征变换参数的 $\ell_2$ 正则系数
+  \item[$\lambda_{\mathrm{reg}}$] SDGNN 使用的全局统一正则系数
+  \item[$\mathcal{L}_{\mathrm{task}}$] 下游任务损失，在节点分类实验中取交叉熵损失
+  \item[$\mathcal{E}_{\mathrm{approx}}$] 表示近似误差，定义为 $\mathcal{E}_{\mathrm{approx}}=\frac{1}{\sqrt{n}}\|H^*-\hat{H}\|_F$
+  \item[$\mathcal{S}(t)$] 在误差阈值 $t$ 下的节点子集，用于第3章的设计准则分析
+  \item[$\varepsilon_0$] 第3章性能保持准则中的总体表示误差容许阈值
+
+  %% ──────────────────────────────────────────────
+  %% 六、节点级自适应正则与跳距预算
+  %% ──────────────────────────────────────────────
+  \item[$\tau(i)$] 节点级正则系数，取值区间为 $[\tau_{\min},\tau_{\mathrm{base}}]$
+  \item[$\tau_{\mathrm{base}}$] 节点级正则系数的基准上界
+  \item[$\tau_{\min}$] 节点级正则系数的下界
+  \item[$\tau_{\mathrm{mono}}(i)$] 仅由节点谱能量驱动的单因子节点级正则系数
+  \item[$\beta_{\tau}$] 节点谱能量到正则系数映射中的响应强度系数
+  \item[$\gamma$] 多因子节点级正则系数中度中心性项的权重
+  \item[$\delta$] 多因子节点级正则系数中 $k$-core 项的权重
+  \item[$\eta$] 多因子节点级正则系数中归一化局部熵项的权重
+  \item[$c_E$] 节点谱能量阈值的尺度系数
+  \item[$E_{\mathrm{threshold}}$] 节点谱能量阈值，定义为 $E_{\mathrm{threshold}}=c_E\cdot \operatorname{median}_{j\in V}E_{\mathrm{spectral}}(j)$
+  \item[$k_i^{\mathrm{total}}$] 节点 $i$ 的总稀疏预算
+  \item[$p_l$] 第 $l$ 跳的保留率，满足 $p_l\in(0,1]$
+  \item[$\xi$] 跳距预算分配中的整数化控制参数
+  \item[$k_i^{(l)}$] 节点 $i$ 在第 $l$ 跳邻居环层上的预算配额，满足 $\sum_{l=1}^{L}k_i^{(l)}=k_i^{\mathrm{total}}$
+  \item[$\varepsilon_l$] 第 $l$ 跳传播允许的信息损失预算
+  \item[$\varepsilon_{\mathrm{total}}$] 第5章条件化误差上界中的整体误差目标
+
+  %% ──────────────────────────────────────────────
+  %% 七、算法实现与复杂度分析符号
+  %% ──────────────────────────────────────────────
+  \item[$C_i$] 节点 $i$ 的候选节点集合，$C_i=\{i\}\cup \bigcup_{l=1}^{L}\mathcal{R}_l(i)$
+  \item[$T_{\mathrm{epoch}}$] 第5章主循环中的外层交替优化轮数
+  \item[$T_W$] 每轮外层迭代中 Phase $W$ 的更新步数
+  \item[$\eta_W$] Phase $W$ 中的学习率
+  \item[$q$] 早停窗口长度
+  \item[$O(Lmd)$] 标准消息传递 GNN 在全图一次前向口径下的主项复杂度
+  \item[$O(n\bar{k}d)$] MSAS-GNN / SDGNN 在推理阶段的主项复杂度口径
+
+  %% ──────────────────────────────────────────────
+  %% 八、实验评估符号
+  %% ──────────────────────────────────────────────
+  \item[$t_{\mathrm{dense}}$] 稠密基线模型推理时间
+  \item[$t_{\mathrm{sparse}}$] MSAS-GNN 稀疏推理时间
+  \item[$\mathrm{Speedup}$] 推理加速比，$\mathrm{Speedup}=t_{\mathrm{dense}}/t_{\mathrm{sparse}}$
+  \item[$t_{\mathrm{pre}}$] 总预处理时间，包括指标计算、LARS 求解与结构固化
+  \item[$Q_{\mathrm{be}}$] 预处理的 break-even 调用次数，$Q_{\mathrm{be}}=t_{\mathrm{pre}}/(t_{\mathrm{dense}}-t_{\mathrm{sparse}})$
+
+\end{denotation}

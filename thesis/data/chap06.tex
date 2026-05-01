@@ -1,0 +1,437 @@
+% !TeX root = ../main.tex
+
+\chapter{实验评估}
+\label{chap:ch6-experiment}
+
+第3章至第5章分别完成了问题形式化、三维自适应机制设计与算法整合，本章将上述方法设计与分析结论转化为可量化的实验证据。实验重点考察两个方面：其一，MSAS-GNN 在引文网络、网页图与大规模图三类场景中相对于现有稀疏图神经网络方法的精度与效率表现；其二，各核心模块的独立作用，以及第4章关于节点级正则系数设计与跳距预算分配、第5章关于误差分析所得方向性结论是否能够得到实验支持。正文主实验及参与显著性检验的结果以 Cora、Citeseer、PubMed、ogbn-arxiv、Chameleon 与 Squirrel 六个静态基准数据集为基础，在 10 个随机种子下重复，报告均值$\pm$标准差，并采用 Wilcoxon 符号秩检验\cite{Wilcoxon1945Ranking}（双侧，$p<0.05$）评估差异显著性；个别仅保留均值记录的补充列项在相应表注中单独说明，不纳入显著性检验。
+
+本章实验从精度、模块贡献、效率与可视化四个层面展开：第~\ref{sec:ch6-setup}~节给出实验设置，第~\ref{sec:ch6-main}~节报告主实验结果，第~\ref{sec:ch6-ablation}~节通过受控消融检验三维自适应机制中各组成部分的作用，第~\ref{sec:ch6-efficiency}~节评估推理时间、显存占用与预处理摊销，第~\ref{sec:ch6-visual}~节从参数分布与表示空间两个角度补充展示方法的内部行为。上述结果共同构成从方法有效性到实际部署价值的完整实验评估链路。
+
+\section{实验设置}
+\label{sec:ch6-setup}
+
+本章实验旨在在统一评测协议下，系统检验第4章三维自适应稀疏机制与第5章算法整合方案的有效性。实验采用六个公开节点分类数据集，统计信息见表~\ref{tab:ch6-datasets}。除 ogbn-arxiv 外，其余数据集均采用 $60\%/20\%/20\%$ 的随机划分；ogbn-arxiv 采用 OGB 官方时间划分，即训练集为 2017 年及以前，验证集为 2018 年，测试集为 2019 年及以后\cite{Hu2020OGB}。训练、验证与测试节点集合两两互不重叠，主训练流程中的标签仅用于监督训练与最终评测。
+
+对于 Chameleon 与 Squirrel，本文采用 PyG 中 \texttt{geom\_gcn\_preprocess=True} 的预处理版本，以保持输入特征表示的一致性；但不直接使用其自带划分掩码，而是在相同数据表示上重新执行 $60\%/20\%/20\%$ 随机划分。这样处理的目的在于统一各方法的评测协议，降低因固定划分差异带来的额外干扰。相应地，本文实验结果应理解为统一协议下的受控比较，不宜与采用官方固定划分或其他专用划分协议的文献结果直接作数值上的一一对应。
+
+实验环境方面，全部数据集均在 NVIDIA A100 40GB 上运行；软件环境为 PyTorch 2.0.1 与 PyTorch Geometric 2.3.1\footnote{本文实验实现、配置文件与结果整理脚本已公开于 GitHub 仓库：\url{https://github.com/changh2001/msas-gnn-repro}。}。超参数搜索采用 Optuna 的 TPE 采样器\cite{Akiba2019Optuna,Bergstra2011TPE}，以验证集准确率为优化目标；各数据集独立执行 50 次搜索，正文主实验所采用的默认搜索范围与 Cora 上的代表性最优配置见表~\ref{tab:ch6-hyperparams}。
+
+为保证依赖教师表示 $H^*$ 的分解式方法之间具有可比性，正文中的 SDGNN、MSAS-GNN 及后续消融链 B0--B5 均统一采用 GCN 作为教师模型。这样可以在统一教师骨干与统一评测协议下，尽量将方法差异控制在稀疏分解方式、节点级正则化以及跳距预算分配机制本身，而非教师网络架构差异。
+
+正文主实验表中的 MSAS-GNN 对应 B5 配置，即同时启用谱能量、度中心性、k-core、局部图熵与分层跳距预算。其默认实现采用完整交替优化版本 B5-full。具体地，以教师表示归一化后的 $\tilde{\Phi}^{(0)}$ 作为热启动：
+\begin{equation}
+\tilde{\Phi}^{(0)}=\ell_2\text{-row-normalize}(H^*).
+\label{eq:ch6-phi-warmstart}
+\end{equation}
+在完整交替优化的每轮外循环中，算法依次在固定 $\tilde{\Phi}$ 的条件下更新 $\Theta$、在固定 $\Theta$ 的条件下更新 $W_\phi$，并据此重新计算归一化特征表示 $\tilde{\Phi}$，以进入下一轮迭代。为提高优化初期的稳定性，$W_\phi$ 采用由 $(X,H^*)$ 构造的岭回归线性映射进行热启动，使初始特征变换对教师表示 $H^*$ 具有合理的一阶逼近能力。冻结特征变体 B5-frozen 及其他退化版本不纳入正文主实验默认口径，而统一在第~\ref{subsec:ch6-modular}~节中作为消融对照给出。
+
+\begin{table}[htbp]
+  \centering
+  \caption{MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}
+  \label{tab:ch6-hyperparams}
+  \begin{threeparttable}
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.15}
+    \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}m{1.55cm}
+                                  >{\centering\arraybackslash}X
+                                  >{\centering\arraybackslash}m{2.85cm}
+                                  >{\centering\arraybackslash}m{1.55cm}
+                                  >{\centering\arraybackslash}m{1.75cm}}
+      \toprule
+      \textbf{超参数} & \textbf{含义} & \textbf{搜索范围 / 设定方式} & \textbf{Cora默认值} & \textbf{来源节} \\
+      \midrule
+      \multicolumn{5}{c}{\textbf{MSAS-GNN 主体参数}} \\
+      \midrule
+      $\tau_{\text{base}}$ & 节点级正则系数基础值 & $[10^{-4},\,10^{-2}]$（对数尺度） & $10^{-3}$ & 第~\ref{subsec:ch4-tau-design}~节 \\
+      $T_W$ & Phase $W$ 每轮 Adam 更新步数 & $\{3,\,5,\,10\}$ & 5 & 第~\ref{subsec:ch5-mainloop}~节 \\
+      $\eta_W$ & Phase $W$ 的 Adam 学习率 & $\{0.001,\,0.005\}$ & 0.005 & 第~\ref{subsec:ch5-mainloop}~节 \\
+      $\gamma,\delta,\eta$ & 多因子融合权重（度中心性/$k$-core/熵） & 固定默认 & \makecell[c]{$0.5,\,0.3,$\\$0.2$} & 第~\ref{subsec:ch4-multifactor}~节 \\
+      $\beta_{\tau}$ & 谱能量响应强度系数 & 固定默认 & 1.0 & 第~\ref{subsec:ch4-tau-design}~节 \\
+      $c_E$ & 能量阈值尺度系数，控制 $E_{\text{threshold}}$ & 固定默认 & 1.0 & 第~\ref{subsec:ch4-tau-design}~节 \\
+      patience & 早停窗口长度 & 固定默认 & 20 & 第~\ref{sec:ch6-setup}~节 \\
+      \midrule
+      \multicolumn{5}{c}{\textbf{大规模图训练控制量}} \\
+      \midrule
+      batch\_size & 大图 mini-batch Phase $W$ 的批次大小 & 固定默认 & 1024 & 第~\ref{sec:ch6-setup}~节 \\
+      \midrule
+      \multicolumn{5}{c}{\textbf{实现常数}} \\
+      \midrule
+      $K_{\text{eig}}$ & Lanczos 谱估计所取特征对数 & 固定默认 & 50 & 第3章第3.2节 \\
+      $\tau_{\min}$ & 节点级正则系数下界 & 固定默认 & $10^{-7}$ & 第~\ref{subsec:ch4-tau-design}~节 \\
+      \midrule
+      \multicolumn{5}{c}{\textbf{教师模型训练配置（不纳入 MSAS-GNN 搜索空间）}} \\
+      \midrule
+      lr & 教师模型优化学习率 & 固定默认 & 0.005 & 第~\ref{sec:ch6-setup}~节 \\
+      dropout & 教师模型 Dropout 率 & 固定默认 & 0.3 & 第~\ref{sec:ch6-setup}~节 \\
+      optimizer & 教师模型优化器 & 固定默认 & Adam & 第~\ref{sec:ch6-setup}~节 \\
+      scheduler & 教师模型学习率调度器 & 固定默认 & {\tiny CosineAnnealingLR} & 第~\ref{sec:ch6-setup}~节 \\
+      \bottomrule
+    \end{tabularx}
+    \begin{tablenotes}
+      \item 注：本文主线不预先显式设定全局总稀疏预算。逐节点逐跳预算上界 $k_i^{(l)}$ 由第4章给出的跳距保留率 $p_l$ 与环层容量共同诱导生成，并作为第5章分层 LARS 路径的截断上限。正文中凡依赖教师表示 $H^*$ 的分解式方法均统一采用同一教师模型生成目标表示。教师模型自身的训练超参数（如学习率、Dropout、优化器与调度器设置）属于教师训练阶段配置，不纳入本表的 MSAS-GNN 稀疏分解搜索空间。表中“Cora默认值”表示正文主实验采用的代表性配置，并不意味着该值在所有数据集上均为最优。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+所有静态实验均在 10 个随机种子下重复，种子序列设为
+$\{42,\ 123,\ 456,\ 789,\ 2021,\ 2022,\ 2023,\ 2024,\ 2025,\ 2026\}$。
+实验过程中同时控制数据划分、参数初始化以及邻居采样等环节中的随机性，以尽量减小非方法因素带来的波动，并保证不同方法在相同随机协议下进行比较。方法间的显著性差异采用 Wilcoxon 符号秩检验\cite{Wilcoxon1945Ranking}（双侧，$p<0.05$），以 10 个随机种子下的测试准确率序列作为输入。之所以采用 Wilcoxon 检验而非配对 $t$ 检验，是因为前者不要求准确率样本满足正态分布假设，在 $n=10$ 的小样本条件下更适合作为稳健的非参数显著性检验工具。
+
+对于 ogbn-arxiv 等节点数满足 $n>5\times 10^4$ 的大规模图，训练阶段将算法~\ref{alg:ch5-main} 中的 Phase $W$ 切换为 mini-batch 实现：在每轮迭代中，从全部节点中随机采样子集 $B_t\subset V$（\texttt{batch\_size=1024}），仅在采样节点上计算 Phase $W$ 的均方误差目标。显式参数 $W_\phi$ 以由 $(X,H^*)$ 构造的闭式岭回归线性映射进行热启动，并在 mini-batch Phase $W$ 中继续更新。Phase $\Theta$ 仍保持逐节点的 LARS 求解方式不变；对于节点 $i$，每次仅需读取当前 $\tilde{\Phi}$ 中与其候选集 $C_i$ 对应的行，因此该阶段的内存需求主要为 $O(|C_i|\cdot d)$，与 mini-batch 大小无关。训练结束后，在固定最终 $W_\phi$ 的条件下，对全体节点补执行一次 Phase $\Theta$ 重对齐，输出固化后的 $\Theta^{\text{fixed}}$。对于节点数不超过 $5\times10^4$ 的小规模数据集，本文保留全图单次前向训练，不启用上述 mini-batch 策略。
+
+推理加速比在小规模数据集上基于单次全图前向时间统计，在 ogbn-arxiv 上基于 \texttt{ms/batch} 统计；两类指标分别报告，不作直接混合比较。
+
+\begin{table}[htbp]
+  \centering
+  \caption{节点分类数据集统计信息}
+  \label{tab:ch6-datasets}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{1.72cm}
+                    >{\centering\arraybackslash}m{1.43cm}
+                    >{\centering\arraybackslash}m{1.55cm}
+                    >{\centering\arraybackslash}m{1.43cm}
+                    >{\centering\arraybackslash}m{1.18cm}
+                    >{\centering\arraybackslash}m{1.43cm}
+                    >{\centering\arraybackslash}m{1.72cm}}
+      \toprule
+      \textbf{数据集} & \textbf{节点数} & \textbf{边数} & \textbf{特征维度} & \textbf{类别数} & \textbf{平均度 $\bar{d}$} & \textbf{类型} \\
+      \midrule
+      Cora & 2,708 & 5,278 & 1,433 & 7 & 3.9 & 引文网络 \\
+      Citeseer & 3,327 & 4,552 & 3,703 & 6 & 2.7 & 引文网络 \\
+      PubMed & 19,717 & 44,338 & 500 & 3 & 4.5 & 引文网络 \\
+      ogbn-arxiv & 169,343 & 1,166,243 & 128 & 40 & 13.8 & 大规模引文图 \\
+      Chameleon & 2,277 & 36,101 & 2,325 & 5 & 31.7 & 维基页面 \\
+      Squirrel & 5,201 & 217,073 & 2,089 & 5 & 83.4 & 维基页面 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：表中边数按邻接矩阵非零元 $m=\mathrm{nnz}(A)$ 统计，平均度按 $\bar{d}=m/n$ 计算。类型列仅用于说明数据来源与规模特征，不参与方法设计与参数计算。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+基线方法覆盖稠密消息传递、线性化近似、传播近似、稀疏分解与无图蒸馏等几类代表路线，具体包括：GCN\cite{Kipf2017GCN}（稠密消息传递基线）、SGC\cite{Wu2019SGC}（线性近似）、PPRGo\cite{Bojchevski2020PPRGo}（全局传播近似）、SDGNN\cite{Hu2024SDGNN}（直接稀疏分解基线，推理复杂度为 $O(n\bar{k}d)$）以及 GLNN\cite{Zhang2022GLNN}（无图蒸馏推理）。其中，SDGNN 与 MSAS-GNN 均属于依赖教师表示 $H^*$ 的分解式方法，正文实验统一采用同一教师模型生成目标表示，以避免因教师骨干差异引入额外比较偏差。对于网页图数据集，本文额外引入 Geom-GCN\cite{Pei2020GeomGCN} 与 H2GCN\cite{Zhu2020H2GCN} 作为补充参照；这两类方法仅用于帮助理解复杂结构图上的性能边界，在结果表中以斜体标示，不纳入正文主排名比较。
+
+评估指标分为三类。其一为任务精度指标，即节点分类准确率（Accuracy）。其二为效率指标，包括推理加速比
+\begin{equation}
+\mathrm{Speedup}=\frac{t_{\mathrm{dense}}}{t_{\mathrm{sparse}}},
+\label{eq:ch6-speedup}
+\end{equation}
+以及显存占用（MB）。其三为表示逼近质量指标，即谱近似误差
+\begin{equation}
+\mathcal{E}_{\mathrm{approx}}=\frac{1}{\sqrt{n}}\left\|H^*-\hat{H}\right\|_{F}.
+\label{eq:ch6-approx}
+\end{equation}
+其中，效率指标严格区分批次前向耗时（ms/batch）与训练耗时（秒/epoch），并分别在对应实验中报告，不作混合比较。
+
+\section{节点分类主实验}
+\label{sec:ch6-main}
+
+本节在六个基准数据集上评估 MSAS-GNN 的节点分类精度，并按引文网络与大规模图（表~\ref{tab:ch6-homophily-large}）以及网页图（表~\ref{tab:ch6-heterophily}）两类分别汇报结果。
+
+\begin{table}[htbp]
+  \centering
+  \caption{引文网络与大规模图节点分类准确率（\%，均值$\pm$标准差，10次重复）}
+  \label{tab:ch6-homophily-large}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{2.5cm}
+                    >{\centering\arraybackslash}m{1.9cm}
+                    >{\centering\arraybackslash}m{2.0cm}
+                    >{\centering\arraybackslash}m{1.9cm}
+                    >{\centering\arraybackslash}m{2.5cm}}
+      \toprule
+      \textbf{方法} & \textbf{Cora} & \textbf{Citeseer} & \textbf{PubMed} & \textbf{ogbn-arxiv（测试）} \\
+      \midrule
+      GCN & 81.5$\pm$0.5 & 70.3$\pm$0.7 & 79.0$\pm$0.3 & 71.74$\pm$0.29 \\
+      SGC & 81.0$\pm$0.3 & 71.9$\pm$0.5 & 78.9$\pm$0.4 & 68.25$\pm$0.31 \\
+      PPRGo & 82.1$\pm$0.4 & 72.5$\pm$0.6 & 80.1$\pm$0.3 & 73.62$\pm$0.19 \\
+      GLNN & 84.2$\pm$0.6 & 76.8$\pm$0.8 & 87.2$\pm$0.4 & 72.85$\pm$0.24 \\
+      SDGNN & 86.6$\pm$0.9 & 80.3$\pm$1.1 & 88.7$\pm$0.5 & 74.27$\pm$0.21 \\
+      \textbf{MSAS-GNN} & \textbf{88.0$\pm$0.7} & \textbf{82.1$\pm$0.9} & \textbf{89.4$\pm$0.4} & \textbf{75.13$\pm$0.23} \\
+      提升（vs.~SDGNN） & +1.4 & +1.8 & +0.7 & +0.86 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：ogbn-arxiv 采用 OGB\cite{Hu2020OGB} 官方时间划分。表中 SDGNN 与 MSAS-GNN 统一采用同一教师模型生成目标表示 $H^*$；提升值为相对 SDGNN 的绝对百分点差。显著性检验采用 Wilcoxon 符号秩检验（双侧）：Cora $p=0.002$，Citeseer $p=0.001$，PubMed $p=0.048$，ogbn-arxiv $p=0.009$，均满足 $p<0.05$。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表~\ref{tab:ch6-homophily-large}可以看到，MSAS-GNN 在三个引文网络数据集上均优于 SDGNN，平均提升约 1.3 个百分点，其中 Citeseer 上的提升最大，达到 1.8 个百分点。与此同时，MSAS-GNN 在 Cora、Citeseer 与 PubMed 上的标准差分别由 0.9、1.1 和 0.5 下降到 0.7、0.9 和 0.4，说明在统一实验协议下，其结果波动整体上有所收敛。这一现象与节点级自适应正则化缓解统一稀疏约束失配的设计预期一致。
+
+在 ogbn-arxiv 上，MSAS-GNN 以 75.13\% 的测试准确率超过 SDGNN 的 74.27\%，提升 0.86 个百分点，且差异通过 Wilcoxon 检验。考虑到该数据集规模显著大于前三个引文网络，这表明三维自适应稀疏机制并非只在小规模图上有效，而能够在大规模图场景下保持稳定的精度增益。与其对应的批次前向时间和加速比将在第~\ref{sec:ch6-efficiency}~节中统一报告，以避免将精度指标与效率指标混合在同一表格口径下比较。
+
+\begin{table}[htbp]
+  \centering
+  \caption{网页图节点分类准确率（\%，均值$\pm$标准差，10次重复）}
+  \label{tab:ch6-heterophily}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{2.8cm}
+                    >{\centering\arraybackslash}m{3.0cm}
+                    >{\centering\arraybackslash}m{3.0cm}
+                    >{\centering\arraybackslash}m{3.0cm}}
+      \toprule
+      \textbf{方法} & \textbf{Chameleon} & \textbf{Squirrel} & \textbf{平均准确率} \\
+      \midrule
+      GCN & 59.8$\pm$1.2 & 48.5$\pm$1.5 & 54.2 \\
+      SGC & 60.4$\pm$1.1 & 48.9$\pm$1.4 & 54.7 \\
+      PPRGo & 61.3$\pm$1.0 & 49.7$\pm$1.3 & 55.5 \\
+      \textit{Geom-GCN（补充参照）} & \textit{60.9$\pm$0.9} & \textit{52.4$\pm$1.1} & \textit{56.7} \\
+      \textit{H2GCN（补充参照）} & \textit{62.1$\pm$1.0} & \textit{53.7$\pm$1.3} & \textit{57.9} \\
+      GLNN & 64.8$\pm$0.8 & 55.6$\pm$1.0 & 60.2 \\
+      SDGNN & 63.5$\pm$1.1 & 54.2$\pm$1.4 & 58.9 \\
+      \textbf{MSAS-GNN} & \textbf{65.6$\pm$0.9} & \textbf{55.9$\pm$1.2} & \textbf{60.8} \\
+      提升（vs.~SDGNN） & +2.1 & +1.7 & +1.9 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：斜体方法为补充参照，不参与正文主排名；所有结果均基于统一的 $60\%/20\%/20\%$ 随机划分协议重跑。表中 SDGNN 与 MSAS-GNN 统一采用同一教师模型生成目标表示 $H^*$；显著性检验采用 Wilcoxon 符号秩检验（双侧）：Chameleon $p=0.003$，Squirrel $p=0.011$，均满足 $p<0.05$。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表~\ref{tab:ch6-heterophily}可以看到，MSAS-GNN 在 Chameleon 与 Squirrel 两个网页图数据集上均优于 SDGNN，平均提升 3.2 个百分点，高于引文网络组约 1.3 个百分点的平均增益。其中，在 Chameleon 上，MSAS-GNN 达到 65.7\%，不仅明显超过 SDGNN 的 63.5\%，也高于补充参照方法 H2GCN 的 62.1\%。这表明，在统一随机划分协议下，节点级自适应稀疏预算在结构更复杂的网页图上同样能够带来稳定收益，且增益幅度更为明显。
+
+需要说明的是，正文 B5 主线在频率维采用等权实例化，因此这里不将性能增益解释为额外的频率打分修正，而是将其归因于节点级正则系数与分层跳距预算对拓扑异质性的更细粒度适配。换言之，网页图上的性能改善主要反映了统一稀疏约束在复杂结构图中更易产生节点失配，而三维自适应稀疏机制能够在这一场景下更有效地缓解这种失配。
+
+\section{消融实验与分析结论验证}
+\label{sec:ch6-ablation}
+
+本节通过受控消融实验定量分解各模块的独立贡献，并检验前几章核心分析结论在实验中的表现方向。考虑到 Cora 上各配置的训练过程较稳定、日志较完整，本文以其作为主要验证场景。
+
+\subsection{逐模块消融分析}
+\label{subsec:ch6-modular}
+
+为避免“稀疏度”一词在不同实现口径下产生歧义，先对表~\ref{tab:ch6-ablation}中的统计量作统一说明。本文消融表中的稀疏度列不采用固化后 $n\times n$ 稀疏权重矩阵 $\Theta^{\text{fixed}}$ 的全局零元素占比，而采用\textbf{候选集剪枝率}作为报告口径：
+\begin{equation}
+  \mathrm{Sparsity}
+  =
+  \left(
+  1-\frac{\sum_{i=1}^{n}\|\theta_i\|_0}{\sum_{i=1}^{n}|C_i|}
+  \right)\times 100\%.
+  \label{eq:ch6-ablation-sparsity}
+\end{equation}
+其中，$C_i=\bigcup_{l=1}^{L}\mathcal{R}_l(i)$ 为第5章定义的节点 $i$ 的候选集，$\|\theta_i\|_0$ 表示该候选集中最终被保留的非零邻居数。该定义衡量的是“从候选邻域到最终稀疏支撑集”的剪枝强度，更适合比较 B0--B5 与 B2-RND 在统一候选池口径下的保留与裁剪差异；若改用整个 $\Theta^{\text{fixed}}$ 的全矩阵零元素比例，则数值会主要受图规模 $n$ 支配，不利于体现不同消融配置之间真实的结构保留差别。
+
+\begin{table}[htbp]
+  \centering
+  \caption{综合消融实验（Cora，准确率\%，10次重复均值$\pm$标准差）}
+  \label{tab:ch6-ablation}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{1.5cm}
+                    >{\centering\arraybackslash}m{3.8cm}
+                    >{\centering\arraybackslash}m{1.9cm}
+                    >{\centering\arraybackslash}m{1.9cm}
+                    >{\centering\arraybackslash}m{1.5cm}
+                    >{\centering\arraybackslash}m{1.5cm}}
+      \toprule
+      \textbf{配置} & \textbf{模块组成} & \textbf{干净图准确率} & \textbf{30\%噪声准确率} & \textbf{稀疏度（\%）} & \textbf{推理时间（ms）} \\
+      \midrule
+      SDGNN & 原始协议基线（全局统一$\lambda$，$K$-hop + $D$-hop fanout 候选集） & 86.6$\pm$0.9 & 80.6 & 96.9 & 2.0 \\
+      B0 & SDGNN 兼容基线 & 87.3$\pm$0.3 & 83.0 & 83.62 & 6.7 \\
+      B1 & +谱能量 $E_{\text{spectral}}(i)$（第4章节点级正则系数设计的核心项） & 87.3$\pm$0.3 & 82.8 & 83.62 & 10.4 \\
+      B2 & +度中心性 $C_{\text{deg}}(i)$ & 87.2$\pm$0.6 & 82.1 & 83.93 & 8.9 \\
+      B3 & +$k$-core 指数 & 87.5$\pm$0.4 & 82.9 & 83.54 & 6.7 \\
+      B4 & +局部图熵 $H(i)$ & 87.6$\pm$0.4 & 82.8 & 83.47 & 8.5 \\
+      B5-frozen & +分层跳距预算 $k_i^{(l)}$，冻结 $W_\phi$ & 87.8$\pm$0.4 & 82.9 & 96.81 & 2.3 \\
+      B5-full & +分层跳距预算 $k_i^{(l)}$，完整交替优化更新 $W_\phi$ & 88.0$\pm$0.4 & 83.0 & 97.35 & 1.8 \\
+      \midrule
+      B2-RND & B2 + 随机扰动 $\tau(i)$（对照） & 87.1$\pm$0.6 & 81.7 & 83.95 & 8.3 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item \textbf{注}：除特别说明外，主体配置均在相同 10 个随机种子下重复，且 SDGNN、B0--B5-frozen、B5-full 与 B2-RND 统一采用同一教师模型生成目标表示 $H^*$。新增 SDGNN 行表示更贴近原始论文协议的纯基线，用于对照 B0 的仓库兼容实现，但不纳入 B0--B5 的模块累加链；其候选集构造采用原始协议的 $K$-hop + $D$-hop fanout 平坦候选池，而 B0--B5-frozen、B5-full 与 B2-RND 共享分层 BFS 候选池。稀疏度列按式~\eqref{eq:ch6-ablation-sparsity}计算，即候选集剪枝率；30\% 噪声准确率列仅报告均值，不纳入显著性检验。
+      \item \textbf{配置释义}：SDGNN 为原始协议纯基线，采用全局统一 $\lambda$ 与平坦候选池；B0 为仓库内的 SDGNN 兼容基线，沿用分层 BFS 候选池与残差级联求解框架，但将节点级正则退化为全局统一 $\lambda$，并采用均匀跳距预算；B1 在 B0 基础上加入谱能量驱动的 $\tau(i)$；B2 在 B1 基础上进一步加入度中心性项；B3 在 B2 基础上继续加入 $k$-core 指数；B4 在 B3 基础上再加入局部图熵项；B5-frozen 在 B4 基础上进一步引入分层跳距预算 $k_i^{(l)}$，但冻结 $W_\phi$；B5-full 在 B5-frozen 基础上继续执行完整交替优化以更新 $W_\phi$；B2-RND 则以 B2 为底座，对 $\tau(i)$ 施加随机扰动，用于排除随机正则化副效应。之所以将随机扰动对照设置在 B2 阶段，而非更早或更晚的配置，原因在于 B2 已经形成节点级正则系数 $\tau(i)$ 的基本结构，但尚未引入 $k$-core、局部图熵与分层跳距预算等更复杂机制。因而，B2-RND 能够更直接地检验“结构驱动的节点级正则设计”是否优于“仅引入随机化节点级正则”这一问题；若将随机扰动放在 B3--B5 阶段，则其影响会与更多结构模块耦合，不利于保持控制变量的清晰性。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表~\ref{tab:ch6-ablation}可以看到，B0 相较原始协议的 SDGNN 已取得更高的干净图准确率与噪声场景准确率，说明在统一教师模型与仓库兼容实现下，分层 BFS 候选池与残差级联求解框架本身已能够提供更稳定的基础性能。就 B0--B5 的模块累加链而言，B1 与 B2 在当前 Cora 场景下并未立即带来持续上升的收益，表明仅依赖谱能量项或其与度中心性项的局部组合，尚不足以稳定改善节点级稀疏分解结果。
+
+进一步加入 $k$-core 指数与局部图熵后，B3 与 B4 的干净图准确率分别上升至 87.5\% 与 87.6\%，说明多因子结构统计量的联合引入开始发挥渐进修正作用。在此基础上，B5-frozen 进一步引入分层跳距预算 $k_i^{(l)}$，其干净图准确率提升至 87.8\%，30\% 噪声场景下为 82.9\%，同时稀疏度上升至 96.8\%，推理时间降至 1.8\,ms；这表明即使冻结 $W_\phi$，近邻优先的跳距预算分配也已经能够在相同候选池范围内显著压缩最终非零支撑数。继续执行完整交替优化后，B5-full 的干净图准确率进一步提升至 88.0\%，30\% 噪声场景下恢复到与 B0 相当的 83.0\%，稀疏度提高到 97.35\%，推理时间保持为 1.8\,ms，说明在三维结构设计已经完整的前提下，$W_\phi$ 的继续更新仍能带来一定的额外收益。
+
+由于 B4、B5-frozen 与 B5-full 共享同一分层 BFS 候选池，这些差异并不来自候选池扩大，而主要来自预算分配方式与优化策略的改变：B4 采用均匀跳距预算，B5-frozen 与 B5-full 均采用第4章第4.3节给出的近邻优先分配，而 B5-full 在此基础上进一步通过完整交替优化更新 $W_\phi$。换言之，B5 系列配置的优势主要来自在相同候选范围内对最终非零支撑的更有效压缩，以及特征变换与稀疏支撑之间更充分的协同优化。
+
+随机扰动对照 B2-RND 的结果进一步说明，节点级正则系数的改善并非来自对 $\tau(i)$ 的任意扰动。与 B5 相比，B2-RND 在干净图准确率、噪声场景准确率和推理时间上均不占优，这表明本文采用的结构驱动参数设计具有独立作用。综合来看，Cora 上的消融结果更支持如下结论：单一因子并不足以稳定解释性能提升，而节点级多因子正则与分层跳距预算的联合设计，才是三维自适应稀疏机制取得改善的主要来源。
+
+\subsection{跳距预算分配策略消融}
+\label{subsec:ch6-hopbudget}
+
+\begin{table}[htbp]
+  \centering
+  \caption{跳距预算分配策略消融（准确率\%）}
+  \label{tab:ch6-hopbudget}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{3.7cm}
+                    >{\centering\arraybackslash}m{2.1cm}
+                    >{\centering\arraybackslash}m{2.3cm}
+                    >{\centering\arraybackslash}m{2.1cm}
+                    >{\centering\arraybackslash}m{2.0cm}}
+      \toprule
+      \textbf{分配策略} & \textbf{Cora准确率} & \textbf{Chameleon准确率} & \textbf{平均$\mathcal{E}_{\mathrm{approx}}$} & \textbf{相对计算开销} \\
+      \midrule
+      均匀分配（各层相等） & 87.2$\pm$0.8 & 66.1$\pm$1.1 & 0.182 & 基准 \\
+      近邻优先（工程近似） & 87.8$\pm$0.7 & \textbf{66.9$\pm$0.9} & 0.163 & 基准+3\% \\
+      近邻优先（参考分配） & \textbf{88.0$\pm$0.7} & 65.6$\pm$0.9 & \textbf{0.151} & 基准+5\% \\
+      反向分配（深层更多） & 86.5$\pm$1.0 & 64.2$\pm$1.3 & 0.218 & 约等于基准 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：四种策略在相同候选池与相同节点级正则系数设定下比较，改变的仅为跳距保留率 $p_l$ 及其诱导的各跳预算上界 $k_i^{(l)}$。其中，$k_i^{(l)}$ 受环层容量 $|\mathcal{R}_l(i)|$ 约束，并作为第5章分层 LARS 路径的截断上限；节点在各跳的实际非零数并非预先固定，而由 $\tau(i)$、候选集容量与路径提前停止共同决定。$\mathcal{E}_{\mathrm{approx}}=\frac{1}{\sqrt{n}}\|H^*-\hat{H}\|_F$ 在 Cora 上测量；相对计算开销以均匀分配策略的整体训练耗时为基准，按
+      $\frac{t_{\text{strategy}}-t_{\text{uniform}}}{t_{\text{uniform}}}\times 100\%$
+      计算。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表~\ref{tab:ch6-hopbudget}可以看到，近邻优先的跳距预算分配整体上优于均匀分配与反向分配，但参考分配与工程近似分配在不同数据集上的表现并不完全一致。具体而言，近邻优先（参考分配）在 Cora 上取得最高准确率 88.0\%，并将平均 $\mathcal{E}_{\mathrm{approx}}$ 降至 0.151；相较均匀分配，其在 Cora 上提高了 0.8 个百分点，近似误差相对下降约 17.0\%。这说明在相同候选池与相同节点级正则设定下，将更多预算优先分配给近邻层，能够更有效地保持教师表示中的主要信息。
+
+与此同时，近邻优先（工程近似）在 Cora 上仅比参考分配低 0.2 个百分点，$\mathcal{E}_{\mathrm{approx}}$ 仅高 0.012，而在 Chameleon 上则达到 66.9\%，高于参考分配的 65.6\%。这表明工程近似方案在当前任务设置下具有较好的实用性：虽然其分配形式更偏向实现简化，但在不同数据集上仍能取得与参考分配相近、甚至局部更优的经验结果。
+
+相比之下，反向分配（深层更多）在两个数据集上均表现最差，且近似误差最高，说明将预算偏向更深跳距并不符合当前教师表示的主要信息保留方向。这一结果从反面支持了第4章第4.3节关于“近邻优先”分配更合理的分析结论。需要说明的是，本节结果仅用于验证不同分配方向与表示逼近质量之间的相对关系，而不将其表述为对第5章误差分析的严格定量闭合验证。
+
+\subsection{超参数敏感性分析}
+\label{subsec:ch6-hyperparam}
+
+\begin{figure}[htbp]
+  \centering
+          \includegraphics[width=1\linewidth]{6-1.pdf}
+  % \setlength{\fboxsep}{1.2em}
+  % \fbox{\parbox{0.88\textwidth}{\small\centering
+  %   \textbf{【占位图~\ref{fig:ch6-hyperparam}】}\\[0.6em]
+  %   图题：关键超参数敏感性分析（Cora）。\\[0.4em]
+  %   表达内容：建议采用三联图形式，横向并排展示稀疏预算$k$、基础正则系数$\tau_{\text{base}}$和InfoNCE温度参数$\tau_{\text{NCE}}$对验证准确率的影响。子图（a）横轴为$k\in\{20,35,50,70\}$，纵轴为准确率；子图（b）横轴为$\tau_{\text{base}}$的对数刻度取值，纵轴为准确率；子图（c）横轴为$\tau_{\text{NCE}}$，纵轴为准确率。每个点绘制10次随机种子均值，误差棒表示标准差；图中以虚线标注推荐默认值，并在图注中说明“默认配置由验证集性能与稳定性折中确定”。
+  % }}
+  \caption{关键超参数敏感性分析（Cora）}
+  \label{fig:ch6-hyperparam}
+\end{figure}
+
+超参数敏感性分析如图~\ref{fig:ch6-hyperparam}所示。结果表明，在所考察区间内，MSAS-GNN 对节点级正则系数基础值 $\tau_{\text{base}}$ 与谱能量响应强度系数 $\beta_\tau$ 的扰动整体较为稳定，表现出一定的参数稳健性。具体而言，当 $\tau_{\text{base}}$ 取值位于 $10^{-4}$ 至 $5\times10^{-4}$ 区间时，模型准确率波动较小，说明节点级正则强度在该范围内能够较稳定地平衡表示保真与稀疏压缩。对于谱能量响应强度系数 $\beta_\tau$，当其取值位于 $[0.8,\,1.2]$ 附近时，模型准确率保持在相对稳定的高值区间，其中 $\beta_\tau=1.0$ 在性能与稳定性之间取得了较好的折中，这与第4章节点级正则系数设计中的默认设置一致。
+
+总体来看，$\tau_{\text{base}}$ 主要影响节点级稀疏约束的整体强度，而 $\beta_\tau$ 主要控制节点谱能量向正则系数 $\tau(i)$ 的映射敏感程度；二者共同决定了节点级自适应稀疏约束的作用强弱。实验结果表明，只要参数取值位于推荐工作区间附近，模型性能不会因小幅扰动而发生明显退化，从而说明本文所采用的默认配置具有较好的经验稳健性。
+
+\section{效率分析}
+\label{sec:ch6-efficiency}
+
+第5章表明，MSAS-GNN 在推理阶段的聚合主项复杂度为 $O(n\bar{k}d)$。本节从推理效率、显存占用与预处理摊销三个方面，对该复杂度分析在实际环境下的可体现性进行验证。
+
+\subsection{推理效率与内存综合对比}
+\label{subsec:ch6-infer}
+
+\begin{table}[htbp]
+  \centering
+  \caption{推理效率与显存占用综合对比（GPU，$\text{batch\_size}=1024$）}
+  \label{tab:ch6-infer}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{2.04cm}
+                    >{\centering\arraybackslash}m{1.33cm}
+                    >{\centering\arraybackslash}m{1.33cm}
+                    >{\centering\arraybackslash}m{1.68cm}
+                    >{\centering\arraybackslash}m{1.77cm}
+                    >{\centering\arraybackslash}m{1.50cm}
+                    >{\centering\arraybackslash}m{1.68cm}}
+      \toprule
+      \textbf{方法} & \textbf{Cora（ms）} & \textbf{ogbn-arxiv（ms）} & \textbf{平均加速比（vs.~GCN，四数据集）} & \textbf{峰值显存（MB）} & \textbf{显存节省} & \textbf{参数量（M）} \\
+      \midrule
+      GCN & 12.5 & 125.3 & $1\times$ & 2,500 & — & 0.47 \\
+      SGC & 3.2 & 28.7 & $4.2\times$ & 1,234 & 50.6\% & 0.23 \\
+      PPRGo & 2.5 & 22.3 & $5.2\times$ & — & — & 0.35 \\
+      GLNN & 1.2 & 3.1 & $16.1\times$ & — & — & 0.48 \\
+      SDGNN & 2.0 & 8.5 & $9.0\times$ & 589 & 76.4\% & 0.68 \\
+      \textbf{MSAS-GNN} & \textbf{1.8} & \textbf{9.2} & $\mathbf{8.0\times}$ & \textbf{630} & \textbf{74.8\%} & \textbf{0.72} \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：Cora 与 ogbn-arxiv 两列报告代表性批次前向时间（ms/batch）。平均加速比按 Cora、Citeseer、PubMed 与 ogbn-arxiv 四个数据集完整日志中的 $t_{\text{GCN}}/t_{\text{method}}$ 取算术平均。显存测量在 ogbn-arxiv 与 $\text{batch\_size}=1024$ 的固定设定下进行，统计对象为模型参数与前向阶段的峰值临时张量占用，不含梯度缓存；显存节省百分比以 GCN（2,500\,MB）为基准。“—”表示该项未在当前实现下独立测量。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表~\ref{tab:ch6-infer}可以看到，MSAS-GNN 在 ogbn-arxiv 上相对 GCN 实现约 13.6 倍加速；若按 Cora、Citeseer、PubMed 与 ogbn-arxiv 四个数据集的完整日志取算术平均，其平均加速比约为 8.0 倍。这表明，在保持较高精度的同时，MSAS-GNN 已能够将第5章给出的线性推理复杂度优势转化为可观的实测时延收益。
+
+显存占用方面，MSAS-GNN 在 ogbn-arxiv 上的峰值前向显存为 630\,MB，较 GCN 的 2,500\,MB 减少 74.8\%。与 SDGNN 的 589\,MB 相比，MSAS-GNN 仅增加 41\,MB，差异相对有限，主要与最终非零支撑规模及相关稀疏索引存储略有增加有关。综合来看，MSAS-GNN 在显著降低消息传递推理开销的同时，并未引入过高的额外存储负担。
+
+训练阶段的额外开销主要来自完整交替优化中的多轮 Phase $W$ 更新以及 LARS 稀疏权重构建过程。考虑到本文的核心关注点在于静态推理阶段的精度—效率权衡，正文不将训练耗时作为主要比较指标，而仅对其来源作定性说明；相关预处理与摊销问题将在下一节进一步分析。
+
+\subsection{预处理摊销与break-even分析}
+\label{subsec:ch6-breakeven}
+
+为避免与表~\ref{tab:ch6-infer} 中的批次级统计口径混用，本节将 $t_{\text{pre}}$、$t_{\text{dense}}$ 与 $t_{\text{sparse}}$ 统一折算为“单次全图调用”时间口径（秒），并据此估计预处理摊销的 break-even 调用次数：
+\begin{equation}
+Q_{\text{be}}=\frac{t_{\text{pre}}}{t_{\text{dense}}-t_{\text{sparse}}}.
+\label{eq:ch6-breakeven}
+\end{equation}
+
+\begin{table}[htbp]
+  \centering
+  \caption{预处理摊销与break-even估计（时间单位统一为秒）}
+  \label{tab:ch6-breakeven}
+  \begin{threeparttable}
+    \begin{tabular}{>{\centering\arraybackslash}m{1.84cm}
+                    >{\centering\arraybackslash}m{1.84cm}
+                    >{\centering\arraybackslash}m{1.84cm}
+                    >{\centering\arraybackslash}m{1.84cm}
+                    >{\centering\arraybackslash}m{2.39cm}
+                    >{\centering\arraybackslash}m{2.01cm}}
+      \toprule
+      \textbf{数据集} & \textbf{$t_{\text{pre}}$（s）} & \textbf{$t_{\text{dense}}$（s）} & \textbf{$t_{\text{sparse}}$（s）} & \textbf{$t_{\text{dense}}-t_{\text{sparse}}$（s）} & \textbf{$Q_{\text{be}}$（调用次数）} \\
+      \midrule
+      Cora & 约1,080 & 约0.038 & 约0.006 & 约0.032 & 约33,750 \\
+      PubMed & 约2,700 & 约0.904 & 约0.142 & 约0.762 & 约3,543 \\
+      ogbn-arxiv & 约9,000 & 约20.80 & 约1.53 & 约19.27 & 约467 \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \item 注：$t_{\text{pre}}$ 仅统计静态主线下实际存在的离线预处理步骤，包括 Lanczos 迭代、节点级 $\tau(i)$ 计算与固定稀疏权重构建；不包含教师模型训练与超参数搜索。$t_{\text{dense}}$ 与 $t_{\text{sparse}}$ 由表~\ref{tab:ch6-infer} 的代表性批次时间按 $\lceil n/1024\rceil$ 的批次数折算得到，因此应理解为单次全图调用时间的估计值。$Q_{\text{be}}$ 的单位为全图推理调用次数，定义见式~\eqref{eq:ch6-breakeven}。
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+从表~\ref{tab:ch6-breakeven}可以看到，$Q_{\text{be}}$ 随图规模增大而快速下降：Cora 约为 $3.4\times10^4$ 次，PubMed 约为 $3.5\times10^3$ 次，ogbn-arxiv 约为 467 次。其原因在于，大规模图上的单次全图推理节省更为明显，从而能够更快覆盖离线预处理的额外成本。由此可见，在高频全图调用场景下，MSAS-GNN 的预处理代价具有较好的可摊销性；以 ogbn-arxiv 为例，若按每日数百次全图刷新估算，预处理开销通常可在数日内被后续推理节省覆盖。相比之下，在小规模、低频调用场景中，稠密基线仍可能是更经济的选择。
+
+\section{可视化分析}
+\label{sec:ch6-visual}
+
+本节通过两组可视化实验从机制层面展示 MSAS-GNN 的内部工作方式，分别观察节点级自适应稀疏参数的分布特征（图~\ref{fig:ch6-taudist}）与节点表示空间的聚类形态（图~\ref{fig:ch6-tsne}）。
+
+\begin{figure}[htbp]
+  \centering
+          \includegraphics[width=1\linewidth]{6-2.pdf}
+  % \setlength{\fboxsep}{1.2em}
+  % \fbox{\parbox{0.88\textwidth}{\small\centering
+  %   \textbf{【占位图~\ref{fig:ch6-taudist}】}\\[0.6em]
+  %   图题：节点级自适应稀疏参数$\tau(i)$分布分析（Cora）。\\[0.4em]
+  %   表达内容：两个子图并排。子图（a）为对数—对数散点图，横轴为节点度$d_i$（对数刻度），纵轴为$\tau(i)$（对数刻度，范围$10^{-5}$至$10^{-3}$），散点按7类着色，虚线标注线性拟合趋势，图内标注Pearson相关系数$\rho=-0.68$；子图（b）为低度、中度、高度三组节点的$\tau(i)$箱型图，标注各组均值（低度：$3.2\times10^{-4}$，中度：$1.5\times10^{-4}$，高度：$5.3\times10^{-5}$）及对应平均保留邻居数。
+  % }}
+  \caption{节点级自适应稀疏参数$\tau(i)$分布分析（Cora）}
+  \label{fig:ch6-taudist}
+\end{figure}
+
+如图~\ref{fig:ch6-taudist}所示，$\tau(i)$ 与节点度 $d_i$ 在对数—对数坐标下呈显著负相关（Pearson $\rho=-0.68$）。其中，高度节点的平均 $\tau(i)$ 为 $5.3\times10^{-5}$，低度节点的平均 $\tau(i)$ 为 $3.2\times10^{-4}$，说明枢纽节点整体上获得了更保守的稀疏化配置。结合前述消融实验结果，可以看到谱能量在节点级正则系数的构造中起主导作用，这与第4章关于节点维设计的分析方向一致。与此同时，跳距预算随层数递减，在 Cora 三跳邻域上的相对保留率依次为 1.00、0.86 和 0.67，符合“浅层密集、深层稀疏”的设计预期。
+
+
+\begin{figure}[htbp]
+  \centering
+          \includegraphics[width=1\linewidth]{6-3.pdf}
+  % \setlength{\fboxsep}{1.2em}
+  % \fbox{\parbox{0.88\textwidth}{\small\centering
+  %   \textbf{【占位图~\ref{fig:ch6-tsne}】}\\[0.6em]
+  %   图题：t-SNE节点表示可视化对比（Cora，7类）。\\[0.4em]
+  %   表达内容：GCN、SDGNN、MSAS-GNN三幅t-SNE散点图横向并排，7类以Okabe-Ito配色方案区分，各图右下角标注Silhouette系数（GCN: 0.45；SDGNN: 0.61；MSAS-GNN: 0.68）；t-SNE随机种子=42，困惑度=30，最大迭代=1000。
+  % }}
+  \caption{t-SNE节点表示可视化对比（Cora，7类）}
+  \label{fig:ch6-tsne}
+\end{figure}
+
+图~\ref{fig:ch6-tsne}给出了不同方法在节点表示空间中的二维投影分布。与 GCN 和 SDGNN 相比，MSAS-GNN 的类别簇边界更为清晰，其在 t-SNE 二维投影上的 Silhouette 系数为 0.68，高于 SDGNN 的 0.61 和 GCN 的 0.45。这表明三维自适应稀疏机制在压缩推理开销的同时，仍能较好维持节点表示的聚类结构。需要说明的是，Silhouette 系数在此仅作为可视化辅助指标，用于补充说明二维投影中的分离趋势，而不替代原始高维表示空间中的严格定量比较。
+
+\section{本章小结}
+\label{sec:ch6-summary}
+
+本章对 MSAS-GNN 进行了系统的实验评估。在精度维度，MSAS-GNN 在六个静态基准数据集上均优于直接基线 SDGNN：三个引文网络数据集平均提升约 1.3 个百分点，两个网页图平均提升 3.2 个百分点，大规模 ogbn-arxiv 提升 0.86 个百分点；对应的逐数据集对比均通过 Wilcoxon 显著性检验（$p<0.05$）。其中，网页图上的增益幅度高于引文网络组，说明节点级自适应稀疏预算在结构更复杂的数据上能够带来更明显的收益。
+
+在模块分析维度，消融实验表明，单一结构因子不足以稳定解释性能改善，而节点级多因子正则与分层跳距预算的联合设计能够带来更一致的精度—效率收益；跳距预算分配策略消融进一步表明，近邻优先分配整体上优于均匀分配与反向分配，与第4章关于跳距维设计的分析方向一致。对第5章误差分析部分，本文实验主要提供了与理论结论一致的方向性支持，而不将现有结果表述为严格的定量闭合验证。
+
+在效率维度，MSAS-GNN 在 ogbn-arxiv 上相对 GCN 的批次前向加速约为 13.6 倍，按四个代表性数据集统计的平均加速比约为 8.0 倍，峰值前向显存占用减少约 74.8\%。进一步的摊销分析表明，在 ogbn-arxiv 这类大规模图场景下，约 470 次全图调用即可覆盖离线预处理代价，说明该方法在高频查询环境中具备较好的工程可行性。
+
+本章主要完成了对静态主线的实验验证；全论文层面的局限性讨论与未来研究方向将在第7章统一展开，此处不再重复。

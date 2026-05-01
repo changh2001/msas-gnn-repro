@@ -1,0 +1,55 @@
+\begin{thebibliography}{7}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax\else
+  \urlstyle{same}\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \DeclareUrlCommand\doi{\urlstyle{rm}}
+  \def\eprint#1#2{#2}
+\else
+  \def\doi#1{\href{https://doi.org/#1}{\nolinkurl{#1}}}
+  \let\eprint\href
+\fi
+
+\bibitem[Chung(1997)]{Chung1997}
+Chung F~R~K.
+\newblock Cbms regional conference series in mathematics: number~92\quad spectral graph theory\allowbreak[M].
+\newblock Providence: American Mathematical Society, 1997.
+
+\bibitem[Shuman et~al.(2013)Shuman, Narang, Frossard, Ortega, and Vandergheynst]{Shuman2013GSP}
+Shuman D~I, Narang S~K, Frossard P, et~al.
+\newblock The emerging field of signal processing on graphs\allowbreak[J/OL].
+\newblock IEEE Signal Processing Magazine, 2013, 30\allowbreak (3): 83-98.
+\newblock DOI: \doi{10.1109/MSP.2012.2235192}.
+
+\bibitem[Ortega et~al.(2018)Ortega, Frossard, Kova{\v{c}}evi{\'{c}}, Moura, and Vandergheynst]{Ortega2018GSP}
+Ortega A, Frossard P, Kova{\v{c}}evi{\'{c}} J, et~al.
+\newblock Graph signal processing: Overview, challenges, and applications\allowbreak[J/OL].
+\newblock Proceedings of the IEEE, 2018, 106\allowbreak (5): 808-828.
+\newblock DOI: \doi{10.1109/JPROC.2018.2820126}.
+
+\bibitem[Stewart(1990)]{stewart1990stochastic}
+Stewart G~W.
+\newblock Stochastic perturbation theory\allowbreak[J].
+\newblock SIAM review, 1990, 32\allowbreak (4): 579-610.
+
+\bibitem[Wu et~al.(2019)Wu, Souza, Zhang, Fifty, Yu, and Weinberger]{Wu2019SGC}
+Wu F, Souza A~H, Zhang T, et~al.
+\newblock Simplifying graph convolutional networks\allowbreak[C/OL]//\allowbreak
+Proceedings of the 36th International Conference on Machine Learning (ICML).
+\newblock Long Beach, USA: PMLR, 2019: 6861-6871.
+\newblock \url{https://arxiv.org/abs/1902.07153}.
+
+\bibitem[Tseng(2001)]{Tseng2001}
+Tseng P.
+\newblock Convergence of a block coordinate descent method for nondifferentiable minimization\allowbreak[J/OL].
+\newblock Journal of Optimization Theory and Applications, 2001, 109\allowbreak (3): 475-494.
+\newblock DOI: \doi{10.1023/A:1017501703105}.
+
+\bibitem[Razaviyayn et~al.(2013)Razaviyayn, Hong, and Luo]{Razaviyayn2013}
+Razaviyayn M, Hong M, Luo Z~Q.
+\newblock A unified convergence analysis of block successive minimization methods for nonsmooth optimization\allowbreak[J/OL].
+\newblock SIAM Journal on Optimization, 2013, 23\allowbreak (2): 1126-1153.
+\newblock DOI: \doi{10.1137/120891009}.
+
+\end{thebibliography}

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>图6-1</title>
+<script>
+MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},
+  options:{skipHtmlTags:['script','noscript','style','textarea']},
+  startup:{typeset:false}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:transparent;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:8px;
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:11px;
+}
+.fig{width:860px;}
+
+/* ─── 标题栏 ─── */
+.fig-header{
+  background:#f2f6fb;
+  border:1px solid #c8d8ec;
+  border-radius:5px 5px 0 0;
+  padding:5px 12px 4px;
+  text-align:center;
+  margin-bottom:4px;
+}
+.fig-subtitle{font-size:9.5px;color:#5a7090;margin-top:0;}
+
+/* ─── 网格布局（上面两个，底下一个） ─── */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+.cell{
+  background:#fff;
+  border:1px solid #c8d8ec;
+  border-radius:4px;
+  padding:8px 8px 6px;
+  position:relative;
+}
+.cell-title{
+  font-size:10px;font-weight:700;color:#1a3558;
+  text-align:center;margin-bottom:5px;
+  padding-bottom:3px;border-bottom:1px solid #e0eaf4;
+  line-height:1.4;
+}
+.cell-title .param{
+  display:inline-block;
+  background:#e8f2fb;border:0.6px solid #a8c8e8;
+  border-radius:3px;padding:0 5px;color:#1a4a80;
+  font-size:10px;
+}
+
+/* ─── 底部图注 ─── */
+.fig-footer{
+  background:#f7fafd;border:1px solid #c8d8ec;border-radius:0 0 5px 5px;
+  margin-top:4px;padding:5px 12px 6px;
+  font-size:8.8px;color:#4a5a6a;line-height:1.6;text-align:center;
+}
+.fig-footer strong{color:#1a3558;}
+
+svg text{font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;}
+</style>
+</head>
+<body>
+<div class="fig">
+
+  <!-- 标题栏 -->
+  <div class="fig-header">
+    <div class="fig-subtitle">单因素敏感性分析 · 双联横排 · 10次随机种子均值±1标准差 · 固定其余超参数于默认配置</div>
+  </div>
+
+  <!-- 双联网格 -->
+  <div class="grid">
+
+    <!-- ① 子图(a)：稀疏预算 k -->
+    <div class="cell">
+      <div class="cell-title">
+        (a)&ensp;谱能量响应系数 <span class="param">\(\beta_\tau\)</span> 敏感性分析
+      </div>
+      <!--
+        plot area: x=52–258, y=18–162  (宽206, 高144)
+        X轴 k: 20,35,50,70,100 → 等间距5点
+          step=(258-52)/4=51.5
+          x: 52, 103.5, 155, 206.5, 258
+        左Y轴 准确率 81–86%, range=5%, 1%=28.8px
+          81→162, 82→133.2, 83→104.4, 84→75.6, 85→46.8, 86→18
+        右Y轴 推理时间 0.5–3.0ms, range=2.5, 1ms=57.6px
+          0.5→162, 1.0→133.2, 1.5→104.4, 2.0→75.6, 2.5→46.8, 3.0→18
+        数据点：
+          准确率 k=20→82.1, 35→83.8, 50→85.3, 70→85.6, 100→85.7
+          时间   k=20→0.6,  35→0.9,  50→1.2,  70→1.8,  100→2.8
+          误差棒 ±0.35%
+      -->
+      <svg width="100%" viewBox="0 0 285 218" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <!-- 误差棒裁切（与下方纵向缩放一致） -->
+          <clipPath id="clipA">
+            <rect x="52" y="18" width="206" height="144" transform="translate(142.5,100) scale(1,1.07) translate(-142.5,-100)"/>
+          </clipPath>
+        </defs>
+        <g transform="translate(142.5,100) scale(1,1.07) translate(-142.5,-100)">
+        <!-- 背景网格 -->
+        <g stroke="#e8eff7" stroke-width="0.7" stroke-dasharray="3,3">
+          <line x1="52" y1="162" x2="258" y2="162"/>
+          <line x1="52" y1="133.2" x2="258" y2="133.2"/>
+          <line x1="52" y1="104.4" x2="258" y2="104.4"/>
+          <line x1="52" y1="75.6" x2="258" y2="75.6"/>
+          <line x1="52" y1="46.8" x2="258" y2="46.8"/>
+          <line x1="52" y1="18" x2="258" y2="18"/>
+        </g>
+
+        <!-- 灰色注释框：k<35 -->
+        <rect x="52" y="18" width="51.5" height="144" fill="#fff3e8" opacity="0.55"/>
+        <!-- 灰色注释框：k>50 -->
+        <rect x="155" y="18" width="103" height="144" fill="#f0f5ff" opacity="0.45"/>
+
+        <!-- 默认值竖线 β_τ=1.0 → x=155 -->
+        <line x1="155" y1="18" x2="155" y2="162" stroke="#c04040" stroke-width="1.4" stroke-dasharray="4,3"/>
+
+        <!-- 轴框 -->
+        <rect x="52" y="18" width="206" height="144" fill="none" stroke="#b0c4d8" stroke-width="0.9"/>
+
+        <!-- X轴标签 -->
+        <g font-size="9" fill="#4a5a6a" text-anchor="middle">
+          <text x="52"    y="176">0.5</text>
+          <text x="103.5" y="176">0.75</text>
+          <text x="155"   y="176">1.0</text>
+          <text x="206.5" y="176">1.25</text>
+          <text x="258"   y="176">1.5</text>
+        </g>
+        <text x="155" y="188" font-size="9" fill="#2a3a4a" text-anchor="middle">谱能量响应系数 \(\beta_\tau\)</text>
+
+        <!-- 左Y轴：准确率 81–86% -->
+        <g font-size="8.5" fill="#1a5a8a" text-anchor="end">
+          <text x="48" y="165">81</text>
+          <text x="48" y="136">82</text>
+          <text x="48" y="107">83</text>
+          <text x="48" y="78">84</text>
+          <text x="48" y="50">85</text>
+          <text x="48" y="21">86</text>
+        </g>
+        <line x1="52" y1="18" x2="52" y2="162" stroke="#1a5a8a" stroke-width="1.3"/>
+        <text transform="translate(13,90) rotate(-90)" font-size="9" fill="#1a5a8a" text-anchor="middle" font-weight="700">验证准确率（%）</text>
+
+        <!-- 右Y轴：推理时间 0.5–3.0ms -->
+        <!-- 0.5→162, 3.0→18 →  step 0.5ms = 28.8px -->
+        <g font-size="8" fill="#b87828" text-anchor="start">
+          <text x="262" y="165">0.5</text>
+          <text x="262" y="136">1.0</text>
+          <text x="262" y="107">1.5</text>
+          <text x="262" y="78">2.0</text>
+          <text x="262" y="50">2.5</text>
+          <text x="262" y="21">3.0</text>
+        </g>
+        <line x1="258" y1="18" x2="258" y2="162" stroke="#b87828" stroke-width="1.3"/>
+        <text transform="translate(278,90) rotate(90)" font-size="8.5" fill="#b87828" text-anchor="middle" font-weight="700">推理时间（ms）</text>
+
+        <!-- 准确率误差棒（clip内）: ±0.35% = ±0.35*28.8=10.08px -->
+        <g clip-path="url(#clipA)" stroke="#253e70" stroke-width="1">
+          <!-- b=0.5: y=162-(82.5-81)*28.8=162-43.2=118.8 -->
+          <line x1="52"    y1="108.7" x2="52"    y2="128.9"/>
+          <line x1="48"    y1="108.7" x2="56"    y2="108.7"/>
+          <line x1="48"    y1="128.9" x2="56"    y2="128.9"/>
+          <!-- b=0.75: y=162-(84.2-81)*28.8=162-92.2=69.8 -->
+          <line x1="103.5" y1="59.7"  x2="103.5" y2="79.9"/>
+          <line x1="99.5"  y1="59.7"  x2="107.5" y2="59.7"/>
+          <line x1="99.5"  y1="79.9"  x2="107.5" y2="79.9"/>
+          <!-- b=1.0: y=162-(85.3-81)*28.8=162-123.8=38.2 -->
+          <line x1="155"   y1="28.1"  x2="155"   y2="48.3"/>
+          <line x1="151"   y1="28.1"  x2="159"   y2="28.1"/>
+          <line x1="151"   y1="48.3"  x2="159"   y2="48.3"/>
+          <!-- b=1.25: y=162-(85.0-81)*28.8=162-115.2=46.8 -->
+          <line x1="206.5" y1="36.7"  x2="206.5" y2="56.9"/>
+          <line x1="202.5" y1="36.7"  x2="210.5" y2="36.7"/>
+          <line x1="202.5" y1="56.9"  x2="210.5" y2="56.9"/>
+          <!-- b=1.5: y=162-(83.8-81)*28.8=162-80.6=81.4 -->
+          <line x1="258"   y1="71.3"  x2="258"   y2="91.5"/>
+          <line x1="254"   y1="71.3"  x2="262"   y2="71.3"/>
+          <line x1="254"   y1="91.5"  x2="262"   y2="91.5"/>
+        </g>
+
+        <!-- 准确率曲线: b=0.5→1.5: 118.8,69.8,38.2,46.8,81.4 -->
+        <polyline points="52,118.8 103.5,69.8 155,38.2 206.5,46.8 258,81.4"
+          fill="none" stroke="#253e70" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+        <g fill="#253e70">
+          <circle cx="52"    cy="118.8" r="3.5"/>
+          <circle cx="103.5" cy="69.8"  r="3.5"/>
+          <circle cx="155"   cy="38.2"  r="5" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="206.5" cy="46.8"  r="3.5"/>
+          <circle cx="258"   cy="81.4"  r="3.5"/>
+        </g>
+        <!-- 准确率数值 -->
+        <g font-size="8" fill="#253e70" text-anchor="middle">
+          <text x="52"    y="112">82.5</text>
+          <text x="103.5" y="63" >84.2</text>
+          <text x="155"   y="31"  font-weight="700">85.3❆</text>
+          <text x="207"   y="40" >85.0</text>
+          <text x="258"   y="75" >83.8</text>
+        </g>
+
+        <!-- 推理时间（常量，与β_τ无关）: t≈1.2ms→y=121.7 -->
+        <polyline points="52,121.7 103.5,121.7 155,121.7 206.5,121.7 258,121.7"
+          fill="none" stroke="#b87828" stroke-width="1.8" stroke-dasharray="5,3" stroke-linejoin="round"/>
+        <g fill="#b87828">
+          <circle cx="52"    cy="121.7" r="2.8"/>
+          <circle cx="103.5" cy="121.7" r="2.8"/>
+          <circle cx="155"   cy="121.7" r="2.8"/>
+          <circle cx="206.5" cy="121.7" r="2.8"/>
+          <circle cx="258"   cy="121.7" r="2.8"/>
+        </g>
+
+        <!-- 默认值标注 -->
+        <text x="138" y="15" font-size="8" fill="#c04040" text-anchor="middle" font-style="italic">默认 \(\beta_\tau=1.0\)</text>
+
+        <!-- 注释文字框 -->
+        <rect x="54" y="56" width="44" height="30" fill="#fff8f0" stroke="#e8c080" stroke-width="0.7" rx="2"/>
+        <text x="76" y="67" font-size="6.8" fill="#a05010" text-anchor="middle">\(\beta_\tau\)&lt;0.75</text>
+        <text x="76" y="76" font-size="6.8" fill="#a05010" text-anchor="middle">响应不足</text>
+        <text x="76" y="84" font-size="6.5" fill="#a05010" text-anchor="middle">误差偏高</text>
+
+        <rect x="160" y="56" width="48" height="30" fill="#f0f5ff" stroke="#a0c0e0" stroke-width="0.7" rx="2"/>
+        <text x="184" y="67" font-size="6.8" fill="#2a5080" text-anchor="middle">\(\beta_\tau\)&gt;1.25</text>
+        <text x="184" y="76" font-size="6.8" fill="#2a5080" text-anchor="middle">过激进</text>
+        <text x="184" y="84" font-size="6.5" fill="#2a5080" text-anchor="middle">准确率↓</text>
+
+        <!-- 图例 -->
+        <g font-size="8">
+          <line x1="54" y1="193" x2="69" y2="193" stroke="#253e70" stroke-width="2.2"/>
+          <circle cx="61.5" cy="193" r="2.5" fill="#253e70"/>
+          <text x="72" y="196" fill="#253e70">准确率（左轴）</text>
+          <line x1="160" y1="193" x2="175" y2="193" stroke="#b87828" stroke-width="1.8" stroke-dasharray="4,2"/>
+          <circle cx="167.5" cy="193" r="2.5" fill="#b87828"/>
+          <text x="178" y="196" fill="#b87828">推理时间（右轴，与\(\beta_\tau\)无关）</text>
+        </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ② 子图(b)：τ_base 敏感性 -->
+    <div class="cell">
+      <div class="cell-title">
+        (b)&ensp;正则系数 <span class="param">\(\tau_{\text{base}}\)</span> 敏感性分析
+      </div>
+      <!--
+        plot area: x=52–258, y=18–162 (宽206, 高144)
+        X轴 log刻度: 1e-4, 5e-4, 1e-3, 5e-3, 1e-2
+          映射到线性位置：取log10值 -4,-3.3,-3,-2.3,-2
+          range=2, 1单位=103px
+          x: 1e-4→52, 5e-4→124.1, 1e-3→155, 5e-3→227.1, 1e-2→258
+        准确率: 83.8, 85.0, 85.3, 84.4, 80.5
+        左Y轴 79–87%, range=8, 1%=18px
+          79→162, 80→144, 81→126, 82→108, 83→90, 84→72, 85→54, 86→36, 87→18
+        稳健区间: 1e-4到5e-4 → x=52到124.1
+      -->
+      <svg width="100%" viewBox="0 0 285 218" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <clipPath id="clipB">
+            <rect x="52" y="18" width="206" height="144" transform="translate(142.5,100) scale(1,1.07) translate(-142.5,-100)"/>
+          </clipPath>
+        </defs>
+        <g transform="translate(142.5,100) scale(1,1.07) translate(-142.5,-100)">
+        <!-- 背景网格 -->
+        <g stroke="#e8eff7" stroke-width="0.7" stroke-dasharray="3,3">
+          <line x1="52" y1="162" x2="258" y2="162"/>
+          <line x1="52" y1="144" x2="258" y2="144"/>
+          <line x1="52" y1="126" x2="258" y2="126"/>
+          <line x1="52" y1="108" x2="258" y2="108"/>
+          <line x1="52" y1="90"  x2="258" y2="90"/>
+          <line x1="52" y1="72"  x2="258" y2="72"/>
+          <line x1="52" y1="54"  x2="258" y2="54"/>
+          <line x1="52" y1="36"  x2="258" y2="36"/>
+          <line x1="52" y1="18"  x2="258" y2="18"/>
+        </g>
+
+        <!-- 稳健区间阴影 [1e-4, 5e-4] → x=52 到 124.1 -->
+        <rect x="52" y="18" width="72.1" height="144" fill="#e8f4e8" opacity="0.6"/>
+        <text x="88" y="32" font-size="7.5" fill="#1a6038" text-anchor="middle" font-weight="600">稳健区间</text>
+        <text x="88" y="41" font-size="7" fill="#1a6038" text-anchor="middle">\(\Delta\!\leq\!0.5\%\)</text>
+
+        <!-- 默认值竖线 τ_base=1e-3 → x=155 -->
+        <line x1="155" y1="18" x2="155" y2="162" stroke="#c04040" stroke-width="1.4" stroke-dasharray="4,3"/>
+
+        <!-- 轴框 -->
+        <rect x="52" y="18" width="206" height="144" fill="none" stroke="#b0c4d8" stroke-width="0.9"/>
+
+        <!-- X轴标签（对数刻度） -->
+        <g font-size="8" fill="#4a5a6a" text-anchor="middle">
+          <text x="52"    y="176">\(10^{-4}\)</text>
+          <text x="124.1" y="176">\(5{\times}10^{-4}\)</text>
+          <text x="155"   y="176">\(10^{-3}\)</text>
+          <text x="227.1" y="176">\(5{\times}10^{-3}\)</text>
+          <text x="258"   y="176">\(10^{-2}\)</text>
+        </g>
+        <text x="155" y="190" font-size="9" fill="#2a3a4a" text-anchor="middle">基础正则系数 \(\tau_{\text{base}}\)（对数刻度）</text>
+
+        <!-- 左Y轴：准确率 79–87% -->
+        <g font-size="8.5" fill="#1a5a8a" text-anchor="end">
+          <text x="48" y="165">79</text>
+          <text x="48" y="147">80</text>
+          <text x="48" y="129">81</text>
+          <text x="48" y="111">82</text>
+          <text x="48" y="93" >83</text>
+          <text x="48" y="75" >84</text>
+          <text x="48" y="57" >85</text>
+          <text x="48" y="39" >86</text>
+          <text x="48" y="21" >87</text>
+        </g>
+        <line x1="52" y1="18" x2="52" y2="162" stroke="#1a5a8a" stroke-width="1.3"/>
+        <text transform="translate(13,90) rotate(-90)" font-size="9" fill="#1a5a8a" text-anchor="middle" font-weight="700">验证准确率（%）</text>
+
+        <!-- 误差棒 ±0.4% = ±7.2px, clip -->
+        <!--
+          y(83.8)=162-(83.8-79)*18=75.6
+          y(85.0)=162-(85.0-79)*18=54.0
+          y(85.3)=162-(85.3-79)*18=48.6
+          y(84.4)=162-(84.4-79)*18=64.8
+          y(80.5)=162-(80.5-79)*18=135.0
+        -->
+        <!-- 误差棒 ±0.4%=±7.2px -->
+        <g clip-path="url(#clipB)" stroke="#253e70" stroke-width="1">
+          <line x1="52"    y1="68.4"  x2="52"    y2="82.8"/> <line x1="48"    y1="68.4"  x2="56"    y2="68.4"/> <line x1="48"    y1="82.8"  x2="56"    y2="82.8"/>
+          <line x1="124.1" y1="46.8"  x2="124.1" y2="61.2"/> <line x1="120.1" y1="46.8"  x2="128.1" y2="46.8"/> <line x1="120.1" y1="61.2"  x2="128.1" y2="61.2"/>
+          <line x1="155"   y1="41.4"  x2="155"   y2="55.8"/> <line x1="151"   y1="41.4"  x2="159"   y2="41.4"/> <line x1="151"   y1="55.8"  x2="159"   y2="55.8"/>
+          <line x1="227.1" y1="57.6"  x2="227.1" y2="72.0"/> <line x1="223.1" y1="57.6"  x2="231.1" y2="57.6"/> <line x1="223.1" y1="72.0"  x2="231.1" y2="72.0"/>
+          <line x1="258"   y1="127.8" x2="258"   y2="142.2"/><line x1="254"   y1="127.8" x2="262"   y2="127.8"/> <line x1="254"   y1="142.2" x2="262"   y2="142.2"/>
+        </g>
+
+        <!-- 准确率曲线 -->
+        <polyline points="52,75.6 124.1,54.0 155,48.6 227.1,64.8 258,135.0"
+          fill="none" stroke="#253e70" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+        <g fill="#253e70">
+          <circle cx="52"    cy="75.6"  r="3.5"/>
+          <circle cx="124.1" cy="54.0"  r="3.5"/>
+          <circle cx="155"   cy="48.6"  r="5" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="227.1" cy="64.8"  r="3.5"/>
+          <circle cx="258"   cy="135.0" r="3.5"/>
+        </g>
+        <!-- 数值标注 -->
+        <g font-size="8" fill="#253e70" text-anchor="middle">
+          <text x="52"    y="69">83.8</text>
+          <text x="124.1" y="47">85.0</text>
+          <text x="155"   y="41" font-weight="700">85.3❆</text>
+          <text x="227.1" y="58">84.4</text>
+          <text x="258"   y="128">80.5</text>
+        </g>
+
+        <!-- 默认值标注 -->
+        <text x="138" y="15" font-size="8" fill="#c04040" text-anchor="end" font-style="italic">默认</text>
+        <text x="174" y="15" font-size="8" fill="#c04040" text-anchor="start" font-style="italic">\(\tau_{\text{base}}\!=\!10^{-3}\)</text>
+
+        <!-- 注释框 过小 / 过大 -->
+        <rect x="54" y="108" width="48" height="30" fill="#fff8f0" stroke="#e8c080" stroke-width="0.7" rx="2"/>
+        <text x="78" y="119" font-size="6.8" fill="#a05010" text-anchor="middle">稳健区间起点</text>
+        <text x="78" y="128" font-size="6.8" fill="#a05010" text-anchor="middle">\(\tau=10^{-4}\)</text>
+        <text x="78" y="135.5" font-size="6.5" fill="#a05010" text-anchor="middle">接近最优区间</text>
+
+        <rect x="206" y="90" width="48" height="30" fill="#fff0f0" stroke="#e8a0a0" stroke-width="0.7" rx="2"/>
+        <text x="230" y="101" font-size="6.8" fill="#902020" text-anchor="middle">过大→稀疏不足</text>
+        <text x="230" y="110" font-size="6.8" fill="#902020" text-anchor="middle">效率下降</text>
+        <text x="230" y="117.5" font-size="6.5" fill="#902020" text-anchor="middle">冗余边保留↑</text>
+
+        <!-- 图例 -->
+        <g font-size="8.5">
+          <line x1="80" y1="197" x2="98" y2="197" stroke="#253e70" stroke-width="2.2"/>
+          <circle cx="89" cy="197" r="2.5" fill="#253e70"/>
+          <text x="101" y="200" fill="#253e70">验证准确率（均值±1σ）</text>
+          <rect x="186" y="192" width="14" height="8" fill="#e8f4e8" stroke="#1a6038" stroke-width="0.8" opacity="0.8"/>
+          <text x="203" y="200" fill="#1a6038">稳健区间</text>
+        </g>
+        </g>
+      </svg>
+    </div>
+
+
+  </div><!-- end grid -->
+
+  <!-- 图注 -->
+  <div class="fig-footer">
+    <strong>注：</strong>以Cora数据集为测试场景（\(n=2708\)，7类节点分类），固定其余超参数于默认配置，10次随机种子均值±1标准差；默认配置由验证集性能与参数稳定性综合折中确定。
+    子图(a)展示谱能量响应系数 \(\beta_\tau\) 的敏感性：左纵轴为验证准确率（%），右纵轴为推理时间（ms，常量，与 \(\beta_\tau\) 无关），默认 \(\beta_\tau=1.0\) 在性能与稳定性间取得较好折中（准确率 85.3%）。
+    子图(b)横轴取对数刻度，搜索范围 \([10^{-4},10^{-2}]\)，Cora默认配置 \(\tau_{\text{base}}=10^{-3}\)；绿色阴影标注稳健区间 \([10^{-4},5\!\times\!10^{-4}]\)（δ≤0.5%）；
+    \(\tau_{\text{base}}\) 过小导致过度稀疏，过大则稀疏度不足。
+  </div>
+
+</div><!-- end fig -->
+<script>
+window.addEventListener('load',()=>{if(window.MathJax&&MathJax.startup){MathJax.startup.promise.then(()=>{MathJax.typesetPromise();});}});
+</script>
+</body>
+</html>

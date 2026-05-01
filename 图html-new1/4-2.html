@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>图4.3 节点级正则系数τ(i)的三维自适应框架示意图</title>
+<script>
+MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]},
+  options:{skipHtmlTags:['script','noscript','style','textarea']},
+  startup:{typeset:false}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:transparent;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:8px;
+  font-family:'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+  font-size:11px;
+}
+.fig{width:920px;}
+.fig-title{
+  text-align:center;font-size:12px;font-weight:700;color:#1a2c50;
+  padding:2px 0 7px;letter-spacing:.05em;
+}
+
+/* === 主体三栏 === */
+.body{display:flex;gap:7px;align-items:stretch;flex-wrap:nowrap;}
+.col-left{width:222px;flex-shrink:0;display:flex;flex-direction:column;gap:5px;}
+.col-mid{width:262px;flex-shrink:0;display:flex;flex-direction:column;gap:5px;align-self:stretch;}
+.col-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+
+/* === 节标题小条 === */
+.sec-label{
+  font-size:8.5px;font-weight:700;color:#4a5a70;text-align:center;
+  letter-spacing:.06em;padding:2px 0 3px;text-transform:uppercase;
+}
+
+/* === 因子卡片 === */
+.factor-card{border-radius:4px;overflow:hidden;border:0.8px solid;flex:0 0 auto;}
+.fc-hdr{font-size:9.5px;font-weight:700;color:#fff;padding:4px 7px;
+  display:flex;align-items:center;gap:5px;line-height:1.3;}
+.fc-badge{font-size:7.5px;background:rgba(255,255,255,0.22);border:0.5px solid rgba(255,255,255,0.35);
+  border-radius:8px;padding:1px 5px;white-space:nowrap;}
+.fc-body{padding:5px 7px 5px;background:#fff;}
+.fc-formula{font-size:9px;color:#333;padding:3px 5px;border-radius:3px;
+  text-align:center;line-height:1.7;margin-bottom:3px;border:0.5px solid;}
+.fc-note{font-size:8px;color:#666;line-height:1.45;margin-top:2px;}
+.fc-src{font-size:7.5px;font-weight:700;display:inline-block;border-radius:9px;
+  padding:1px 5px;border:0.5px solid;margin-top:2px;}
+
+/* ── Factor color themes ── */
+/* 1 spectral energy: blue */
+.f1{border-color:#7aaad4;}
+.f1 .fc-hdr{background:#1c4890;}
+.f1 .fc-body{background:#f4f9fe;}
+.f1 .fc-formula{background:#eaf3fd;border-color:#b0cce8;color:#1a3868;}
+.f1 .fc-src{background:#deeaf8;border-color:#7aaad4;color:#1a3868;}
+
+/* 2 degree centrality: teal */
+.f2{border-color:#6abcaa;}
+.f2 .fc-hdr{background:#1a6050;}
+.f2 .fc-body{background:#f2faf8;}
+.f2 .fc-formula{background:#e4f7f2;border-color:#90d0c0;color:#0e4838;}
+.f2 .fc-src{background:#d0f0e8;border-color:#6abcaa;color:#0e4838;}
+
+/* 3 k-core: purple */
+.f3{border-color:#a898dc;}
+.f3 .fc-hdr{background:#3828a0;}
+.f3 .fc-body{background:#f6f4fe;}
+.f3 .fc-formula{background:#eeeafc;border-color:#c0b8ec;color:#2a1880;}
+.f3 .fc-src{background:#e4e0f8;border-color:#a898dc;color:#2a1880;}
+
+/* 4 local entropy: amber */
+.f4{border-color:#c8a050;}
+.f4 .fc-hdr{background:#8a5010;}
+.f4 .fc-body{background:#fef9f0;}
+.f4 .fc-formula{background:#fdf0d8;border-color:#dcc080;color:#6a3808;}
+.f4 .fc-src{background:#fae0a8;border-color:#c8a050;color:#6a3808;}
+
+/* === 中间列 === */
+.center-box{border-radius:5px;border:1.2px solid #c0ccdc;background:#f8fafd;
+  flex:1;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;
+  padding:6px 8px 6px;min-height:0;}
+.fusion-formula-box{
+  background:#fff;border:1px solid #b0bcd4;border-radius:4px;
+  padding:5px 6px 4px;width:100%;margin:4px 0 3px;
+  font-size:8.5px;line-height:1.6;text-align:center;color:#1a1a1a;
+  overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
+}
+.fusion-formula-box mjx-container{max-width:100%;font-size:92% !important;}
+.design-logic{
+  background:#eef2fa;border:0.5px solid #b8c8e0;border-radius:3px;
+  font-size:8px;color:#2a3a58;padding:4px 6px;width:100%;line-height:1.55;
+  margin-top:3px;
+}
+.center-title{font-size:9.5px;font-weight:700;color:#1c3870;text-align:center;margin-bottom:3px;}
+.center-box > *{flex-shrink:0;}
+
+/* connector arrows (small SVG) */
+.arr-col{display:flex;align-items:center;justify-content:center;margin:1px 0;}
+
+/* === 右列 === */
+/* tau output box */
+.tau-out{border-radius:5px;border:1.2px solid #b0bcd4;background:#f0f4fa;
+  padding:5px 8px 5px;display:flex;flex-direction:column;}
+.tau-label{font-size:10px;font-weight:700;color:#1c3870;text-align:center;
+  border-bottom:0.5px solid #c0cce0;padding-bottom:4px;margin-bottom:4px;}
+.tau-range{display:flex;align-items:center;gap:4px;margin:2px 0;}
+.tau-range-lbl{font-size:8px;color:#5a6a80;width:62px;flex-shrink:0;}
+.tau-bar-bg{flex:1;height:9px;border-radius:4px;background:#e0e8f4;border:0.5px solid #c0d0e8;position:relative;overflow:hidden;}
+.tau-bar-fill{height:100%;border-radius:4px;}
+
+/* node type contrast */
+.node-row{display:flex;gap:5px;margin-top:5px;}
+.node-card{flex:1;border-radius:4px;overflow:hidden;border:0.7px solid;}
+.nc-hdr{font-size:9px;font-weight:700;color:#fff;text-align:center;padding:3px 5px;line-height:1.3;}
+.nc-body{padding:4px 6px 5px;}
+.nc-item{font-size:8px;padding:1.5px 4px;border-radius:2px;margin-bottom:1.5px;
+  line-height:1.45;display:block;border:0.5px solid;}
+.nc-tau{font-size:10px;font-weight:700;text-align:center;margin-top:3px;padding:2px 4px;
+  border-radius:3px;border:0.7px solid;}
+
+/* high-energy: blue */
+.nc-hi{border-color:#7aaad4;}
+.nc-hi .nc-hdr{background:#1c4890;}
+.nc-hi .nc-body{background:#f0f6fd;}
+.nc-hi .nc-item{background:#e4f0fb;border-color:#a8c8e8;color:#1a3868;}
+.nc-hi .nc-tau{background:#deeaf8;border-color:#7aaad4;color:#1a3868;}
+
+/* low-energy: orange */
+.nc-lo{border-color:#d4905a;}
+.nc-lo .nc-hdr{background:#a04010;}
+.nc-lo .nc-body{background:#fef5ee;}
+.nc-lo .nc-item{background:#fde8d4;border-color:#d8a878;color:#7a3010;}
+.nc-lo .nc-tau{background:#fad8b8;border-color:#d4905a;color:#7a3010;}
+
+/* LARS interface box */
+.lars-box{border-radius:4px;overflow:hidden;border:0.8px solid #8048b0;margin-top:5px;}
+.lars-hdr{background:#6030a0;color:#fff;font-size:9.5px;font-weight:700;
+  text-align:center;padding:4px 8px;line-height:1.3;}
+.lars-body{background:#f9f0fe;padding:5px 8px 5px;}
+.lars-flow{display:flex;align-items:center;gap:3px;margin-bottom:3px;}
+.lars-block{flex:1;text-align:center;font-size:8px;border-radius:3px;
+  padding:2.5px 2px;border:0.5px solid;line-height:1.45;}
+.lf-a{background:#ede4fc;border-color:#c0a8ec;color:#2a1880;}
+.lf-b{background:#e0f4f0;border-color:#90ccbc;color:#0e4838;}
+.lf-c{background:#fde8d8;border-color:#d4a888;color:#7a3010;}
+.lf-arr{font-size:12px;color:#9080c0;flex-shrink:0;}
+
+/* clip annotation */
+.clip-note{background:#fff8e0;border:0.5px solid #d8c050;border-radius:3px;
+  font-size:7.5px;color:#604808;padding:3px 6px;text-align:center;line-height:1.5;margin-top:3px;}
+
+/* === 底注 === */
+.fig-note{
+  margin-top:5px;font-size:8px;color:#5a6a7a;line-height:1.6;
+  padding:4px 10px 0;border-top:1px solid #dde4ee;font-style:normal;
+  font-weight:600;text-align:justify;
+}
+
+/* vertical connector SVG region */
+.v-conn{display:flex;justify-content:center;align-items:center;height:14px;}
+
+/* factor complementarity mini-table */
+.compat-table{width:100%;border-collapse:collapse;font-size:7.5px;margin-top:4px;}
+.compat-table th{background:#e8edf8;color:#2a3a60;font-weight:700;padding:2px 4px;border:0.5px solid #c0cce0;text-align:center;}
+.compat-table td{padding:2px 4px;border:0.5px solid #d0d8e8;text-align:center;color:#3a4a60;line-height:1.4;}
+.compat-table tr:nth-child(even) td{background:#f4f7fc;}
+.compat-table .dot-hi{color:#1c4890;font-weight:700;}
+.compat-table .dot-lo{color:#a04010;}
+
+/* single-factor fallback box */
+.fallback-box{background:#fff8e8;border:0.6px solid #d8c870;border-radius:3px;
+  padding:4px 7px;margin-top:4px;font-size:7.5px;color:#604808;line-height:1.55;}
+.fallback-box .fb-title{font-weight:700;color:#7a5010;margin-bottom:2px;font-size:8px;}
+
+/* param range bars */
+.prange-row{display:flex;align-items:center;gap:4px;margin:2px 0;}
+.prange-lbl{font-size:7.5px;font-weight:700;width:22px;flex-shrink:0;text-align:right;}
+.prange-track{flex:1;height:7px;background:#e8edf4;border-radius:3px;border:0.4px solid #c0ccd8;position:relative;overflow:visible;}
+.prange-fill{height:100%;border-radius:3px;position:absolute;}
+.prange-def{width:5px;height:13px;background:#c04040;border-radius:1px;position:absolute;top:-3px;}
+.prange-val{font-size:7px;color:#5a6880;margin-left:2px;white-space:nowrap;}
+
+/* ch4 link box */
+.ch4-box{border-radius:4px;overflow:hidden;border:0.8px solid #60a890;margin-top:5px;}
+.ch4-hdr{background:#1a7060;color:#fff;font-size:9px;font-weight:700;text-align:center;padding:3px 7px;line-height:1.3;}
+.ch4-body{background:#f0faf6;padding:5px 7px 5px;}
+.ch4-row{display:flex;align-items:flex-start;gap:4px;margin-bottom:4px;}
+.ch4-icon{flex-shrink:0;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;}
+.ch4-text{font-size:7.5px;color:#1a4838;line-height:1.5;}
+
+/* complexity breakdown */
+.cplx-box{border-radius:3px;border:0.6px solid #b0d0c0;background:#e8f6f0;padding:4px 6px;margin-top:4px;}
+.cplx-row{display:flex;align-items:center;gap:4px;padding:1.5px 0;border-bottom:0.4px solid #c8e8d8;font-size:7.5px;}
+.cplx-row:last-child{border-bottom:none;}
+.cplx-phase{color:#1a5040;font-weight:700;margin-right:2px;}
+.cplx-val{color:#2a6858;font-family:monospace;font-size:7.5px;}
+.cplx-full{border-radius:4px;overflow:hidden;border:0.8px solid #9090b0;margin-top:6px;background:#fff;}
+.cplx-full-hdr{background:#3a4070;color:#fff;font-size:9px;font-weight:700;text-align:center;padding:4px 8px;}
+.cplx-full-body{margin-top:0;border-radius:0;border:none;padding:2px 6px;}
+.cplx-full-body .cplx-row{padding:3px 6px;}
+.cplx-inline{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;overflow-y:hidden;font-size:7.4px;line-height:1.2;color:#1a5040;}
+.cplx-item{display:inline-flex;align-items:center;gap:3px;}
+.cplx-sep{color:#80a890;}
+.cplx-item .cplx-val{font-size:7.3px;}
+.cplx-tag{display:inline-block;padding:1px 5px;border-radius:3px;background:#d8f0e8;color:#0a4030;font-weight:700;border:0.5px solid #8cc8b0;}
+</style>
+</head>
+<body>
+<div class="fig">
+  <div class="body">
+
+    <!-- ===== 左列：4个输入因子 ===== -->
+    <div class="col-left">
+      <div class="sec-label">四维输入因子</div>
+
+      <!-- Factor 1: Modified spectral energy -->
+      <div class="factor-card f1">
+        <div class="fc-hdr">
+          <span>① 节点谱能量</span>
+          <span class="fc-badge">频率维度</span>
+        </div>
+        <div class="fc-body">
+          <div class="fc-formula">
+            \(E_{\text{spectral}}(i)=\displaystyle\sum_{k=1}^{K_{\text{eig}}}\frac{1}{K_{\text{eig}}}\lambda_k|U_{ik}|^2\)
+          </div>
+          <!-- Mini spectral bar chart -->
+          <svg width="100%" viewBox="0 0 210 70" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:3px 0 2px;">
+            <defs>
+              <linearGradient id="bG1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3a78cc"/><stop offset="100%" stop-color="#6aa0e8"/>
+              </linearGradient>
+              <linearGradient id="wG1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#88b8e8"/><stop offset="100%" stop-color="#b0d0f4"/>
+              </linearGradient>
+            </defs>
+            <!-- axes -->
+            <line x1="22" y1="8" x2="22" y2="58" stroke="#b0c8e0" stroke-width="0.8"/>
+            <line x1="22" y1="58" x2="205" y2="58" stroke="#b0c8e0" stroke-width="0.8"/>
+            <!-- high-energy node bars (blue, taller low-freq) -->
+            <rect x="26"  y="13" width="14" height="45" fill="url(#bG1)" rx="1"/>
+            <rect x="44"  y="22" width="14" height="36" fill="url(#bG1)" rx="1" opacity=".9"/>
+            <rect x="62"  y="33" width="14" height="25" fill="url(#bG1)" rx="1" opacity=".75"/>
+            <rect x="80"  y="42" width="14" height="16" fill="url(#bG1)" rx="1" opacity=".6"/>
+            <rect x="98"  y="49" width="14" height="9"  fill="url(#bG1)" rx="1" opacity=".45"/>
+            <rect x="116" y="53" width="14" height="5"  fill="url(#bG1)" rx="1" opacity=".3"/>
+            <!-- low-energy node bars (gray-blue, flatter) -->
+            <rect x="26"  y="51" width="14" height="7"  fill="url(#wG1)" rx="1"/>
+            <rect x="44"  y="50" width="14" height="8"  fill="url(#wG1)" rx="1"/>
+            <rect x="62"  y="48" width="14" height="10" fill="url(#wG1)" rx="1"/>
+            <rect x="80"  y="49" width="14" height="9"  fill="url(#wG1)" rx="1"/>
+            <rect x="98"  y="47" width="14" height="11" fill="url(#wG1)" rx="1"/>
+            <rect x="116" y="48" width="14" height="10" fill="url(#wG1)" rx="1"/>
+            <!-- labels -->
+            <text x="22" y="66" font-size="7" fill="#6a8aaa" font-family="sans-serif">低频</text>
+            <text x="116" y="66" font-size="7" fill="#6a8aaa" font-family="sans-serif">高频 \(\lambda_k\)</text>
+            <text x="3" y="18" font-size="7" fill="#6a8aaa" font-family="sans-serif" writing-mode="tb">能量</text>
+            <!-- legend -->
+            <rect x="148" y="20" width="8" height="6" fill="url(#bG1)" rx="1"/>
+            <text x="159" y="27" font-size="7.5" fill="#1a3868" font-family="sans-serif">高能节点</text>
+            <rect x="148" y="32" width="8" height="6" fill="url(#wG1)" rx="1"/>
+            <text x="159" y="39" font-size="7.5" fill="#5a7898" font-family="sans-serif">低能节点</text>
+          </svg>
+          <div class="fc-note">等权实例化 \(w_k(i)=1/K_{\text{eig}}\)，保持任务通用性；谱能量越大，节点对图结构贡献越强。</div>
+          <span class="fc-src">来源：§4.1节 \(E_{\text{spectral}}(i)\)（等权实例化）</span>
+        </div>
+      </div>
+
+      <!-- Factor 2: Degree centrality -->
+      <div class="factor-card f2">
+        <div class="fc-hdr">
+          <span>② 度中心性</span>
+          <span class="fc-badge">拓扑角色</span>
+        </div>
+        <div class="fc-body">
+          <div class="fc-formula">
+            \(C_{\text{deg}}(i)=\dfrac{d_i}{n-1}\in[0,1]\)
+          </div>
+          <!-- Mini degree distribution sketch -->
+          <svg width="100%" viewBox="0 0 210 42" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:2px 0;">
+            <defs>
+              <linearGradient id="tG2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1a6050"/><stop offset="100%" stop-color="#3a9070"/>
+              </linearGradient>
+            </defs>
+            <!-- small graph: hub node -->
+            <circle cx="34" cy="21" r="8" fill="#1a6050" opacity=".85"/>
+            <circle cx="14" cy="12" r="4" fill="#5ab898" opacity=".7"/>
+            <circle cx="14" cy="30" r="4" fill="#5ab898" opacity=".7"/>
+            <circle cx="54" cy="10" r="4" fill="#5ab898" opacity=".7"/>
+            <circle cx="54" cy="32" r="4" fill="#5ab898" opacity=".7"/>
+            <circle cx="60" cy="21" r="3" fill="#8adcc0" opacity=".6"/>
+            <line x1="34" y1="21" x2="14" y2="12" stroke="#3a9070" stroke-width="1.2"/>
+            <line x1="34" y1="21" x2="14" y2="30" stroke="#3a9070" stroke-width="1.2"/>
+            <line x1="34" y1="21" x2="54" y2="10" stroke="#3a9070" stroke-width="1.2"/>
+            <line x1="34" y1="21" x2="54" y2="32" stroke="#3a9070" stroke-width="1.2"/>
+            <line x1="34" y1="21" x2="60" y2="21" stroke="#3a9070" stroke-width="1.2"/>
+            <text x="28" y="25" font-size="8" fill="#fff" font-family="sans-serif" font-weight="700">hub</text>
+            <!-- bar showing C_deg range -->
+            <rect x="80" y="14" width="120" height="8" fill="#e4f7f2" rx="3" stroke="#90d0c0" stroke-width="0.5"/>
+            <rect x="80" y="14" width="90" height="8" fill="url(#tG2)" rx="3" opacity=".8"/>
+            <text x="80" y="32" font-size="7.5" fill="#0e4838" font-family="sans-serif">0</text>
+            <text x="185" y="32" font-size="7.5" fill="#0e4838" font-family="sans-serif">1.0</text>
+            <text x="151" y="20" font-size="7" fill="#fff" font-family="sans-serif">0.75</text>
+            <text x="80" y="40" font-size="7" fill="#5a7878" font-family="sans-serif">低度外围节点</text>
+            <text x="149" y="40" font-size="7" fill="#1a6050" font-family="sans-serif" font-weight="700">枢纽</text>
+          </svg>
+          <div class="fc-note">枢纽节点度数高，稀疏化损失大；外围节点可激进剪枝。参数 \(\gamma\in[0.3,0.7]\)。</div>
+        </div>
+      </div>
+
+      <!-- Factor 3: k-core -->
+      <div class="factor-card f3">
+        <div class="fc-hdr">
+          <span>③ k-core 指数</span>
+          <span class="fc-badge">核心层级</span>
+        </div>
+        <div class="fc-body">
+          <div class="fc-formula">
+            \(\text{core}(i)/k_{\max}\in[0,1]\)
+          </div>
+          <!-- k-core shell diagram -->
+          <svg width="100%" viewBox="0 0 210 42" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:2px 0;">
+            <circle cx="105" cy="21" r="20" fill="none" stroke="#a898dc" stroke-width="1" stroke-dasharray="3,2"/>
+            <circle cx="105" cy="21" r="13" fill="none" stroke="#8070cc" stroke-width="1" stroke-dasharray="2,2"/>
+            <circle cx="105" cy="21" r="7"  fill="#3828a0" opacity=".7"/>
+            <circle cx="105" cy="21" r="7" fill="none" stroke="#8070cc" stroke-width="1"/>
+            <!-- nodes on shells -->
+            <circle cx="88"  cy="12" r="3" fill="#a898dc" opacity=".8"/>
+            <circle cx="122" cy="12" r="3" fill="#a898dc" opacity=".8"/>
+            <circle cx="85"  cy="30" r="3" fill="#a898dc" opacity=".8"/>
+            <circle cx="125" cy="30" r="3" fill="#a898dc" opacity=".8"/>
+            <circle cx="75"  cy="21" r="2.5" fill="#d0c8f0" opacity=".6"/>
+            <circle cx="135" cy="21" r="2.5" fill="#d0c8f0" opacity=".6"/>
+            <!-- labels -->
+            <text x="100" y="24" font-size="7.5" fill="#fff" font-family="sans-serif" font-weight="700">k=5</text>
+            <text x="89"  y="18" font-size="6.5" fill="#3828a0" font-family="sans-serif">k=4</text>
+            <text x="70"  y="18" font-size="6"   fill="#7060c0" font-family="sans-serif">k=2</text>
+            <!-- right: range bar -->
+            <rect x="155" y="14" width="45" height="8" fill="#eeeafc" rx="3" stroke="#c0b8ec" stroke-width="0.5"/>
+            <rect x="155" y="14" width="33" height="8" fill="#3828a0" rx="3" opacity=".7"/>
+            <text x="153" y="30" font-size="7" fill="#7060b0" font-family="sans-serif">外围</text>
+            <text x="183" y="30" font-size="7" fill="#3828a0" font-family="sans-serif" font-weight="700">核心</text>
+          </svg>
+          <div class="fc-note">与度中心性互补：星形中心度数高但 k-core 低；稠密团节点 k-core 高但度数未必最高。参数 \(\delta\approx 0.3\)。</div>
+        </div>
+      </div>
+
+      <!-- Factor 4: local entropy -->
+      <div class="factor-card f4">
+        <div class="fc-hdr">
+          <span>④ 局部图熵</span>
+          <span class="fc-badge">信息多样性</span>
+        </div>
+        <div class="fc-body">
+          <div class="fc-formula">
+            \(H_{\text{norm}}(i)=H(i)/\ln|\mathcal{N}(i)|\in[0,1]\)
+          </div>
+          <!-- entropy comparison sketch -->
+          <svg width="100%" viewBox="0 0 210 42" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:2px 0;">
+            <!-- low entropy: similar neighbors -->
+            <circle cx="30" cy="21" r="5" fill="#8a5010" opacity=".8"/>
+            <circle cx="14" cy="12" r="3" fill="#c8a050" opacity=".7"/>
+            <circle cx="15" cy="29" r="3" fill="#c8a050" opacity=".7"/>
+            <circle cx="46" cy="14" r="3" fill="#c8a050" opacity=".75"/>
+            <circle cx="47" cy="28" r="3" fill="#c8a050" opacity=".75"/>
+            <line x1="30" y1="21" x2="14" y2="12" stroke="#c8a050" stroke-width="0.8"/>
+            <line x1="30" y1="21" x2="15" y2="29" stroke="#c8a050" stroke-width="0.8"/>
+            <line x1="30" y1="21" x2="46" y2="14" stroke="#c8a050" stroke-width="0.8"/>
+            <line x1="30" y1="21" x2="47" y2="28" stroke="#c8a050" stroke-width="0.8"/>
+            <text x="5"  y="41" font-size="7" fill="#8a5010" font-family="sans-serif">低熵（冗余）</text>
+            <!-- entropy bar low (same造型，填充比例小) -->
+            <rect x="60" y="28" width="30" height="4" fill="none" rx="1" stroke="#c8a050" stroke-width="0.5"/>
+            <rect x="60" y="28" width="6"  height="4" fill="#c8a050" rx="1" opacity=".7"/>
+            <text x="60" y="26" font-size="6.5" fill="#8a5010" font-family="sans-serif">H≈0</text>
+            <!-- separator -->
+            <line x1="100" y1="5" x2="100" y2="40" stroke="#ddd" stroke-width="0.6" stroke-dasharray="2,2"/>
+            <!-- high entropy: diverse neighbors -->
+            <circle cx="145" cy="21" r="5" fill="#8a5010" opacity=".8"/>
+            <circle cx="126" cy="11" r="3" fill="#e09040" opacity=".7"/>
+            <circle cx="130" cy="33" r="3" fill="#60b888" opacity=".7"/>
+            <circle cx="162" cy="10" r="3" fill="#4878cc" opacity=".7"/>
+            <circle cx="165" cy="30" r="3" fill="#c040a0" opacity=".6"/>
+            <line x1="145" y1="21" x2="126" y2="11" stroke="#e09040" stroke-width="0.8"/>
+            <line x1="145" y1="21" x2="130" y2="33" stroke="#60b888" stroke-width="0.8"/>
+            <line x1="145" y1="21" x2="162" y2="10" stroke="#4878cc" stroke-width="0.8"/>
+            <line x1="145" y1="21" x2="165" y2="30" stroke="#c040a0" stroke-width="0.8"/>
+            <text x="114" y="41" font-size="7" fill="#6a3808" font-family="sans-serif">高熵（多样）</text>
+            <!-- entropy bar high（同造型，填充接近满） -->
+            <rect x="175" y="28" width="30" height="4" fill="none" rx="1" stroke="#c8a050" stroke-width="0.5"/>
+            <rect x="175" y="28" width="27" height="4" fill="#c8a050" rx="1" opacity=".7"/>
+            <text x="175" y="26" font-size="6.5" fill="#8a5010" font-family="sans-serif">H≈\(\ln|\mathcal{N}(i)|\)</text>
+          </svg>
+          <div class="fc-note">邻域特征多样性越高（熵高），每条边越不可替代，稀疏化空间越小。参数 \(\eta\approx 0.2\)。</div>
+        </div>
+      </div>
+    </div><!-- end col-left -->
+
+
+    <!-- ===== 中列：融合计算 ===== -->
+    <div class="col-mid">
+      <div class="sec-label">多因子融合 ·&nbsp;§4.2节</div>
+
+      <!-- Fusion formula + content box -->
+      <div class="center-box">
+        <!-- compact node convergence diagram -->
+        <svg width="240" height="88" viewBox="0 0 240 88" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 4px;">
+          <defs>
+            <radialGradient id="nodeGrad" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#3a68cc"/>
+              <stop offset="100%" stop-color="#1a3890"/>
+            </radialGradient>
+            <marker id="arr" markerWidth="7" markerHeight="6" refX="5" refY="3" orient="auto">
+              <polygon points="0 0, 7 3, 0 6" fill="#5060a0"/>
+            </marker>
+            <marker id="arr2" markerWidth="7" markerHeight="6" refX="5" refY="3" orient="auto">
+              <polygon points="0 0, 7 3, 0 6" fill="#6030a0"/>
+            </marker>
+          </defs>
+          <!-- four factor entry points on left -->
+          <circle cx="14" cy="12" r="6" fill="#1c4890"/>
+          <text x="22" y="16" font-size="8" fill="#1c4890" font-family="sans-serif" font-weight="700">① \(E_{\text{spectral}}(i)\)</text>
+          <circle cx="14" cy="33" r="6" fill="#1a6050"/>
+          <text x="22" y="37" font-size="8" fill="#1a6050" font-family="sans-serif" font-weight="700">② \(C_{\text{deg}}\)</text>
+          <circle cx="14" cy="54" r="6" fill="#3828a0"/>
+          <text x="22" y="58" font-size="8" fill="#3828a0" font-family="sans-serif" font-weight="700">③ \(\text{core}/k_{\max}\)</text>
+          <circle cx="14" cy="75" r="6" fill="#8a5010"/>
+          <text x="22" y="79" font-size="8" fill="#8a5010" font-family="sans-serif" font-weight="700">④ \(H_{\text{norm}}\)</text>
+          <!-- dashed lines to central node -->
+          <line x1="20" y1="12" x2="118" y2="44" stroke="#3a78cc" stroke-width="1" stroke-dasharray="4,3" opacity=".7"/>
+          <line x1="20" y1="33" x2="118" y2="44" stroke="#1a6050" stroke-width="1" stroke-dasharray="4,3" opacity=".65"/>
+          <line x1="20" y1="54" x2="118" y2="44" stroke="#3828a0" stroke-width="1" stroke-dasharray="4,3" opacity=".65"/>
+          <line x1="20" y1="75" x2="118" y2="44" stroke="#8a5010" stroke-width="1" stroke-dasharray="4,3" opacity=".6"/>
+          <!-- central node -->
+          <circle cx="118" cy="44" r="22" fill="url(#nodeGrad)"/>
+          <circle cx="118" cy="44" r="22" fill="none" stroke="#7aaad4" stroke-width="1" opacity=".5"/>
+          <text x="118" y="39" font-size="9"  fill="#fff" font-family="sans-serif" font-weight="700" text-anchor="middle">节点 \(i\)</text>
+          <text x="118" y="52" font-size="7.5" fill="#c0d8f8" font-family="sans-serif" text-anchor="middle">融合计算</text>
+          <!-- neighbor nodes -->
+          <circle cx="156" cy="25" r="6" fill="#4878b8" opacity=".55"/>
+          <circle cx="162" cy="58" r="5" fill="#4878b8" opacity=".45"/>
+          <line x1="140" y1="44" x2="156" y2="25" stroke="#7aaad4" stroke-width="0.7" opacity=".45"/>
+          <line x1="140" y1="44" x2="162" y2="58" stroke="#7aaad4" stroke-width="0.7" opacity=".4"/>
+          <!-- output arrow to τ(i) -->
+          <line x1="185" y1="44" x2="228" y2="44" stroke="#5060a0" stroke-width="2" marker-end="url(#arr)"/>
+          <text x="190" y="39" font-size="9" fill="#3848a0" font-family="sans-serif" font-weight="700">\(\tau(i)\)</text>
+          <!-- LARS arrow below τ -->
+          <line x1="234" y1="48" x2="234" y2="65" stroke="#6030a0" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <text x="210" y="78" font-size="7.5" fill="#6030a0" font-family="sans-serif">第5章 LARS主循环</text>
+        </svg>
+
+        <div class="center-title">多因子融合公式（式4.8）</div>
+        <div class="fusion-formula-box">
+          \(\tau(i)=\mathrm{clip}\!\left(\dfrac{\tau_{\text{base}}\cdot\exp\!\left(-\beta_{\tau}\dfrac{E_{\text{spectral}}(i)}{E_{\text{threshold}}}\right)}{1+\gamma C_{\text{deg}}(i)+\delta\dfrac{\text{core}(i)}{k_{\max}}+\eta H_{\text{norm}}(i)},\;\tau_{\min},\; \tau_{\text{base}}\right)\)
+        </div>
+
+        <!-- Design logic chain -->
+        <div class="design-logic">
+          <strong>设计逻辑链：</strong><br>
+          谱能量高 \(\Rightarrow\) 分子 \(\exp(-\beta_{\tau}E/E_{\text{th}})\downarrow\) → \(\tau(i)\downarrow\)<br>
+          拓扑重要性高 \(\Rightarrow\) 分母\(\uparrow\) → \(\tau(i)\downarrow\)<br>
+          \(\tau(i)\downarrow\;\Rightarrow\) L1惩罚弱 \(\Rightarrow\) LARS截断晚 \(\Rightarrow\) 邻居保留多
+        </div>
+
+        <!-- parameter reference -->
+        <div style="display:flex;gap:3px;margin-top:5px;flex-wrap:wrap;">
+          <span style="background:#eaf3fd;border:0.5px solid #a8c8e8;border-radius:9px;font-size:7.5px;color:#1a3868;padding:1px 5px;">\(\beta_{\tau}{=}1.0\)</span>
+          <span style="background:#e4f7f2;border:0.5px solid #90ccbc;border-radius:9px;font-size:7.5px;color:#0e4838;padding:1px 5px;">\(\gamma{=}0.5\)</span>
+          <span style="background:#eeeafc;border:0.5px solid #c0b8ec;border-radius:9px;font-size:7.5px;color:#2a1880;padding:1px 5px;">\(\delta{=}0.3\)</span>
+          <span style="background:#fdf0d8;border:0.5px solid #dcc080;border-radius:9px;font-size:7.5px;color:#6a3808;padding:1px 5px;">\(\eta{=}0.2\)</span>
+          <span style="background:#f5f0fe;border:0.5px solid #c0a8f0;border-radius:9px;font-size:7.5px;color:#3828a0;padding:1px 5px;">\(\tau_{\min}{=}10^{-7}\)</span>
+        </div>
+
+        <!-- clip zone visualization -->
+        <div style="margin-top:5px;width:100%;">
+          <div style="font-size:8px;color:#5a6a80;margin-bottom:2px;font-weight:600;">约束范围 \([\tau_{\min},\,\tau_{\text{base}}]\)</div>
+          <svg width="100%" viewBox="0 0 220 22" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="7" width="216" height="8" fill="#e8edf8" rx="4" stroke="#b0bcd0" stroke-width="0.6"/>
+            <defs>
+              <linearGradient id="cG" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#1c4890"/>
+                <stop offset="40%" stop-color="#6898d8"/>
+                <stop offset="100%" stop-color="#c8d8f4"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="7" width="216" height="8" fill="url(#cG)" rx="4" opacity=".6"/>
+            <line x1="3"   y1="4" x2="3"   y2="20" stroke="#c04040" stroke-width="1.2"/>
+            <line x1="218" y1="4" x2="218" y2="20" stroke="#c04040" stroke-width="1.2"/>
+            <text x="3"   y="21" font-size="7" fill="#c04040" font-family="sans-serif">\(\tau_{\min}\)</text>
+            <text x="186" y="21" font-size="7" fill="#c04040" font-family="sans-serif">\(\tau_{\text{base}}\)</text>
+            <circle cx="20" cy="11" r="4" fill="#1c4890" opacity=".9"/>
+            <text x="10" y="5" font-size="6.5" fill="#1c4890" font-family="sans-serif">高能→小</text>
+            <circle cx="200" cy="11" r="4" fill="#c08040" opacity=".9"/>
+            <text x="178" y="5" font-size="6.5" fill="#a04010" font-family="sans-serif">低能→大</text>
+          </svg>
+        </div>
+
+        <!-- factor complementarity mini-table -->
+        <div style="font-size:8px;color:#3a4a60;font-weight:700;margin-top:6px;margin-bottom:2px;">四因子互补性（↓低 / ↑高 / ≈中）</div>
+        <table class="compat-table">
+          <tr>
+            <th>节点类型</th>
+            <th style="color:#1c4890;">\(E_{\text{sp}}\)</th>
+            <th style="color:#1a6050;">\(C_{\text{deg}}\)</th>
+            <th style="color:#3828a0;">core</th>
+            <th style="color:#8a5010;">\(H_{\text{norm}}\)</th>
+            <th>\(\tau(i)\)</th>
+          </tr>
+          <tr>
+            <td>枢纽节点</td>
+            <td class="dot-hi">↑</td><td class="dot-hi">↑</td><td class="dot-hi">↑</td><td>≈</td>
+            <td class="dot-hi" style="font-weight:700;">极小</td>
+          </tr>
+          <tr>
+            <td>桥接节点</td>
+            <td class="dot-hi">↑</td><td>≈</td><td>≈</td><td class="dot-hi">↑</td>
+            <td class="dot-hi">小</td>
+          </tr>
+          <tr>
+            <td>星形中心</td>
+            <td>≈</td><td class="dot-hi">↑</td><td class="dot-lo">↓</td><td>≈</td>
+            <td>中等</td>
+          </tr>
+          <tr>
+            <td>外围叶节点</td>
+            <td class="dot-lo">↓</td><td class="dot-lo">↓</td><td class="dot-lo">↓</td><td class="dot-lo">↓</td>
+            <td class="dot-lo">→ \(\tau_{\text{base}}\)</td>
+          </tr>
+        </table>
+
+        <!-- single-factor fallback -->
+        <div class="fallback-box">
+          <div class="fb-title">▸ 计算受限退化版（单因子）</div>
+          \(\tau(i)=\tau_{\text{base}}\cdot\exp\!\bigl(-\beta_{\tau}\,E_{\text{spectral}}(i)/E_{\text{threshold}}\bigr)\)
+          <div style="margin-top:2px;color:#806030;">仅用谱能量项，省略拓扑因子，适用于大图离线场景。</div>
+        </div>
+
+        <!-- parameter tuning ranges -->
+        <div style="font-size:8px;color:#3a4a60;font-weight:700;margin-top:7px;margin-bottom:3px;">超参精调范围（验证集5折，对数尺度）</div>
+        <!-- β -->
+        <div class="prange-row">
+          <span class="prange-lbl" style="color:#1c4890;">\(\beta_{\tau}\)</span>
+          <div class="prange-track">
+            <div class="prange-fill" style="left:0;width:100%;background:linear-gradient(90deg,#b0d0f4,#3a78cc);opacity:.45;"></div>
+            <!-- recommended [0.5,2.0] mapped to full, default=1.0 at 33% -->
+            <div class="prange-fill" style="left:15%;width:55%;background:#3a78cc;opacity:.6;border-radius:3px;"></div>
+            <div class="prange-def" style="left:32%;background:#1c4890;"></div>
+          </div>
+          <span class="prange-val">推荐 [0.5, 2.0]，默认 <strong>1.0</strong></span>
+        </div>
+        <!-- γ -->
+        <div class="prange-row">
+          <span class="prange-lbl" style="color:#1a6050;">\(\gamma\)</span>
+          <div class="prange-track">
+            <div class="prange-fill" style="left:20%;width:50%;background:#3a9070;opacity:.6;border-radius:3px;"></div>
+            <div class="prange-def" style="left:42%;background:#1a6050;"></div>
+          </div>
+          <span class="prange-val">推荐 [0.2, 0.8]，默认 <strong>0.5</strong>；异配图↓</span>
+        </div>
+        <!-- δ -->
+        <div class="prange-row">
+          <span class="prange-lbl" style="color:#3828a0;">\(\delta\)</span>
+          <div class="prange-track">
+            <div class="prange-fill" style="left:8%;width:42%;background:#6050c0;opacity:.6;border-radius:3px;"></div>
+            <div class="prange-def" style="left:28%;background:#3828a0;"></div>
+          </div>
+          <span class="prange-val">推荐 [0.1, 0.5]，默认 <strong>0.3</strong>；幂律图↑</span>
+        </div>
+        <!-- η -->
+        <div class="prange-row">
+          <span class="prange-lbl" style="color:#8a5010;">\(\eta\)</span>
+          <div class="prange-track">
+            <div class="prange-fill" style="left:8%;width:25%;background:#c8a050;opacity:.6;border-radius:3px;"></div>
+            <div class="prange-def" style="left:18%;background:#8a5010;"></div>
+          </div>
+          <span class="prange-val">推荐 [0.1, 0.3]，默认 <strong>0.2</strong>；同质图↓</span>
+        </div>
+        <!-- τ_base -->
+        <div class="prange-row">
+          <span class="prange-lbl" style="color:#6030a0;font-size:7px;">\(\tau_{\text{b}}\)</span>
+          <div class="prange-track">
+            <div class="prange-fill" style="left:0;width:80%;background:linear-gradient(90deg,#d0b8f0,#8050c0);opacity:.5;border-radius:3px;"></div>
+            <div class="prange-def" style="left:40%;background:#6030a0;"></div>
+          </div>
+          <span class="prange-val">对数搜索 \([10^{-4},10^{-2}]\)，11点网格</span>
+        </div>
+      </div>
+    </div><!-- end col-mid -->
+
+
+    <!-- ===== 右列：输出与接口 ===== -->
+    <div class="col-right">
+      <div class="sec-label">输出 · \(\tau(i)\) 分布与 LARS 接口</div>
+
+      <!-- τ(i) output visualization -->
+      <div class="tau-out">
+        <div class="tau-label">节点级正则系数 \(\tau(i)\in[\tau_{\min},\,\tau_{\text{base}}]\)</div>
+
+        <!-- τ range bar for different node types -->
+        <div class="tau-range">
+          <div class="tau-range-lbl" style="font-size:7.5px;color:#1c4890;font-weight:700;">高谱能量枢纽</div>
+          <div class="tau-bar-bg">
+            <div class="tau-bar-fill" style="width:8%;background:linear-gradient(90deg,#1c4890,#3a68c0);"></div>
+          </div>
+          <span style="font-size:7.5px;color:#1c4890;margin-left:3px;width:48px;">\(\tau\ll\tau_{\text{base}}\)</span>
+        </div>
+        <div class="tau-range">
+          <div class="tau-range-lbl" style="font-size:7.5px;color:#3a8060;font-weight:700;">中等普通节点</div>
+          <div class="tau-bar-bg">
+            <div class="tau-bar-fill" style="width:42%;background:linear-gradient(90deg,#3a9070,#6ab898);"></div>
+          </div>
+          <span style="font-size:7.5px;color:#3a8060;margin-left:3px;width:48px;">\(\approx0.4\,\tau_{\text{base}}\)</span>
+        </div>
+        <div class="tau-range">
+          <div class="tau-range-lbl" style="font-size:7.5px;color:#a04010;font-weight:700;">低能叶节点</div>
+          <div class="tau-bar-bg">
+            <div class="tau-bar-fill" style="width:95%;background:linear-gradient(90deg,#c87830,#e0a060);"></div>
+          </div>
+          <span style="font-size:7.5px;color:#a04010;margin-left:3px;width:48px;">\(\to\tau_{\text{base}}\)</span>
+        </div>
+
+        <!-- τ(i) scatter mini visualization -->
+        <svg width="100%" viewBox="0 0 350 80" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:5px;">
+          <defs>
+            <linearGradient id="scatterBG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#f0f4fa"/><stop offset="100%" stop-color="#fef8f0"/>
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="346" height="76" fill="url(#scatterBG)" rx="3" stroke="#c8d4e4" stroke-width="0.5"/>
+          <!-- axes -->
+          <line x1="30" y1="10" x2="30" y2="65" stroke="#9090a0" stroke-width="0.7"/>
+          <line x1="30" y1="65" x2="340" y2="65" stroke="#9090a0" stroke-width="0.7"/>
+          <!-- axis labels -->
+          <text x="170" y="76" font-size="7.5" fill="#5a6a80" font-family="sans-serif" text-anchor="middle">\(\log E_{\text{spectral}}(i)\) （谱能量，越大→左）</text>
+          <text x="14"  y="40" font-size="7.5" fill="#5a6a80" font-family="sans-serif" writing-mode="tb" text-anchor="middle">\(\tau(i)\)</text>
+          <!-- monotone decreasing trend curve -->
+          <path d="M50,15 Q100,18 150,30 Q200,45 260,55 Q300,61 330,63" 
+                fill="none" stroke="#5060a0" stroke-width="1.4" stroke-dasharray="5,3"/>
+          <!-- confidence band -->
+          <path d="M50,10 Q100,13 150,25 Q200,40 260,50 Q300,56 330,58
+                   L330,68 Q300,66 260,60 Q200,51 150,36 Q100,24 50,21Z"
+                fill="#d0d8f0" opacity=".35"/>
+          <!-- scatter dots: high energy (blue, small tau) -->
+          <circle cx="52"  cy="13" r="4" fill="#1c4890" opacity=".85"/>
+          <circle cx="65"  cy="17" r="3.5" fill="#1c4890" opacity=".75"/>
+          <circle cx="80"  cy="20" r="4.5" fill="#2a58a0" opacity=".8"/>
+          <circle cx="95"  cy="23" r="3" fill="#3a68c0" opacity=".7"/>
+          <!-- medium nodes (green) -->
+          <circle cx="130" cy="32" r="4" fill="#1a8060" opacity=".8"/>
+          <circle cx="155" cy="36" r="4.5" fill="#2a9070" opacity=".75"/>
+          <circle cx="175" cy="42" r="3.5" fill="#3aa070" opacity=".7"/>
+          <circle cx="200" cy="47" r="4" fill="#4ab080" opacity=".65"/>
+          <!-- low energy (orange) -->
+          <circle cx="240" cy="55" r="4" fill="#c06020" opacity=".8"/>
+          <circle cx="265" cy="58" r="4.5" fill="#c07030" opacity=".75"/>
+          <circle cx="290" cy="61" r="3.5" fill="#d08040" opacity=".7"/>
+          <circle cx="315" cy="63" r="4" fill="#d09050" opacity=".65"/>
+          <!-- grid lines -->
+          <line x1="30" y1="25" x2="340" y2="25" stroke="#dde4ee" stroke-width="0.4" stroke-dasharray="2,3"/>
+          <line x1="30" y1="45" x2="340" y2="45" stroke="#dde4ee" stroke-width="0.4" stroke-dasharray="2,3"/>
+          <!-- right axis label -->
+          <text x="336" y="14"  font-size="7" fill="#9090a0" font-family="sans-serif">\(\tau_{\min}\)</text>
+          <text x="334" y="67"  font-size="7" fill="#9090a0" font-family="sans-serif">\(\tau_{\text{base}}\)</text>
+        </svg>
+        <div style="font-size:7.5px;color:#5a6a80;margin-top:2px;text-align:center;">
+          单调性：谱能量↑ → \(\tau(i)\)↓（保留邻居↑）；设计准则见§§4.2节，谱保持条件界讨论见§§5.2节。
+        </div>
+      </div>
+
+      <!-- Node type contrast -->
+      <div class="node-row">
+        <div class="node-card nc-hi">
+          <div class="nc-hdr">高能节点（蓝色）</div>
+          <div class="nc-body">
+            <span class="nc-item">谱能量 \(E_{\text{spectral}}(i)\) 大</span>
+            <span class="nc-item">度高 / k-core 高</span>
+            <span class="nc-item">邻域信息不可替代</span>
+            <div class="nc-tau" style="color:#1c4890;">\(\tau(i)\ll\tau_{\text{base}}\)</div>
+            <div style="font-size:7.5px;color:#3a68b0;margin-top:3px;text-align:center;">LARS 路径截断晚 → 邻居保留多</div>
+          </div>
+        </div>
+        <div class="node-card nc-lo">
+          <div class="nc-hdr">低能节点（橙色）</div>
+          <div class="nc-body">
+            <span class="nc-item">谱能量 \(E_{\text{spectral}}(i)\) 小</span>
+            <span class="nc-item">度低 / 处于外围</span>
+            <span class="nc-item">邻域信息冗余度高</span>
+            <div class="nc-tau" style="color:#a04010;">\(\tau(i)\to\tau_{\text{base}}\)</div>
+            <div style="font-size:7.5px;color:#a06030;margin-top:3px;text-align:center;">LARS 路径截断早 → 激进稀疏</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LARS interface box -->
+      <div class="lars-box">
+        <div class="lars-hdr">第5章 LARS主循环</div>
+        <div class="lars-body">
+          <div style="font-size:8px;color:#4a3080;margin-bottom:4px;">
+            节点 \(i\) 子问题：\(\displaystyle\min_{\bar\theta_i}\tfrac{1}{2}\|\tilde{\Phi}_{C_i}^\top\bar\theta_i-\Omega_i\|_2^2+\tau(i)\|\bar\theta_i\|_1\)
+          </div>
+          <div class="lars-flow">
+            <div class="lars-block lf-a">\(\tau(i)\) 输入<br><span style="font-size:7px;">（节点自适应）</span></div>
+            <div class="lf-arr">→</div>
+            <div class="lars-block lf-a">LARS 正则化<br>路径追踪</div>
+            <div class="lf-arr">→</div>
+            <div class="lars-block lf-b">稀疏权重<br>\(\theta_i\in\mathbb{R}^n\)</div>
+            <div class="lf-arr">→</div>
+            <div class="lars-block lf-c">固化 \(\Theta^{\text{fixed}}\)<br><span style="font-size:7px;">（推理使用）</span></div>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:3px;">
+            <div style="flex:1;background:#ede4fc;border:0.5px solid #c0a8ec;border-radius:3px;padding:3px 5px;font-size:7.5px;color:#2a1880;line-height:1.5;">
+              <strong>稀疏度控制优先级：</strong><br>
+              ① \(\tau(i)\)→LARS路径趋势<br>
+              ② max_iter 上限<br>
+              ③ Top-\(k_{\max}\) 硬截断
+            </div>
+            <div style="flex:1;background:#e0f4f0;border:0.5px solid #90ccbc;border-radius:3px;padding:3px 5px;font-size:7.5px;color:#0e4838;line-height:1.5;">
+              <strong>推理复杂度：</strong><br>
+              单次稀疏矩乘 \(\hat{H}=\Theta^\top\tilde{\Phi}\)<br>
+              \(O(n\bar{k}d)\)，\(\bar{k}=\tfrac{1}{n}\textstyle\sum_i k_i^{\text{total}}\)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter 4 interface linkage -->
+      <div class="ch4-box">
+        <div class="ch4-hdr">与第5章的衔接接口 · §5.2节 \(\sigma\)-谱相似性</div>
+        <div class="ch4-body">
+          <div class="ch4-row">
+            <div class="ch4-icon" style="background:#1a7060;">Θ</div>
+            <div class="ch4-text">
+              <strong>\(\Theta^{\text{fixed}}\)</strong>：本章输出固化稀疏权重矩阵，作为第5章LARS主循环的稀疏权重输入基线；第5章在此基础上完成算法整合与谱误差保证。
+            </div>
+          </div>
+          <div class="ch4-row">
+            <div class="ch4-icon" style="background:#2a6858;">\(\sigma\)</div>
+            <div class="ch4-text">
+              <strong>\(\sigma\)-谱相似性</strong>（命题5.2.1）：稀疏图与原图谱近似误差度量，为第5章谱滤波误差界提供统一接口；\(\sigma\leq1+\varepsilon\) 是命题5.2.1的输入条件，也是第5章参数反向设计的参考依据。
+            </div>
+          </div>
+          <div class="ch4-row" style="margin-bottom:0;">
+            <div class="ch4-icon" style="background:#3a8070;">A</div>
+            <div class="ch4-text">
+              <strong>假设A（图结构静态可信）</strong>：本章全部推导在该前提下展开；第5章在此假设下完成LARS算法整合与复杂度分析，线性推理假设适用条件见§5.3节。
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div><!-- end col-right -->
+  </div><!-- end body -->
+
+  <!-- Complexity breakdown across phases (full-width) -->
+  <div class="cplx-full">
+    <div class="cplx-full-hdr">各阶段复杂度汇总（口径：单次全图前向）</div>
+    <div class="cplx-box cplx-full-body">
+      <div class="cplx-inline">
+        <span class="cplx-item"><span class="cplx-phase">预计算：Lanczos谱分解</span><span class="cplx-val">\(O(m\cdot K_{\text{eig}})\)</span></span>
+        <span class="cplx-sep">|</span>
+        <span class="cplx-item"><span class="cplx-phase">预计算：k-core 分解</span><span class="cplx-val">\(O(m)\)</span></span>
+        <span class="cplx-sep">|</span>
+        <span class="cplx-item"><span class="cplx-phase">预计算：局部图熵</span><span class="cplx-val">\(O(m)\) 或 \(O(mD)\)</span></span>
+        <span class="cplx-sep">|</span>
+        <span class="cplx-item"><span class="cplx-phase">训练：LARS/Lasso（Phase Θ）</span><span class="cplx-val">\(O(n\cdot k_{\max}^2\cdot d)\)</span></span>
+        <span class="cplx-sep">|</span>
+        <span class="cplx-item"><span class="cplx-tag">★ 推理：单次稀疏矩乘</span><span class="cplx-val" style="color:#0a4030;font-weight:700;">\(O(n\bar{k}d)\)</span></span>
+        <span class="cplx-sep">|</span>
+        <span class="cplx-item"><span class="cplx-phase">对比：标准GCN（L层）</span><span class="cplx-val">\(O(L\cdot m\cdot d)\)</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 底注 === -->
+  <div class="fig-note">
+    注：图中蓝色节点（高谱能量）对应极小 \(\tau(i)\)，LARS 路径截断晚，保留更多邻居；橙色节点（低谱能量）对应 \(\tau(i)\to\tau_{\text{base}}\)，激进稀疏化。
+    多因子融合公式中 \(\tau_{\min}=10^{-7}\) 为数值保护下界；默认参数 \((\beta_{\tau},\gamma,\delta,\eta)=(1.0,0.5,0.3,0.2)\)，\(\tau_{\text{base}}\) 通过验证集Optuna搜索（50次）确定（见第6章）。
+    右下角 LARS 接口输出固化稀疏权重矩阵 \(\Theta^{\text{fixed}}\)，全图推理复杂度 \(O(n\bar{k}d)\)，与 SDGNN 基线口径一致（§3.1节）。
+    散点示意图中曲线为单调性趋势示意，非实测曲线；颜色按谱能量大小连续编码：蓝（高能）→绿（中等）→橙（低能）。
+  </div>
+</div>
+
+<script>
+window.addEventListener('load',()=>{
+  if(window.MathJax&&MathJax.startup){
+    MathJax.startup.promise.then(()=>MathJax.typesetPromise());
+  }
+});
+</script>
+</body>
+</html>
