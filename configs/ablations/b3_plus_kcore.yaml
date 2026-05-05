@@ -9,7 +9,7 @@ node_dim:
   beta_tau: 1.0
   gamma: 0.5
   delta: 0.3
-  eta: 0.0
+  omega_h: 0.0
 hop_dim:
   strategy: uniform
   L: 3

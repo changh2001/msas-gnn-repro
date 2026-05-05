@@ -9,69 +9,71 @@
 \contentsline {section}{\numberline {1.4}技术路线与论文组织结构}{5}{section.1.4}%
 \contentsline {section}{\numberline {1.5}本章小结}{6}{section.1.5}%
 \contentsline {chapter}{\numberline {第2章}相关工作}{8}{chapter.2}%
-\contentsline {section}{\numberline {2.1}图神经网络基础与谱图理论}{9}{section.2.1}%
+\contentsline {section}{\numberline {2.1}图神经网络基础与谱图理论}{8}{section.2.1}%
 \contentsline {section}{\numberline {2.2}高效与稀疏图神经网络方法}{10}{section.2.2}%
-\contentsline {section}{\numberline {2.3}复杂图结构与谱视角相关方法}{11}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}图结构差异与频率响应}{11}{subsection.2.3.1}%
+\contentsline {section}{\numberline {2.3}复杂图结构与谱视角相关方法}{12}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}图结构差异与频率响应}{12}{subsection.2.3.1}%
 \contentsline {subsection}{\numberline {2.3.2}代表性复杂图结构处理方法}{12}{subsection.2.3.2}%
-\contentsline {section}{\numberline {2.4}本章小结与研究空白}{12}{section.2.4}%
-\contentsline {chapter}{\numberline {第3章}问题形式化与图复杂度指标体系}{15}{chapter.3}%
-\contentsline {section}{\numberline {3.1}问题形式化与优化目标}{15}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}图学习基本设定与SDGNN基准}{15}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}统一优化目标与预算约束}{18}{subsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.1.3}近似误差度量与三项设计准则}{19}{subsection.3.1.3}%
-\contentsline {section}{\numberline {3.2}图复杂度量化指标体系}{21}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}频率接口的等权约束与泄漏边界}{21}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}节点谱能量、局部图熵与中心性}{21}{subsection.3.2.2}%
-\contentsline {section}{\numberline {3.3}本章小结}{25}{section.3.3}%
-\contentsline {chapter}{\numberline {第4章}谱驱动三维自适应稀疏机制}{26}{chapter.4}%
-\contentsline {section}{\numberline {4.1}频率维度：节点谱能量的统一谱输入}{26}{section.4.1}%
-\contentsline {section}{\numberline {4.2}节点维度：节点级自适应正则系数}{28}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}节点级正则系数的构造原则}{28}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}多因子融合的完整公式}{30}{subsection.4.2.2}%
-\contentsline {subsection}{\numberline {4.2.3}算法实现}{31}{subsection.4.2.3}%
-\contentsline {section}{\numberline {4.3}层级维度：分层跳距预算分配}{32}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}分层信息衰减界分析}{33}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}分层保留率 $p_l$ 的两种策略}{35}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}节点-跳距联合预算分配策略}{37}{subsection.4.3.3}%
-\contentsline {section}{\numberline {4.4}本章小结}{38}{section.4.4}%
-\contentsline {chapter}{\numberline {第5章}算法整合、误差分析与复杂度分析}{39}{chapter.5}%
-\contentsline {section}{\numberline {5.1}LARS分层稀疏求解与交替优化}{39}{section.5.1}%
-\contentsline {subsection}{\numberline {5.1.1}分层LARS的候选集构造与方案选定}{39}{subsection.5.1.1}%
-\contentsline {subsection}{\numberline {5.1.2}完整交替优化算法}{41}{subsection.5.1.2}%
-\contentsline {subsection}{\numberline {5.1.3}优化稳定性与实现说明}{44}{subsection.5.1.3}%
-\contentsline {section}{\numberline {5.2}误差分析与适用条件}{45}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}谱相似性与图稀疏化}{45}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}多项式谱滤波器的近似误差界}{46}{subsection.5.2.2}%
-\contentsline {section}{\numberline {5.3}复杂度分析}{52}{section.5.3}%
-\contentsline {section}{\numberline {5.4}本章小结}{56}{section.5.4}%
-\contentsline {chapter}{\numberline {第6章}实验评估}{57}{chapter.6}%
-\contentsline {section}{\numberline {6.1}实验设置}{57}{section.6.1}%
-\contentsline {section}{\numberline {6.2}节点分类主实验}{61}{section.6.2}%
-\contentsline {section}{\numberline {6.3}消融实验与分析结论验证}{62}{section.6.3}%
-\contentsline {subsection}{\numberline {6.3.1}逐模块消融分析}{62}{subsection.6.3.1}%
-\contentsline {subsection}{\numberline {6.3.2}跳距预算分配策略消融}{65}{subsection.6.3.2}%
-\contentsline {subsection}{\numberline {6.3.3}超参数敏感性分析}{65}{subsection.6.3.3}%
-\contentsline {section}{\numberline {6.4}效率分析}{66}{section.6.4}%
-\contentsline {subsection}{\numberline {6.4.1}推理效率与内存综合对比}{66}{subsection.6.4.1}%
-\contentsline {subsection}{\numberline {6.4.2}预处理摊销与break-even分析}{67}{subsection.6.4.2}%
-\contentsline {section}{\numberline {6.5}可视化分析}{68}{section.6.5}%
-\contentsline {section}{\numberline {6.6}本章小结}{69}{section.6.6}%
-\contentsline {chapter}{\numberline {第7章}总结与展望}{71}{chapter.7}%
-\contentsline {section}{\numberline {7.1}研究工作总结}{71}{section.7.1}%
-\contentsline {subsection}{\numberline {7.1.1}问题背景与核心挑战}{71}{subsection.7.1.1}%
-\contentsline {subsection}{\numberline {7.1.2}各章核心工作回顾}{71}{subsection.7.1.2}%
-\contentsline {subsection}{\numberline {7.1.3}方法、分析与实验结果的一致性说明}{72}{subsection.7.1.3}%
-\contentsline {section}{\numberline {7.2}主要贡献与创新点}{72}{section.7.2}%
-\contentsline {section}{\numberline {7.3}研究局限性}{73}{section.7.3}%
-\contentsline {section}{\numberline {7.4}未来研究方向}{73}{section.7.4}%
+\contentsline {section}{\numberline {2.4}本章小结与研究空白}{13}{section.2.4}%
+\contentsline {chapter}{\numberline {第3章}问题形式化与图复杂度指标体系}{16}{chapter.3}%
+\contentsline {section}{\numberline {3.1}问题形式化与优化目标}{16}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}图学习基本设定与SDGNN基准}{16}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}统一优化目标与预算约束}{19}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}近似误差度量与三项设计准则}{21}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}图复杂度量化指标体系}{24}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}谱间隙与节点谱能量}{24}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}局部图熵}{26}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}节点中心性}{26}{subsection.3.2.3}%
+\contentsline {section}{\numberline {3.3}本章小结}{27}{section.3.3}%
+\contentsline {chapter}{\numberline {第4章}谱驱动三维自适应稀疏机制}{30}{chapter.4}%
+\contentsline {section}{\numberline {4.1}频率维度：节点谱能量的统一谱输入}{30}{section.4.1}%
+\contentsline {section}{\numberline {4.2}节点维度：节点级自适应正则系数}{33}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}节点级正则系数的构造原则}{33}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}多因子融合的完整公式}{35}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}算法实现}{36}{subsection.4.2.3}%
+\contentsline {section}{\numberline {4.3}层级维度：分层跳距预算分配}{37}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}分层信息衰减界分析}{37}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}分层保留率 $p_l$ 的两种策略}{41}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}节点-跳距联合预算分配策略}{43}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.4}本章小结}{44}{section.4.4}%
+\contentsline {chapter}{\numberline {第5章}算法整合、误差分析与复杂度分析}{46}{chapter.5}%
+\contentsline {section}{\numberline {5.1}LARS分层稀疏求解与交替优化}{46}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}分层LARS的候选集构造与方案选定}{46}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}完整交替优化算法}{48}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}优化稳定性与实现说明}{52}{subsection.5.1.3}%
+\contentsline {section}{\numberline {5.2}误差分析与适用条件}{52}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}自适应参数设计与误差分析的接口}{53}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}谱相似性与图稀疏化}{53}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}多项式谱滤波器的近似误差界}{54}{subsection.5.2.3}%
+\contentsline {section}{\numberline {5.3}复杂度分析}{60}{section.5.3}%
+\contentsline {section}{\numberline {5.4}本章小结}{64}{section.5.4}%
+\contentsline {chapter}{\numberline {第6章}实验评估}{65}{chapter.6}%
+\contentsline {section}{\numberline {6.1}实验设置}{65}{section.6.1}%
+\contentsline {section}{\numberline {6.2}节点分类主实验}{70}{section.6.2}%
+\contentsline {section}{\numberline {6.3}消融实验与分析结论验证}{73}{section.6.3}%
+\contentsline {subsection}{\numberline {6.3.1}逐模块消融分析}{73}{subsection.6.3.1}%
+\contentsline {subsection}{\numberline {6.3.2}跳距预算分配策略消融}{76}{subsection.6.3.2}%
+\contentsline {subsection}{\numberline {6.3.3}超参数敏感性分析}{77}{subsection.6.3.3}%
+\contentsline {section}{\numberline {6.4}效率分析}{78}{section.6.4}%
+\contentsline {subsection}{\numberline {6.4.1}推理效率与内存综合对比}{78}{subsection.6.4.1}%
+\contentsline {subsection}{\numberline {6.4.2}预处理摊销与 break-even 分析}{80}{subsection.6.4.2}%
+\contentsline {section}{\numberline {6.5}可视化分析}{81}{section.6.5}%
+\contentsline {section}{\numberline {6.6}本章小结}{83}{section.6.6}%
+\contentsline {chapter}{\numberline {第7章}总结与展望}{84}{chapter.7}%
+\contentsline {section}{\numberline {7.1}研究工作总结}{84}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}问题背景与核心挑战}{84}{subsection.7.1.1}%
+\contentsline {subsection}{\numberline {7.1.2}各章核心工作回顾}{84}{subsection.7.1.2}%
+\contentsline {subsection}{\numberline {7.1.3}方法、分析与实验结果的一致性说明}{85}{subsection.7.1.3}%
+\contentsline {section}{\numberline {7.2}主要贡献与创新点}{86}{section.7.2}%
+\contentsline {section}{\numberline {7.3}研究局限性}{87}{section.7.3}%
+\contentsline {section}{\numberline {7.4}未来研究方向}{88}{section.7.4}%
 \setcounter {tocdepth}{0}
-\contentsline {chapter}{参考文献}{75}{section*.64}%
-\contentsline {chapter}{索\hskip 2em\relax 引}{78}{section*.66}%
-\contentsline {section}{创新索引}{78}{section*.69}%
-\contentsline {section}{主题索引}{79}{section*.70}%
-\contentsline {section}{专有名称索引}{79}{section*.71}%
-\contentsline {chapter}{在学期间完成的相关学术成果}{81}{section*.72}%
-\contentsline {chapter}{致\hskip 1em\relax 谢}{82}{section*.74}%
-\contentsline {chapter}{答辩委员会名单}{83}{section*.76}%
+\contentsline {chapter}{参考文献}{89}{section*.62}%
+\contentsline {chapter}{索\hskip 2em\relax 引}{93}{section*.64}%
+\contentsline {section}{创新索引}{93}{section*.67}%
+\contentsline {section}{主题索引}{94}{section*.68}%
+\contentsline {section}{专有名称索引}{94}{section*.69}%
+\contentsline {chapter}{在学期间完成的相关学术成果}{96}{section*.70}%
+\contentsline {chapter}{致\hskip 1em\relax 谢}{97}{section*.72}%
+\contentsline {chapter}{答辩委员会名单}{98}{section*.74}%
 \contentsfinish 

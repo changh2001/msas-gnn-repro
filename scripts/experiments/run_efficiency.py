@@ -5,7 +5,19 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s][%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 ALL_DS=["cora","citeseer","pubmed","ogbn_arxiv"]
-METHODS=["gcn","sgc","pprgo","glnn","sdgnn","msas_gnn"]
+METHODS=[
+    "gcn",
+    "sgc",
+    "pprgo",
+    "glnn",
+    "sdgnn",
+    "msas_gnn",
+    "graphsaint",
+    "nodeformer",
+    "difformer",
+    "sgformer",
+    "nagphormer",
+]
 LARGE={"ogbn_arxiv"}
 def main():
     parser = argparse.ArgumentParser()

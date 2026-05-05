@@ -20,8 +20,8 @@ def build_protocol_metadata(cfg: dict) -> dict[str, object]:
 
     if ablation_id == "sdgnn_pure":
         return {
-            "table_protocol_version": 4,
-            "phi_tilde_init": "l2_row_normalize_h_star",
+            "table_protocol_version": 5,
+            "phi_tilde_init": "ridge_x_to_h_star_then_l2_row_normalize",
             "w_phi_parameterization": "explicit_linear_xw",
             "w_phi_init": str(feature_cfg.get("init_protocol", "ridge_x_to_h_star")),
             "phase_w_protocol": "optimize_explicit_w_phi_then_recompute_phi_tilde",
@@ -33,12 +33,12 @@ def build_protocol_metadata(cfg: dict) -> dict[str, object]:
         }
 
     return {
-        "table_protocol_version": 4,
-        "phi_tilde_init": "l2_row_normalize_h_star",
+        "table_protocol_version": 5,
+        "phi_tilde_init": "ridge_x_to_h_star_then_l2_row_normalize",
         "w_phi_parameterization": "explicit_linear_xw",
         "w_phi_init": str(feature_cfg.get("init_protocol", "ridge_x_to_h_star")),
         "phase_w_protocol": "optimize_explicit_w_phi_then_recompute_phi_tilde",
-        "phase_theta_protocol": "layered_residual_cascade_lars_lasso",
+        "phase_theta_protocol": "bfs_flat_lars_lasso" if ablation_id == "b0" else "self_channel_plus_layered_residual_cascade_lars_lasso",
         "candidate_protocol": "layered_bfs_hop_rings",
         "sparsity_protocol": "candidate_pruning_rate",
         "frequency_mode": "equal_weight",

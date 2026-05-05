@@ -12,9 +12,14 @@ def test_cora_b5_defaults_align_with_current_paper_defaults():
     cfg = load_experiment_config("cora", ablation_id="b5")
     assert cfg["train"]["lr"] == 0.005
     assert cfg["train"]["dropout"] == 0.3
-    assert cfg["teacher"]["hidden_dim"] == 128
+    assert cfg["teacher"]["layers"] == 3
+    assert cfg["teacher"]["hidden_dim"] == 64
     assert cfg["teacher"]["lr"] == 0.005
     assert cfg["teacher"]["dropout"] == 0.3
+    assert cfg["node_dim"]["omega_h"] == 0.2
+    assert "eta" not in cfg["node_dim"]
+    assert cfg["hop_dim"]["varrho"] == 0.7
+    assert cfg["hop_dim"]["rho"] == 1.0
 
 
 def test_cora_b0_uses_explicit_gcn_teacher_defaults():
@@ -22,7 +27,8 @@ def test_cora_b0_uses_explicit_gcn_teacher_defaults():
 
     cfg = load_experiment_config("cora", ablation_id="b0")
     assert cfg["teacher_name"] == "gcn"
-    assert cfg["teacher"]["hidden_dim"] == 128
+    assert cfg["teacher"]["layers"] == 3
+    assert cfg["teacher"]["hidden_dim"] == 64
     assert cfg["train"]["lr"] == 0.005
     assert cfg["train"]["dropout"] == 0.3
 

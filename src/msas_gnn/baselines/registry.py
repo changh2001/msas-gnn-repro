@@ -35,6 +35,26 @@ def _resolve_baseline(name):
         from msas_gnn.baselines.h2gcn import H2GCN
 
         return H2GCN
+    if name == "graphsaint":
+        from msas_gnn.baselines.graphsaint import GraphSAINT
+
+        return GraphSAINT
+    if name == "nodeformer":
+        from msas_gnn.baselines.graph_transformers import NodeFormer
+
+        return NodeFormer
+    if name == "difformer":
+        from msas_gnn.baselines.graph_transformers import DIFFormer
+
+        return DIFFormer
+    if name == "sgformer":
+        from msas_gnn.baselines.graph_transformers import SGFormer
+
+        return SGFormer
+    if name == "nagphormer":
+        from msas_gnn.baselines.graph_transformers import NAGphormer
+
+        return NAGphormer
     if name in ("sdgnn", "sdgnn_compat", "sdgnn_pure", "msas_gnn_b5", "b5"):
         from msas_gnn.baselines.sdgnn import SDGNN
 

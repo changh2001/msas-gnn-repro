@@ -1,5 +1,5 @@
 ablation_id: b0
-description: SDGNN兼容基线，全局统一正则系数并沿用 MSAS 分层候选/Phase-Theta 口径
+description: SDGNN兼容基线，全局统一正则系数，分层 BFS 候选池 + 单次平坦 LARS/Lasso
 lambda_reg: 1.0e-3
 node_dim:
   use_spectral_energy: false
@@ -8,3 +8,5 @@ hop_dim:
   L: 3
 lars:
   k: 50
+alternating_opt:
+  protocol: b0_flat

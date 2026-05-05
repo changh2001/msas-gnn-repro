@@ -31,7 +31,44 @@
 \label{subsec:ch3-graph-setup}
 \label{subsec:ch3-sdgnn}
 
-给定无向图 $G = (V, E, X)$，其中 $|V|=n$，节点特征矩阵 $X\in\mathbb{R}^{n\times D}$。实现上采用对称邻接存储，记 $m:=\mathrm{nnz}(A)=2|E|$ 为邻接矩阵非零元数。若图中存在孤立节点，则本文统一采用“加自环后再归一化”的预处理约定，使 $\mathbf{D}^{-1/2}$ 合法；下文默认经该预处理后 $d_i>0$。归一化拉普拉斯 $\tilde{\mathcal{L}} = I - \mathbf{D}^{-1/2}A\mathbf{D}^{-1/2}$ 的谱分解为 $\tilde{\mathcal{L}} = U\Lambda U^\top$，特征值按升序排列：
+给定无向属性图 $G=(V,E,X)$，其中 $|V|=n$，节点特征矩阵 $X\in\mathbb{R}^{n\times D}$。记 $A\in\mathbb{R}^{n\times n}$ 为原始无向图的邻接矩阵；实现上采用对称邻接存储，因此记
+\begin{equation}
+  m:=\mathrm{nnz}(A)=2|E|.
+  \label{eq:ch2-nnz-a}
+\end{equation}
+为原始邻接矩阵的非零元数。为处理孤立节点并与后续 GCN 式归一化传播口径保持一致，本文统一采用“加自环后再归一化”的预处理约定：
+\begin{equation}
+  \tilde{A}=A+I,\qquad
+  \tilde{D}_{\mathrm{deg},ii}=\sum_{j=1}^{n}\tilde{A}_{ij}.
+  \label{eq:ch2-self-loop-degree}
+\end{equation}
+由此可保证 $\tilde{D}_{\mathrm{deg},ii}>0$，从而 $\tilde{D}_{\mathrm{deg}}^{-1/2}$ 合法。基于加自环邻接矩阵的对称归一化邻接矩阵定义为
+\begin{equation}
+  \bar{A}
+  =
+  \tilde{D}_{\mathrm{deg}}^{-1/2}
+  \tilde{A}
+  \tilde{D}_{\mathrm{deg}}^{-1/2}.
+  \label{eq:ch2-normalized-adj}
+\end{equation}
+相应的归一化拉普拉斯矩阵定义为
+\begin{equation}
+  \tilde{\mathcal{L}}
+  =
+  I-\bar{A}
+  =
+  I-
+  \tilde{D}_{\mathrm{deg}}^{-1/2}
+  \tilde{A}
+  \tilde{D}_{\mathrm{deg}}^{-1/2}.
+  \label{eq:ch2-normalized-laplacian}
+\end{equation}
+其谱分解为
+\begin{equation}
+  \tilde{\mathcal{L}}=U\Lambda U^\top,
+  \label{eq:ch2-laplacian-eigendecomposition}
+\end{equation}
+特征值按升序排列：
 \begin{equation}
   0 = \lambda_0 \leq \lambda_1 \leq \cdots \leq \lambda_{n-1} \leq 2\text{.\cite{anderson1985eigenvalues}}
   \label{eq:ch3-eigenvalue}
@@ -49,23 +86,39 @@
 
 许多真实网络的度分布呈长尾甚至近似幂律；当以方差
 $\mathrm{Var}(\{d_i\})=\frac{1}{n}\sum_i(d_i-\bar{d})^2$
-度量的度异质性较大时，统一稀疏控制强度往往会对高度节点和低度节点产生截然不同的相对稀疏化效果。以 SDGNN 为例，其对所有节点在同一全局稀疏控制规则下求解稀疏权重，并未显式根据节点拓扑异质性调整节点级稀疏强度；因此，高度节点在相同稀疏压力下更容易丢失大量关键邻域信息，而低度节点则可能保留冗余连接，导致不同拓扑角色节点承受不均衡的稀疏化效应。这一现象表明，仅依赖全局统一的稀疏控制机制难以适应度异质性显著的图结构，也正是本文进一步引入节点级自适应稀疏参数的直接动机：
+度量的度异质性较大时，统一稀疏控制强度往往会对高度节点和低度节点产生截然不同的相对稀疏化效果。以 SDGNN 为例，其对所有节点在同一全局稀疏控制规则下求解稀疏权重，并未显式根据节点拓扑异质性调整节点级稀疏强度；因此，高度节点在相同稀疏压力下更容易丢失大量关键邻域信息，而低度节点则可能保留冗余连接，导致不同拓扑角色节点承受不均衡的稀疏化效应。这一现象表明，仅依赖全局统一的稀疏控制机制难以适应度异质性显著的图结构，也正是本文进一步引入节点级自适应稀疏参数的直接动机。
+% \begin{equation}
+%   \mathrm{Var}(\{d_i\}) = \frac{1}{n}\sum_{i=1}^n (d_i - \bar{d})^2.
+%   \label{eq:ch3-degreevar}
+% \end{equation}
+
+以标准 GCN\cite{Kipf2017GCN}（Kipf \& Welling, 2017）为例，其第 $l$ 层传播可写为
 \begin{equation}
-  \mathrm{Var}(\{d_i\}) = \frac{1}{n}\sum_{i=1}^n (d_i - \bar{d})^2.
-  \label{eq:ch3-degreevar}
+  H^{(l)} = \sigma\!\left(\bar{A} H^{(l-1)} W^{(l)}\right),
+  \label{eq:ch2-gcn-layer}
 \end{equation}
-标准 GCN\cite{Kipf2017GCN}（Kipf \& Welling, 2017）采用逐层更新
-$H^{(l)} = \sigma(\bar{A} H^{(l-1)} W^{(l)})$，省略中间非线性并合并多层权重后可写为
-$H^{(L)} = \bar{A}^L X W_{\mathrm{eq}}$，全图推理复杂度为 $O(L\cdot m\cdot d)$。
+其中，$H^{(l)}\in\mathbb{R}^{n\times d_l}$ 表示第 $l$ 层节点表示矩阵，$H^{(0)}=X$ 为输入特征矩阵，$X\in\mathbb{R}^{n\times D}$；$n$ 为节点数，$D$ 为输入特征维度，$d_l$ 为第 $l$ 层隐藏维度；$W^{(l)}\in\mathbb{R}^{d_{l-1}\times d_l}$ 为第 $l$ 层可学习权重；$\sigma(\cdot)$ 为非线性激活函数。$\bar{A}=\tilde{D}_{\mathrm{deg}}^{-1/2}\tilde{A}\tilde{D}_{\mathrm{deg}}^{-1/2}$ 表示加入自环并对称归一化后的邻接矩阵，其中 $\tilde{A}=A+I$，$\tilde{D}_{\mathrm{deg}}$ 为 $\tilde{A}$ 的度矩阵，满足 $\tilde{D}_{\mathrm{deg},ii}=\sum_{j=1}^{n}\tilde{A}_{ij}$。这里 $D$ 仅表示输入特征维度，$\tilde{D}_{\mathrm{deg}}$ 表示度矩阵，二者不应混用。若仅从传播路径角度理解其多层邻域聚合过程，暂时省略层间非线性并将多层线性变换合并为等效权重 $W_{\mathrm{eq}}$，则可近似写为
+\begin{equation}
+  H^{(L)} \approx \bar{A}^{L} X W_{\mathrm{eq}}.
+  \label{eq:ch2-gcn-linearized}
+\end{equation}
+式~\eqref{eq:ch2-gcn-linearized}表明，$L$ 层 GCN 会将节点特征沿归一化邻接矩阵传播到 $L$ 跳邻域范围内。若记 $m=\mathrm{nnz}(A)=2|E|$ 为邻接矩阵的非零元数，$d$ 为传播过程中的代表性隐藏维度，则在稀疏矩阵乘法实现下，GCN 全图一次前向传播的主项复杂度通常可写为 $O(L\cdot m\cdot d)$。
 SDGNN\cite{Hu2024SDGNN}（Hu等）将固定传播权重替换为每节点可学习稀疏权重 $\theta_i$：
 \begin{equation}
   \hat{\mathcal{F}}(i, X, A;\, W, \Theta) = \theta_i^\top \Phi(X;\, W).
   \label{eq:ch3-sdgnn-infer}
 \end{equation}
 在 $\tilde{\Phi}$ 已预计算缓存的口径下，推理阶段仅执行稀疏矩阵乘
-$\hat{H}=\Theta^\top\tilde{\Phi}$，主导复杂度降至 $O(n\bar{k}d)$，其中
-$\bar{k}$ 表示节点最终稀疏结果规模的平均水平，即平均非零项个数。当
-$\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明显压缩优势。
+$\hat{H}=\Theta^\top\tilde{\Phi}$，主导复杂度降至 $O(n\bar{k}d)$，其中，$\bar{k}$ 表示全图节点最终稀疏结果规模的平均水平，即每个节点稀疏权重向量中非零项个数的平均值，定义为
+\begin{equation}
+  \bar{k}
+  =
+  \frac{1}{n}\sum_{i=1}^{n}k_i,
+  \qquad
+  k_i=\|\theta_i\|_0.
+  \label{eq:ch2-average-sparse-budget}
+\end{equation}
+式中，$k_i$ 表示节点 $i$ 最终保留的非零权重个数，$\theta_i$ 为节点 $i$ 对应的稀疏权重向量，$\|\cdot\|_0$ 表示向量中非零元素的个数。当$\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明显压缩优势。
 然而，SDGNN 对所有节点采用统一的全局稀疏控制规则，而未显式根据节点拓扑异质性调整节点级稀疏强度；因此，不同节点最终得到的稀疏结果规模及其相对覆盖率会显著不同。对于枢纽节点，即使最终保留的非零项个数记为 $k_i:=\|\theta_i\|_0$，其相对覆盖率 $k_i/d_i$ 往往仍然较低，容易丢失大量关键邻域信息；而对于外围低度节点，则更可能保留冗余连接，稀疏潜力未被充分释放。这种由统一稀疏控制强度导致的结构性失配如图~\ref{fig:ch3-sdgnn-fail} 所示。
 
 % ---- 图~\ref{fig:ch3-sdgnn-fail}~占位符 ----
@@ -84,7 +137,21 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
 \subsection{统一优化目标与预算约束}
 \label{subsec:ch3-objective}
 
-本文以逼近教师/基准GNN的中间节点表示为主问题，决策变量为特征变换参数 $W_\phi$ 与稀疏权重矩阵 $\Theta$：
+本文以逼近教师/基准 GNN 的中间节点表示为主问题。给定教师目标表示矩阵
+$H^*\in\mathbb{R}^{n\times d}$，本文首先通过逐节点共享参数的特征变换函数
+$\phi(\cdot;W_\phi):\mathbb{R}^{D}\to\mathbb{R}^{d}$ 将原始节点特征映射到与教师表示同维的嵌入空间。SDGNN 框架中 $\phi$ 可以采用 MLP 等一般可学习变换形式；为控制特征变换模块容量，并突出节点级自适应稀疏预算机制本身的作用，本文主实验统一采用单层线性变换作为默认实例化：
+\begin{equation}
+  \phi(X;W_\phi)=XW_\phi,\qquad W_\phi\in\mathbb{R}^{D\times d}.
+  \label{eq:ch3-feature-transform}
+\end{equation}
+进一步地，记
+\begin{equation}
+  \tilde{\Phi}:=\ell_2\text{-normalize-row}\bigl(\phi(X;W_\phi)\bigr)\in\mathbb{R}^{n\times d}.
+  \label{eq:ch3-normalized-feature}
+\end{equation}
+式~\eqref{eq:ch3-normalized-feature} 表示对变换后的节点特征逐行作 $\ell_2$ 归一化，以减弱不同节点特征尺度差异对后续稀疏分解的影响。单层线性变换是本文主实验采用的特征变换配置，并不意味着该结构在所有任务中最优；第~6~章将在去除特征变换的消融设置下，进一步分析该模块对表示逼近与下游性能的影响。
+
+在此基础上，本文的决策变量为特征变换参数 $W_\phi$ 与稀疏权重矩阵 $\Theta$，统一优化目标写为
 \begin{equation}
   \begin{aligned}
     \min_{W_\phi,\,\Theta}\quad &
@@ -96,26 +163,22 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
   \end{aligned}
   \label{eq:ch3-main-objective}
 \end{equation}
-式~\eqref{eq:ch3-main-objective} 中，$H^*\in\mathbb{R}^{n\times d}$ 为教师 GNN 的目标表示矩阵，$\phi(\cdot;W_\phi):\mathbb{R}^D\to\mathbb{R}^d$ 为逐节点共享参数的可学习特征变换函数，用于将原始节点特征映射到与教师表示同维的嵌入空间。本文主实验将其实例化为单层线性变换：
-\begin{equation}
-  \phi(X;W_\phi)=XW_\phi,\qquad W_\phi\in\mathbb{R}^{D\times d}.
-  \label{eq:ch3-feature-transform}
-\end{equation}
-进一步地，记
-\begin{equation}
-  \tilde{\Phi}:=\ell_2\text{-normalize-row}\bigl(\phi(X;W_\phi)\bigr)\in\mathbb{R}^{n\times d}.
-  \label{eq:ch3-normalized-feature}
-\end{equation}
-即对变换后的节点特征逐行作 $\ell_2$ 归一化，以减弱不同节点特征尺度差异对后续稀疏分解的影响。$\lambda_W>0$ 为特征变换参数 $W_\phi$ 的 $\ell_2$ 正则系数，$\tau(i)\in[\tau_{\min},\tau_{\mathrm{base}}]$ 为节点自适应正则系数，用以替代 SDGNN 的全局统一稀疏控制系数。感受野约束要求节点 $i$ 的稀疏权重仅能作用于其 $L$ 跳邻域，从而保持局部传播语义并与教师 GNN 的感受野范围相一致。
+其中，$\Theta=\{\theta_i\}_{i=1}^{n}\in\mathbb{R}^{n\times n}$ 为全图稀疏权重矩阵，$\theta_i$ 表示节点 $i$ 对候选节点特征的稀疏组合权重；$\lambda_W>0$ 为特征变换参数 $W_\phi$ 的 $\ell_2$ 正则系数；$\tau(i)\in[\tau_{\min},\tau_{\mathrm{base}}]$ 为节点自适应正则系数，用以替代 SDGNN 的全局统一稀疏控制系数。约束 $\mathrm{supp}(\theta_i)\subseteq\mathcal{N}_L(i)$ 要求节点 $i$ 的非零稀疏权重仅作用于其 $L$ 跳感受野范围内，从而保持局部传播语义，并与教师 GNN 的感受野范围相一致。
 
-后文以 $k_i:=\|\theta_i\|_0$ 记节点 $i$ 最终稀疏解中的非零项个数，并记
+后文以
 \begin{equation}
-  \bar{k}:=\frac{1}{n}\sum_{i=1}^n k_i.
+  k_i:=\|\theta_i\|_0
+  \label{eq:ch3-node-sparse-size}
+\end{equation}
+记节点 $i$ 最终稀疏解中的非零项个数，并以
+\begin{equation}
+  \bar{k}:=\frac{1}{n}\sum_{i=1}^{n}k_i
   \label{eq:ch3-kbar}
 \end{equation}
-为全图平均稀疏度。需要说明的是，$k_i$ 与 $\bar{k}$ 在本文中用于刻画最终稀疏结果的保留规模，而非预先给定的显式预算常数；其数值由节点级正则强度、候选集范围以及后续 LARS 求解过程共同决定。具体实现中，后文进一步通过分层候选集构造与 LARS 截断机制控制路径扩张规模，从而在保持局部性的同时实现稀疏求解。
+记全图平均保留规模。$k_i$ 与 $\bar{k}$ 在本文中主要用于刻画最终稀疏结果的非零规模，并非式~\eqref{eq:ch3-main-objective} 中预先固定的显式预算常数；其数值由节点级正则强度 $\tau(i)$、候选集范围以及后续 LARS 求解过程共同决定。第~4~章进一步给出节点级正则系数与分层跳距配额的构造方式，第~5~章则在具体求解时结合分层候选集与 LARS 截断机制控制路径扩张规模，从而在保持局部性的同时实现稀疏求解。
 \label{idx:theme:lars}
-本文采用两阶段交替优化：Phase $\Theta$ 利用 LARS\cite{Efron2004LARS}（Efron等，2004）求解各节点的 $\tau(i)$-加权 Lasso 子问题；Phase $W$ 利用反向传播更新 $W_\phi$。由于联合优化问题为非凸，本文在工程实现上主要关注训练过程的稳定性与可实现性，而不主张严格的全局收敛保证（详见第5章第5.1.3节）。$\tau(i)$ 的可计算表达式在第4章第4.2节给出。
+
+本文采用两阶段交替优化求解式~\eqref{eq:ch3-main-objective}：Phase $\Theta$ 在固定 $W_\phi$ 的条件下，利用 LARS\cite{Efron2004LARS}（Efron等，2004）求解各节点的 $\tau(i)$ 加权 Lasso 子问题；Phase $W$ 在固定 $\Theta$ 的条件下，利用反向传播更新 $W_\phi$。由于该联合优化问题包含可学习特征变换与稀疏权重的交替更新，整体上属于非凸优化问题，本文在工程实现上主要关注训练过程的稳定性与可实现性，不主张严格的全局最优收敛保证，相关实现说明见第~5~章第~5.1.3~节。$\tau(i)$ 的可计算表达式将在第~4~章第~4.2~节给出。
 
 \subsection{近似误差度量与三项设计准则}
 \label{subsec:ch3-criteria}
@@ -128,26 +191,83 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
 \end{equation}
 其中，$n$ 为图中节点总数，$H^*(X,A;\,W^*)\in\mathbb{R}^{n\times d}$ 表示教师/基准 GNN 在参数 $W^*$ 下得到的目标中间表示矩阵，$\hat{H}(X,A;\,W,\Theta)\in\mathbb{R}^{n\times d}$ 表示稀疏分解模型在参数 $W$ 与 $\Theta$ 下得到的近似表示矩阵，$\|\cdot\|_F$ 为 Frobenius 范数。式~\eqref{eq:ch3-approx-error} 中的 $n^{-1/2}$ 缩放用于消除图规模对误差量级的线性放大影响，使不同规模图上的表示误差具有可比性；该口径也与第5章谱保持分析及第6章实验中的表示误差统计保持一致。后续各章的模块设计与实验分析主要围绕“精度保持”与“效率提升”两个评价口径展开。
 
-其一为精度保持口径（Accuracy Preservation）。本文以后续稀疏分解输出与教师表示之间的 RMS-Frobenius 误差作为统一评价量，即以式~\eqref{eq:ch3-approx-error} 衡量表示层逼近质量。该误差越小，说明稀疏分解对教师中间表示的保真程度越高。需要说明的是，本文不将某一固定阈值设为必须满足的硬验收条件，而是在第5章结合谱保持分析讨论其与结构近似误差之间的关系，并在第6章通过表示误差、分类精度及其变化趋势进行经验验证。对任意阈值 $t>0$，记大误差节点集合为
+其一为精度保持口径（Accuracy Preservation）。本文以后续稀疏分解输出与教师表示之间的 RMS-Frobenius 误差作为统一评价量，即以式~\eqref{eq:ch3-approx-error} 衡量表示层逼近质量。该误差越小，说明稀疏分解对教师中间表示的保真程度越高。本文不将某一固定阈值设为必须满足的硬验收条件；第~5~章将结合谱保持分析讨论该误差与结构近似误差之间的关系，第~6~章则通过表示误差、分类精度及其变化趋势进行经验验证。
+
+为说明 RMS-Frobenius 误差与节点级大误差比例之间的关系，记节点 $i$ 的表示误差向量为
 \begin{equation}
-  \mathcal{S}(t)
-  \;:=\;
-  \left\{\, i\in V \;:\; \|\Delta z_i\|_2 \ge t \,\right\},
-  \label{eq:ch3-large-error-set}
-\end{equation}
-其中，$V$ 为节点集合，$i$ 为节点索引，$\Delta z_i$ 表示节点 $i$ 的表示误差向量，可写为
-\begin{equation}
-  \Delta z_i \;:=\; h_i^* - \hat{h}_i,
+  \Delta z_i:=h_i^*-\hat{h}_i,
   \label{eq:ch3-delta-z}
 \end{equation}
-这里 $h_i^*$ 与 $\hat{h}_i$ 分别表示教师模型与稀疏分解模型在节点 $i$ 处的表示，$\|\cdot\|_2$ 为向量的 $\ell_2$ 范数，$t$ 为预先给定的误差阈值。因此，$\mathcal{S}(t)$ 表示所有表示误差不小于阈值 $t$ 的节点所构成的集合。由 Markov 不等式可得，大误差节点所占比例满足
+其中，$h_i^*$ 与 $\hat{h}_i$ 分别表示教师模型与稀疏分解模型在节点 $i$ 处的表示。进一步定义节点级误差标量
+\begin{equation}
+  \varepsilon_i^{\mathrm{rep}}:=\|\Delta z_i\|_2=\|\hat{h}_i-h_i^*\|_2,\qquad i=1,\ldots,n.
+  \label{eq:ch3-node-error}
+\end{equation}
+根据式~\eqref{eq:ch3-approx-error}，RMS-Frobenius 近似误差满足
+\begin{equation}
+  \mathcal{E}_{\mathrm{approx}}^2
+  =
+  \frac{1}{n}\|\hat{H}-H^*\|_F^2
+  =
+  \frac{1}{n}\sum_{i=1}^{n}\|\hat{h}_i-h_i^*\|_2^2
+  =
+  \frac{1}{n}\sum_{i=1}^{n}\bigl(\varepsilon_i^{\mathrm{rep}}\bigr)^2.
+  \label{eq:ch3-rms-node-error}
+\end{equation}
+对任意给定阈值 $t>0$，定义大误差节点集合为
+\begin{equation}
+  \mathcal{S}(t):=\{i\in V:\varepsilon_i^{\mathrm{rep}}\geq t\}.
+  \label{eq:ch3-large-error-set}
+\end{equation}
+其中，$V$ 为节点集合，$\mathcal{S}(t)$ 表示所有表示误差不小于阈值 $t$ 的节点所构成的集合。
+
+由于当 $i\in\mathcal{S}(t)$ 时有 $\bigl(\varepsilon_i^{\mathrm{rep}}\bigr)^2\geq t^2$，因此
+\begin{equation}
+  \sum_{i=1}^{n}\bigl(\varepsilon_i^{\mathrm{rep}}\bigr)^2
+  \geq
+  \sum_{i\in\mathcal{S}(t)}\bigl(\varepsilon_i^{\mathrm{rep}}\bigr)^2
+  \geq
+  |\mathcal{S}(t)|\,t^2.
+  \label{eq:ch3-large-error-sum-bound}
+\end{equation}
+将式~\eqref{eq:ch3-rms-node-error} 代入式~\eqref{eq:ch3-large-error-sum-bound}，可得
+\begin{equation}
+  n\mathcal{E}_{\mathrm{approx}}^2
+  \geq
+  |\mathcal{S}(t)|\,t^2.
+  \label{eq:ch3-large-error-intermediate}
+\end{equation}
+两边同时除以 $nt^2$，得到
 \begin{equation}
   \frac{|\mathcal{S}(t)|}{n}
-  \;\le\;
+  \leq
   \left(\frac{\mathcal{E}_{\mathrm{approx}}}{t}\right)^2.
   \label{eq:ch3-large-error-bound}
 \end{equation}
-其中，$|\mathcal{S}(t)|$ 表示集合 $\mathcal{S}(t)$ 中节点的个数，故左端表示误差超过阈值 $t$ 的节点比例；$\mathcal{E}_{\mathrm{approx}}$ 为式~\eqref{eq:ch3-approx-error} 定义的 RMS-Frobenius 近似误差。式~\eqref{eq:ch3-large-error-bound} 表明：当整体表示误差 $\mathcal{E}_{\mathrm{approx}}$ 较小时，大误差节点在全图中的占比也会受到相应控制。然而，将表示层误差进一步严格转化为准确率下降界，仍需额外给定分类头的 Lipschitz 常数及节点 margin 分布，因此本文对此保持经验性表述，而不作严格封闭界声明。
+
+式~\eqref{eq:ch3-large-error-bound} 也可视为对非负随机变量 $\bigl(\varepsilon_i^{\mathrm{rep}}\bigr)^2$ 使用 Markov 不等式所得的结果。若从节点集合 $V$ 中均匀随机抽取一个节点 $I$，则有
+\begin{equation}
+  \mathbb{E}\bigl[(\varepsilon_I^{\mathrm{rep}})^2\bigr]
+  =
+  \frac{1}{n}\sum_{i=1}^{n}\bigl(\varepsilon_i^{\mathrm{rep}}\bigr)^2
+  =
+  \mathcal{E}_{\mathrm{approx}}^2.
+  \label{eq:ch3-markov-expectation}
+\end{equation}
+由 Markov 不等式可得
+\begin{equation}
+  \mathbb{P}(\varepsilon_I^{\mathrm{rep}}\geq t)
+  =
+  \mathbb{P}\bigl((\varepsilon_I^{\mathrm{rep}})^2\geq t^2\bigr)
+  \leq
+  \frac{\mathbb{E}\bigl[(\varepsilon_I^{\mathrm{rep}})^2\bigr]}{t^2}
+  =
+  \left(\frac{\mathcal{E}_{\mathrm{approx}}}{t}\right)^2.
+  \label{eq:ch3-markov-derivation}
+\end{equation}
+又因为 $\mathbb{P}(\varepsilon_I^{\mathrm{rep}}\geq t)=|\mathcal{S}(t)|/n$，故可得到式~\eqref{eq:ch3-large-error-bound}。该式表明，当整体 RMS-Frobenius 近似误差 $\mathcal{E}_{\mathrm{approx}}$ 较小时，表示误差不小于阈值 $t$ 的节点比例也会受到相应控制。
+
+将表示层误差进一步严格转化为准确率下降界，还需要额外给定分类头的 Lipschitz 常数（分类头对输入扰动的敏感程度）、节点分类 margin 分布（各节点到分类决策边界的距离）以及预测扰动对决策边界的影响条件（误差扰动是否会改变预测类别）。因此，本文仅将式~\eqref{eq:ch3-large-error-bound} 作为表示近似误差的节点比例控制说明，而不声称其直接给出分类准确率的封闭下降界。
 
 其二为效率提升口径（Efficiency Gain）。为避免复杂度口径混用，本文统一采用“$\tilde{\Phi}$ 已离线预计算并缓存后的聚合主项”作为在线推理比较口径。在该口径下，稀疏分解推理的主导复杂度可记为 $O(n\bar{k}d)$；相应地，对 $L$ 层标准消息传递 GNN，若同样按“全图一次前向、仅统计聚合主项”的口径计算，则其复杂度可记为 $O(Ln\bar{d}d)$。因此，后文默认在这一统一口径下讨论加速比，相较标准消息传递 GNN 的基础聚合加速比可写为
 \begin{equation}
@@ -158,7 +278,7 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
   \frac{L\bar{d}}{\bar{k}}.
   \label{eq:ch3-speedup}
 \end{equation}
-其中，$L$ 为教师或基准 GNN 的传播层数，$\bar{d}$ 为全图平均度，$d$ 为隐藏表示维度，$\bar{k}$ 表示全图平均最终保留规模。式~\eqref{eq:ch3-speedup} 表明，当 $\bar{k}\ll L\bar{d}$ 时，稀疏分解在聚合主项上具有潜在加速优势。需要说明的是，式~\eqref{eq:ch3-speedup} 仅用于给出统一评价口径下的理论近似加速比，而非端到端实测时间比值；关于推理、训练与预处理三类开销的严格区分及其成立条件，将在第5章复杂度分析中进一步展开。
+其中，$L$ 为教师或基准 GNN 的传播层数，$\bar{d}$ 为全图平均度，$d$ 为隐藏表示维度，$\bar{k}$ 表示全图平均最终保留规模。式~\eqref{eq:ch3-speedup} 表明，当 $\bar{k}\ll L\bar{d}$ 时，稀疏分解在聚合主项上具有潜在加速优势。式~\eqref{eq:ch3-speedup} 仅用于给出统一评价口径下的理论近似加速比，而非端到端实测时间比值；关于推理、训练与预处理三类开销的严格区分及其成立条件，将在第5章复杂度分析中进一步展开。
 
 其三为自适应性诊断（Adaptivity Diagnosis）。为刻画不同节点最终稀疏结果规模的离散程度，本文可进一步引入变异系数（coefficient of variation, CV）作为辅助诊断量：
 \begin{equation}
@@ -171,77 +291,127 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
 \end{equation}
 其中，$k_i:=\|\theta_i\|_0$ 表示节点 $i$ 最终稀疏解中的非零项个数，反映节点 $i$ 的最终保留规模；$\bar{k}:=\frac{1}{n}\sum_{i=1}^n k_i$ 为全图平均稀疏度；$n$ 为图中节点总数。式~\eqref{eq:ch3-crit3} 的分子为节点最终保留规模的标准差，分母为其均值，因此 $\mathrm{CV}(\{k_i\})$ 刻画的是节点间最终稀疏结果规模的相对离散程度。一般而言，$\mathrm{CV}(\{k_i\})$ 越大，说明不同节点对应的最终保留规模差异越明显；当其接近 $0$ 时，说明各节点最终稀疏结果规模更为接近，方法在经验上更接近全局统一稀疏化行为。
 
-需要说明的是，本文后续实验并未再额外设定统一的自适应性诊断阈值，也未将式~\eqref{eq:ch3-crit3} 作为与表示误差、加速比并列的独立硬验收指标进行系统报告。其原因主要有三点：第一，$\mathrm{CV}(\{k_i\})$ 刻画的是单张图内部节点最终保留规模的相对离散程度，而不同数据集本身的节点结构异质性基线并不一致；对于节点角色差异较小、度分布更集中的图，即使方法具有合理的节点自适应性，$\mathrm{CV}(\{k_i\})$ 也可能保持在较低水平。第二，$\mathrm{CV}(\{k_i\})$ 同时受节点数、平均度、候选集规模及图结构分布等数据统计特征影响，因而并非脱离数据背景的纯方法指标，直接用于跨图比较时容易混入图本身的结构差异。第三，$\mathrm{CV}(\{k_i\})$ 仅反映最终保留规模的离散程度，能够回答“差异是否存在”，却不能进一步说明“这种差异是否合理”以及“是否真正带来了更优的精度—效率权衡”。基于上述原因，本文将式~\eqref{eq:ch3-crit3} 视为单图内部的辅助诊断量，而不将其作为跨图统一比较的硬性评价标准。相应地，后文关于“自适应性诊断”的讨论主要通过节点级正则参数 $\tau(i)$ 的分布，以及不同设置下精度与效率变化的联合现象进行经验分析。
+本文后续实验并未再额外设定统一的自适应性诊断阈值，也未将式~\eqref{eq:ch3-crit3} 作为与表示误差、加速比并列的独立硬验收指标进行系统报告。其原因主要有三点：第一，$\mathrm{CV}(\{k_i\})$ 刻画的是单张图内部节点最终保留规模的相对离散程度，而不同数据集本身的节点结构异质性基线并不一致；对于节点角色差异较小、度分布更集中的图，即使方法具有合理的节点自适应性，$\mathrm{CV}(\{k_i\})$ 也可能保持在较低水平。第二，$\mathrm{CV}(\{k_i\})$ 同时受节点数、平均度、候选集规模及图结构分布等数据统计特征影响，因而并非脱离数据背景的纯方法指标，直接用于跨图比较时容易混入图本身的结构差异。第三，$\mathrm{CV}(\{k_i\})$ 仅反映最终保留规模的离散程度，能够回答“差异是否存在”，却不能进一步说明“这种差异是否合理”以及“是否真正带来了更优的精度—效率权衡”。基于上述原因，本文将式~\eqref{eq:ch3-crit3} 视为单图内部的辅助诊断量，而不将其作为跨图统一比较的硬性评价标准。相应地，后文关于“自适应性诊断”的讨论主要通过节点级正则参数 $\tau(i)$ 的分布，以及不同设置下精度与效率变化的联合现象进行经验分析。
 
 综上，后续各章的理论分析与实验验证主要围绕表示逼近误差与推理效率两条主线展开，自适应性则作为解释节点级差异化稀疏机制有效性的辅助分析视角。
 
-%%============================================================
 \section{图复杂度量化指标体系}
 \label{sec:ch3-complexity}
 
-前节建立了优化目标与验收准则，但尚未回答 $\tau(i)$ 如何从图的可观测属性确定。本节提取四类互补的图复杂度量化指标，为第4章三维参数体系提供可计算输入，参数化设计留至第4章完成。
+前节建立了统一优化目标与三项设计准则，但尚未回答节点级正则系数 $\tau(i)$ 应如何由图的可观测结构属性确定。本节从全图级与节点级两个粒度提取图复杂度指标，为第~4~章三维自适应参数设计提供可计算输入。本节仅给出指标定义、计算方式及其结构含义，具体的参数化映射关系将在第~4~章展开。
 \phantomsection\label{subsec:ch3-indices}
 
-本节提取的四类指标涵盖全图级与节点级两个粒度，彼此互补。在全图级，谱间隙 $\lambda_{\text{gap}}$（归一化拉普拉斯第二小特征值）由 Cheeger 不等式\cite{AlonMilman1985,Chung1997}关联图的导通率（conductance）$\phi(G)$，满足 $\phi(G)^2/2\leq\lambda_{\text{gap}}\leq 2\phi(G)$。在本文中，$\lambda_{\text{gap}}$ 作为图级结构量进入第4章第4.3.2节的分层跳距保留率设计。基于同一谱预处理过程，还可近似获得节点级谱信息；其中，节点谱能量 $E_{\text{spectral}}(i)$ 用于刻画节点在各频率分量上的参与强度，主线采用等权频率实例化，并将该谱能量作为 $\tau(i)$ 的谱输入。局部图熵 $H(i)$ 用于量化邻域消息流的均匀性，度中心性 $C_{\text{deg}}(i)$ 与 $k$-core 指数 $\mathrm{core}(i)$ 则分别从节点影响力与局部稠密层级两个角度补充结构刻画；上述节点级统计量在第4章第4.2.2节作为多因子融合的输入，共同服务于节点级自适应正则系数 $\tau(i)$ 的构造。四类指标由算法~\ref{alg:ch3-preprocess} 在固定图设定下批量计算，适合在训练前离线预计算并缓存，其总复杂度见该算法后的讨论。
+本节使用的结构指标包括谱间隙、节点谱能量、局部图熵与节点中心性四类。其中，谱间隙 $\lambda_{\text{gap}}$ 是归一化拉普拉斯矩阵的最小非零特征值，用于刻画图的整体连通扩张性质，并将在第~4~章第~4.3.2~节进入分层跳距保留率设计。节点谱能量 $E_{\text{spectral}}(i)$ 刻画节点在非平凡谱分量上的参与强度，是节点级正则系数 $\tau(i)$ 的核心谱输入。局部图熵 $H_{\text{norm}}(i)$ 用于描述节点邻域消息流的分散程度；度中心性 $C_{\text{deg}}(i)$ 与 $k$-core 指数 $\mathrm{core}(i)$ 则分别从节点连接规模和局部稠密层级两个角度补充结构刻画。上述节点级统计量将在第~4~章第~4.2.2~节共同进入 $\tau(i)$ 的多因子融合公式。
 
-\subsection{频率接口的等权约束与泄漏边界}
-\label{subsec:ch3-homophily}
-
-节点谱能量中的频率权重接口 $w_k(i)$ 在形式上允许不同参数化，但主线固定采用等权实例化：令 $\alpha_k(i)\equiv 0$，从而各频段权重一致，不再额外引入任何基于标签一致性的控制变量。这样处理有两点考虑。其一，本文希望频率维保持任务通用性，使第3章离线预处理完全建立在纯结构统计量之上；其二，训练、验证与测试划分下的标签只用于监督训练和最终评测，不回流到频率打分函数，从源头避免标签统计引入的泄漏风险。因此，第3章指标体系仅保留谱间隙、节点谱能量、局部图熵与节点中心性四类结构量，频率接口不再单独维护基于标签一致性统计的支路。
-
-\subsection{节点谱能量、局部图熵与中心性}
+\subsection{谱间隙与节点谱能量}
 \label{subsec:ch3-specenergy}
+\label{def:ch3-specenergy}
 
-\phantomsection\label{def:ch3-specenergy}
-本文对归一化拉普拉斯矩阵按特征值升序取前 $K_\text{eig}$ 个非平凡特征对$\{(\lambda_k,u_k)\}_{k=1}^{K_\text{eig}}$，并据此为每个节点 $i\in V$ 定义节点谱能量（spectral node energy）：
+设归一化拉普拉斯矩阵的谱分解为
 \begin{equation}
-  E_\text{spectral}(i) = \frac{1}{K_\text{eig}} \sum_{k=1}^{K_\text{eig}} \lambda_k\,|U_{ik}|^2.
+  \tilde{\mathcal{L}}=U\Lambda U^\top,
+  \label{eq:ch3-laplacian-eigendecomposition}
+\end{equation}
+其中，$U$ 为特征向量矩阵，$\Lambda$ 为特征值对角矩阵。本文按特征值升序排列，并跳过 $k=0$ 的平凡特征分量，取前 $K_{\text{eig}}$ 个非平凡特征对 $\{(\lambda_k,u_k)\}_{k=1}^{K_{\text{eig}}}$。谱间隙定义为最小非零特征值 $\lambda_{\text{gap}}$。在连通图上，$\lambda_{\text{gap}}=\lambda_1$；若图不连通，则取最小正特征值。该量与导通率（conductance）$\phi(G)$ 满足 Cheeger 型关系\cite{AlonMilman1985,Chung1997}，可作为图级连通性与扩张性的结构刻画量。
+
+节点谱能量用于刻画节点在不同拉普拉斯特征分量上的参与强度。一般形式下，节点 $i$ 的谱能量可写为
+\begin{equation}
+  E_{\text{spectral}}(i)
+  =
+  \sum_{k=1}^{K_{\text{eig}}}
+  w_k(i)\lambda_k |U_{ik}|^2,
+  \label{eq:ch3-specenergy-general}
+\end{equation}
+其中，$\lambda_k$ 承担频率敏感性尺度，$|U_{ik}|^2$ 衡量节点 $i$ 对第 $k$ 个特征向量的参与强度，$w_k(i)$ 表示节点 $i$ 对第 $k$ 个频率分量的权重，满足 $w_k(i)\geq 0$ 且 $\sum_{k=1}^{K_{\text{eig}}}w_k(i)=1$。
+
+频率权重 $w_k(i)$ 在形式上可以设计为节点相关的自适应函数，用于强调某些频段对节点表示的贡献差异。然而，第~3~章承担的是离线结构指标预处理功能，其输出应尽量保持任务无关，并作为后续自适应稀疏预算设计的统一输入。若在此阶段引入基于标签一致性或同配性统计的频率打分函数，则训练、验证与测试划分中的标签信息可能通过结构指标间接回流到后续稀疏参数中，从而带来标签泄漏风险。
+
+基于上述考虑，本文在正文主线中采用等权频率接口。具体地，令
+\begin{equation}
+  \alpha_k(i)\equiv 0,\qquad
+  w_k(i)
+  =
+  \frac{\exp(\alpha_k(i))}
+       {\sum_{r=1}^{K_{\mathrm{eig}}}\exp(\alpha_r(i))}
+  =
+  \frac{1}{K_{\mathrm{eig}}},
+  \label{eq:ch3-equal-frequency-weight}
+\end{equation}
+从而得到本文实际使用的节点谱能量定义：
+\begin{equation}
+  E_{\text{spectral}}(i)
+  =
+  \frac{1}{K_{\text{eig}}}
+  \sum_{k=1}^{K_{\text{eig}}}
+  \lambda_k |U_{ik}|^2.
   \label{eq:ch3-specenergy}
 \end{equation}
-式~\eqref{eq:ch3-specenergy}中，$\lambda_k$ 承担频率敏感性尺度，$|U_{ik}|^2$ 衡量节点 $i$ 对第 $k$ 个特征向量的参与强度，$K_\text{eig}$ 表示参与统计的非平凡特征对数量。本文统一取各频率分量等权，即令 $w_k(i)=1/K_\text{eig}$，从而得到不依赖额外频率偏好参数的通用谱能量定义；其中跳过 $k=0$ 的平凡特征分量，以避免与度中心性所反映的全局平滑信息产生冗余。这里选取前 $K_\text{eig}$ 个非平凡特征对，主要是因为较小特征值对应的谱分量与图的整体结构更为相关，能够更稳定地反映连通模式、簇结构与全局平滑性质；同时，本文后续还将使用谱间隙 $\lambda_{\text{gap}}$ 等全图级谱量刻画图结构特征，因此从低频端开始截断，也可使节点谱能量的定义与谱间隙、连通性等全图量在分析口径上保持一致。
+式~\eqref{eq:ch3-specenergy} 仅依赖拉普拉斯特征值、特征向量以及节点在各谱分量上的投影，不额外引入标签统计量。这里跳过 $k=0$ 的平凡特征分量，是为了避免与度中心性所反映的全局平滑信息产生冗余。本文选取前 $K_{\text{eig}}$ 个非平凡特征对，主要是因为较小特征值对应的谱分量与图的整体结构更为相关，能够更稳定地反映连通模式、簇结构与全局平滑性质；同时，后续还将使用谱间隙 $\lambda_{\text{gap}}$ 等全图级谱量刻画图结构特征，因此从低频端开始截断，也可使节点谱能量的定义与谱间隙、连通性等全图量在分析口径上保持一致。
 
-从直观上看，$E_\text{spectral}(i)$ 刻画了节点 $i$ 在不同频率成分上的综合参与程度：当节点在较多非平凡谱分量上均有较高投影，尤其是在对应较大特征值的分量上参与更强时，其谱能量取值相对更高；反之，若节点主要集中于少数低频平滑分量，或在非平凡特征向量上的响应整体较弱，则其谱能量相对较低。因此，节点谱能量可以被视为一种节点级结构活跃度指标，用于反映节点在图谱域中承载局部差异信息与复杂结构信号的能力。后续第4章将把该量作为节点级自适应正则系数 $\tau(i)$ 的核心谱输入，用于区分不同节点对邻居保留预算的潜在需求。
+从直观上看，$E_{\text{spectral}}(i)$ 刻画了节点 $i$ 在不同非平凡谱分量上的综合参与程度。当节点在多个非平凡特征向量上具有较高投影，且这些投影对应的特征值相对更大时，其谱能量取值更高；反之，若节点主要集中于少数低频平滑分量，或在非平凡特征向量上的响应整体较弱，则其谱能量较低。因此，节点谱能量可以被视为一种节点级结构活跃度指标，用于反映节点在图谱域中承载局部差异信息与复杂结构信号的能力。后续第~4~章将把该量作为节点级自适应正则系数 $\tau(i)$ 的核心谱输入，用于区分不同节点对邻居保留预算的潜在需求。
 
-归一化拉普拉斯满足谱分解 $\tilde{\mathcal{L}} = U\Lambda U^\top$，特征向量集 $\{u_k\}$ 构成图信号空间的正交基\cite{Shuman2013GSP,Ortega2018GSP}。完整谱分解复杂度为 $O(n^3)$，在中大规模图上难以直接承受，故本文采用 Lanczos 迭代\cite{Lanczos1950}进行截断谱估计，将谱计算开销降至 $O(mK_\text{eig})$。其基本思想是：从一个随机初始向量出发，在 Krylov 子空间中递推构造一组近似正交基，将原始大规模稀疏对称矩阵 $\tilde{\mathcal{L}}$ 的特征值问题压缩为一个低维三对角矩阵的特征值问题；随后对该三对角矩阵做特征分解，即可近似恢复原矩阵前若干个低频非平凡特征对。本文记 $K_\text{eig}$ 为预设的谱截断数，用于控制最多保留的非平凡特征对数量；在给定收敛容差下，若 Lanczos 迭代提前收敛，则实际参与后续节点谱能量计算的特征对数记为 $K_\text{pair}\le K_\text{eig}$。
+完整谱分解的复杂度为 $O(n^3)$，在中大规模图上难以直接承受。本文采用 Lanczos 迭代\cite{Lanczos1950}进行截断谱估计，将前若干个低频非平凡特征对的计算开销降至 $O(mK_{\text{eig}})$。其基本思想是从随机初始向量出发，在 Krylov 子空间中递推构造一组近似正交基，并将原始大规模稀疏对称矩阵 $\tilde{\mathcal{L}}$ 的特征值问题压缩为低维三对角矩阵的特征值问题。随后对该三对角矩阵进行特征分解，即可近似恢复原矩阵前若干个低频非平凡特征对。本文记 $K_{\text{eig}}$ 为预设谱截断数；若在给定收敛容差下 Lanczos 迭代提前收敛，则实际参与后续节点谱能量计算的非平凡特征对数量记为 $K_{\text{pair}}\leq K_{\text{eig}}$。
 
+\subsection{局部图熵}
+\label{subsec:ch3-local-entropy}
+\label{def:ch3-entropy}
 
-\phantomsection\label{def:ch3-entropy}
-本文将节点 $i$ 邻域消息流的均匀程度以局部图熵（local graph entropy）量化。为避免无权图情形下归一化邻域分布退化为等概率分布、从而使归一化局部图熵在多数节点上接近常数 1，本文统一采用基于节点特征差异的高斯核边权重来刻画邻域内各邻居对节点 $i$ 的相对贡献。具体地，对任意 $(i,j)\in E$，定义
+本文将节点 $i$ 邻域消息流的均匀程度以局部图熵（local graph entropy）量化。为避免无权图情形下归一化邻域分布退化为等概率分布，从而使归一化局部图熵在多数节点上接近常数 $1$，本文统一采用基于节点特征差异的高斯核边权重来刻画邻域内各邻居对节点 $i$ 的相对贡献。具体地，对任意 $(i,j)\in E$，定义
 \begin{equation}
   w_{ij}=\exp\!\bigl(-\gamma_x\|x_i-x_j\|_2^2\bigr),\qquad
   \gamma_x=\frac{1}{2\hat{\sigma}^2},
   \label{eq:ch3-gaussian-weight}
 \end{equation}
-其中，$\hat{\sigma}^2$ 取边集上特征差平方的中位数，用作高斯核带宽的鲁棒数据自适应估计。这样既可避免人为指定固定尺度参数，又能减弱少量异常大距离边对带宽估计的影响，使边权更稳定地反映相邻节点间的特征相似性。
+其中，$\hat{\sigma}^2$ 取边集上特征差平方的中位数，用作高斯核带宽的鲁棒数据自适应估计：
 \begin{equation}
-  \hat{\sigma}^2 := \mathrm{median}\left\{\|x_i-x_j\|_2^2 : (i,j)\in E\right\}.
+  \hat{\sigma}^2
+  :=
+  \mathrm{median}\left\{\|x_i-x_j\|_2^2 : (i,j)\in E\right\}.
   \label{eq:ch3-gaussian-bandwidth}
 \end{equation}
+这种带宽设定可以避免人为指定固定尺度参数，并减弱少量异常大距离边对带宽估计的影响，使边权更稳定地反映相邻节点间的特征相似性。
+
 在此基础上，对节点 $i$ 的邻居集 $\mathcal{N}(i)$ 定义归一化分布
 \begin{equation}
-  p_{ij} = \frac{w_{ij}}{\sum_{k\in\mathcal{N}(i)} w_{ik}}, \qquad j\in\mathcal{N}(i),
+  p_{ij}
+  =
+  \frac{w_{ij}}{\sum_{k\in\mathcal{N}(i)}w_{ik}},
+  \qquad j\in\mathcal{N}(i).
   \label{eq:ch3-entropy-prob}
 \end{equation}
-并约定 $0\ln 0=0$。当 $|\mathcal{N}(i)|\le 1$ 时取 $H(i)=0$，$H_\text{norm}(i)=0$；当 $|\mathcal{N}(i)|>1$ 时，局部图熵及其归一化形式定义为
+并约定 $0\ln0=0$。当 $|\mathcal{N}(i)|\leq 1$ 时，取 $H(i)=0$ 且 $H_{\text{norm}}(i)=0$；当 $|\mathcal{N}(i)|>1$ 时，局部图熵及其归一化形式定义为
 \begin{equation}
-  H(i) = -\sum_{j\in\mathcal{N}(i)} p_{ij}\ln p_{ij}, \qquad
-  H_\text{norm}(i) = \frac{H(i)}{\ln|\mathcal{N}(i)|}\in[0,1].
+  H(i)
+  =
+  -\sum_{j\in\mathcal{N}(i)}p_{ij}\ln p_{ij},
+  \qquad
+  H_{\text{norm}}(i)
+  =
+  \frac{H(i)}{\ln|\mathcal{N}(i)|}\in[0,1].
   \label{eq:ch3-entropy}
 \end{equation}
+由式~\eqref{eq:ch3-entropy} 可知，当节点 $i$ 的邻域贡献较为均衡时，$H_{\text{norm}}(i)$ 取值较高；当少数邻居在加权分布中占主导时，$H_{\text{norm}}(i)$ 相应降低。因此，该指标刻画的并非仅是邻居个数本身，而是结合特征相似性后的邻域有效信息分散程度，可作为节点局部结构复杂度与消息流均匀性的辅助量化指标。按边遍历计算全部 $w_{ij}$ 与 $H_{\text{norm}}(i)$ 的总开销为 $O(mD)$，与后文图复杂度指标的统一预处理口径保持一致。归一化局部图熵 $H_{\text{norm}}(i)$ 将在第~4~章第~4.2.2~节作为多因子之一并入节点级正则系数 $\tau(i)$ 的融合公式。
 
-由式~\eqref{eq:ch3-entropy}可知，当节点 $i$ 的邻域贡献较为均衡时，$H_\text{norm}(i)$ 取值较高；当少数邻居在加权分布中占主导时，$H_\text{norm}(i)$ 相应降低。因此，该指标刻画的并非仅是邻居个数本身，而是结合特征相似性后的邻域有效信息分散程度，可作为节点局部结构复杂度与消息流均匀性的辅助量化指标。按边遍历计算全部 $w_{ij}$ 与 $H_\text{norm}(i)$ 的总开销为 $O(mD)$，与后文图复杂度指标的统一预处理口径保持一致。归一化局部图熵 $H_\text{norm}(i)$ 将在第4章第4.2.2节作为多因子之一并入节点级正则系数 $\tau(i)$ 的融合公式。
+\subsection{节点中心性}
+\label{subsec:ch3-centrality}
 
-
-度中心性 \(C_\text{deg}(i)=d_i/(n-1)\)（式~\eqref{eq:ch3-degcent}）与 \(k\)-core 指数 \(core(i)\)\cite{BatageljZaversnik2003}作为节点中心性的两个互补刻画量，在第4章第4.2.2节与节点谱能量、归一化局部图熵共同进入节点级正则系数 \(\tau(i)\) 的多因子融合公式。按全图离线预处理口径，若度向量已缓存，则度中心性的批量计算复杂度为 \(O(n)\)；若需由邻接结构统计全部节点度，则复杂度为 \(O(m)\)。\(k\)-core 指数可由线性时间算法计算，复杂度为 \(O(m)\)。对应定义为
+度中心性 $C_{\text{deg}}(i)$ 与 $k$-core 指数 $\mathrm{core}(i)$\cite{BatageljZaversnik2003} 作为节点中心性的两个互补刻画量，在第~4~章第~4.2.2~节与节点谱能量、归一化局部图熵共同进入节点级正则系数 $\tau(i)$ 的多因子融合公式。对应定义为
 \begin{equation}
-  C_\text{deg}(i) = \frac{d_i}{n-1},
+  C_{\text{deg}}(i)
+  =
+  \frac{d_i}{n-1},
   \label{eq:ch3-degcent}
 \end{equation}
 \begin{equation}
-  core(i) = \max \{\, k \mid i \in V(G_k) \,\}.
+  \mathrm{core}(i)
+  =
+  \max \{\, k \mid i \in V(G_k) \,\}.
   \label{eq:ch3-kcore}
 \end{equation}
-其中，\(G_k\) 表示图 \(G\) 的 \(k\)-core 子图，即满足子图内任意节点度均不小于 \(k\) 的极大诱导子图。算法~\ref{alg:ch3-preprocess} 在离线阶段统一完成谱间隙及上述节点级指标的预处理，并将结果缓存供第4章参数化使用。多项式谱滤波器次数 \(K_\text{poly}\)（第5章第5.2.1节定义）与本章谱截断数 \(K_\text{eig}\) 分属不同分析口径，全文严格区分，不作混用。
+其中，$d_i$ 为节点 $i$ 的度，$G_k$ 表示图 $G$ 的 $k$-core 子图，即满足子图内任意节点度均不小于 $k$ 的极大诱导子图。按全图离线预处理口径，若度向量已缓存，则度中心性的批量计算复杂度为 $O(n)$；若需由邻接结构统计全部节点度，则复杂度为 $O(m)$。$k$-core 指数可由线性时间算法计算，复杂度为 $O(m)$。
+
+算法~\ref{alg:ch3-preprocess} 在离线阶段统一完成谱间隙、节点谱能量、局部图熵与中心性指标的预处理，并将结果缓存供第~4~章参数化使用。多项式谱滤波器次数 $K_{\text{poly}}$（第~5~章第~5.2.1~节定义）与本章谱截断数 $K_{\text{eig}}$ 分属不同分析口径，全文严格区分，不作混用。
+
 
 \begin{algorithm}[htbp]
 \caption{图复杂度指标预处理（含谱估计、节点谱能量与局部图熵批量计算）}
@@ -251,12 +421,12 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
 \REQUIRE 图 $G=(V,E,X)$；归一化拉普拉斯 $\tilde{\mathcal{L}}$；谱截断数 $K_{\text{eig}}$；收敛容差 $\tau_{\text{tol}}=10^{-10}$
 \ENSURE 谱间隙近似值 $\hat{\lambda}_{\text{gap}}$；前 $K_{\text{pair}}$ 个非平凡特征对 $\{(\lambda_r,u_r)\}_{r=1}^{K_{\text{pair}}}$；节点谱能量 $\{E_{\text{spectral}}(i)\}_{i=1}^n$；归一化局部图熵 $\{H_{\text{norm}}(i)\}_{i=1}^n$；度中心性 $\{C_{\text{deg}}(i)\}_{i=1}^n$；$k$-core 指数 $\{\mathrm{core}(i)\}_{i=1}^n$
 \STATE \textit{第一阶段：谱间隙与低频非平凡特征对估计}
-\STATE 初始化随机单位向量 $v_1$，令 $v_0\leftarrow \mathbf{0}$，并设置初值 $b_0\leftarrow 0$
+\STATE 初始化随机单位向量 $v_1$，令 $v_0\leftarrow \mathbf{0}$，并设置 $b_0\leftarrow 0$
 \FOR{$k=1$ \textbf{to} $K_{\text{eig}}+1$}
-  \STATE 计算 $w \leftarrow \tilde{\mathcal{L}}\,v_k$
-  ;计算投影系数 $a_k \leftarrow v_k^\top w$
-  ;更新残差向量 $w \leftarrow w-a_kv_k-b_{k-1}v_{k-1}$
-  ;计算残差范数 $b_k \leftarrow \|w\|_2$
+  \STATE 计算 $w \leftarrow \tilde{\mathcal{L}}v_k$
+  \STATE 计算投影系数 $a_k \leftarrow v_k^\top w$
+  \STATE 更新残差向量 $w \leftarrow w-a_kv_k-b_{k-1}v_{k-1}$
+  \STATE 计算残差范数 $b_k \leftarrow \|w\|_2$
   \IF{$b_k < \tau_{\text{tol}}$}
     \STATE 令 $K_{\text{eff}}\leftarrow k$，并终止迭代
   \ELSE
@@ -269,27 +439,30 @@ $\bar{k}\ll\bar{d}^{\,L}$ 时，该口径相较原始多层消息传递具有明
 \STATE 由 $\{a_k\}$ 与 $\{b_k\}$ 构造三对角矩阵 $T_{K_{\text{eff}}}$，并对其做特征分解
 \STATE 取最小非零 Ritz 值作为谱间隙近似：$\hat{\lambda}_{\text{gap}}\leftarrow \mu_1$
 \STATE 令
+{\setlength{\abovedisplayskip}{2pt}
+ \setlength{\belowdisplayskip}{2pt}
+ \setlength{\abovedisplayshortskip}{2pt}
+ \setlength{\belowdisplayshortskip}{2pt}
 \[
-K_{\text{pair}} \leftarrow \min\!\bigl(K_{\text{eig}},\,K_{\text{eff}}-1\bigr),
+K_{\text{pair}} \leftarrow \min\!\bigl(K_{\text{eig}},\,K_{\text{eff}}-1\bigr)
 \]
-其中，$K_{\text{eig}}$ 表示预设的谱截断数，$K_{\text{eff}}$ 表示在收敛容差 $\tau_{\text{tol}}$ 下的实际有效迭代步数，$K_{\text{pair}}$ 表示剔除平凡特征对后实际保留的非平凡特征对数量
-\STATE 记 $\{(\lambda_r,u_r)\}_{r=1}^{K_{\text{pair}}}$ 为前 $K_{\text{pair}}$ 个低频非平凡近似特征对
-\STATE \textit{第二阶段：节点谱能量批量计算（正文主线采用等权实例化）}
+}
+\STATE 记 $\{(\lambda_r,u_r)\}_{r=1}^{K_{\text{pair}}}$ 为前 $K_{\text{pair}}$ 个低频非平凡近似特征对\STATE \textit{第二阶段：节点谱能量批量计算（正文主线采用等权实例化）}
 \STATE $U_{:,1:K_{\text{pair}}} \leftarrow [u_1,\ldots,u_{K_{\text{pair}}}]$
 \FOR{$i=1$ \textbf{to} $n$}
   \STATE $E_{\text{spectral}}(i) \leftarrow \sum_{k=1}^{K_{\text{pair}}} \frac{1}{K_{\text{pair}}}|U_{ik}|^2\lambda_k$
 \ENDFOR
-\STATE \textit{第三阶段：Gaussian 局部图熵、度中心性与 \(k\)-core 计算}
+\STATE \textit{第三阶段：Gaussian 局部图熵、度中心性与 $k$-core 计算}
 \STATE $\hat{\sigma}^2 \leftarrow \mathrm{median}\!\bigl(\{\|x_i-x_j\|_2^2:(i,j)\in E\}\bigr)$
 \STATE $\gamma_x \leftarrow 1/(2\hat{\sigma}^2)$
 \STATE 对每条边 $(i,j)\in E$，计算 $w_{ij} \leftarrow \exp(-\gamma_x\|x_i-x_j\|_2^2)$
 \FOR{$i=1$ \textbf{to} $n$}
   \STATE $Z_i \leftarrow \sum_{j\in\mathcal{N}(i)} w_{ij}$
-  \STATE $H(i) \leftarrow -\sum_{j\in\mathcal{N}(i),\,w_{ij}>0}\frac{w_{ij}}{Z_i}\ln\frac{w_{ij}}{Z_i}$
   \IF{$|\mathcal{N}(i)|>1$}
+    \STATE $H(i) \leftarrow -\sum_{j\in\mathcal{N}(i),\,w_{ij}>0}\frac{w_{ij}}{Z_i}\ln\frac{w_{ij}}{Z_i}$
     \STATE $H_{\text{norm}}(i) \leftarrow H(i)/\ln|\mathcal{N}(i)|$
   \ELSE
-    \STATE $H_{\text{norm}}(i) \leftarrow 0$
+    \STATE $H(i)\leftarrow 0$，$H_{\text{norm}}(i) \leftarrow 0$
   \ENDIF
   \STATE $C_{\text{deg}}(i) \leftarrow d_i/(n-1)$
 \ENDFOR
@@ -298,17 +471,18 @@ K_{\text{pair}} \leftarrow \min\!\bigl(K_{\text{eig}},\,K_{\text{eff}}-1\bigr),
 \end{algorithmic}
 \end{algorithm}
 
-由算法~\ref{alg:ch3-preprocess} 可知，其预处理开销主要由 Lanczos 谱估计、节点谱能量累计以及局部图熵计算三部分构成。其中，Lanczos 阶段在保留前 \(K_\text{eig}\) 个非平凡特征对的设定下，复杂度为 \(O(mK_\text{eig})\)；节点谱能量的批量累计需要对全部 \(n\) 个节点在前 \(K_\text{pair}\) 个频率分量上求和，在 \(K_\text{pair}\leq K_\text{eig}\) 的前提下可记为 \(O(nK_\text{eig})\)；由于本文在局部图熵计算中采用 Gaussian 边权，并需沿边计算特征距离，故该部分复杂度为 \(O(mD)\)。再加上度中心性与 \(k\)-core 指数的统计开销分别为 \(O(n)\) 与 \(O(m)\)，算法~\ref{alg:ch3-preprocess} 的总预处理复杂度可写为
+由算法~\ref{alg:ch3-preprocess} 可知，其预处理开销主要由 Lanczos 谱估计、节点谱能量累计以及局部图熵计算三部分构成。其中，Lanczos 阶段在保留前 $K_{\text{eig}}$ 个非平凡特征对的设定下，复杂度为 $O(mK_{\text{eig}})$；节点谱能量的批量累计需要对全部 $n$ 个节点在前 $K_{\text{pair}}$ 个频率分量上求和，在 $K_{\text{pair}}\leq K_{\text{eig}}$ 的前提下可记为 $O(nK_{\text{eig}})$；由于本文在局部图熵计算中采用 Gaussian 边权，并需沿边计算特征距离，故该部分复杂度为 $O(mD)$。再加上度中心性与 $k$-core 指数的统计开销分别为 $O(n)$ 与 $O(m)$，算法~\ref{alg:ch3-preprocess} 的总预处理复杂度可写为
 \begin{equation}
-  O(mK_\text{eig}+nK_\text{eig}+mD+m+n),
+  O(mK_{\text{eig}}+nK_{\text{eig}}+mD+m+n).
+  \label{eq:ch3-preprocess-complexity-full}
 \end{equation}
 忽略低阶项后，上式可进一步简记为
 \begin{equation}
-  O(mK_\text{eig}+nK_\text{eig}+mD).
+  O(mK_{\text{eig}}+nK_{\text{eig}}+mD).
+  \label{eq:ch3-preprocess-complexity}
 \end{equation}
-因此，整体预处理代价可概括为以 \(O(mK_\text{eig})\) 为核心、并叠加节点级指标统计项的离线一次性成本。当 \(K_\text{eig}\) 取中等常数时，该流程总体上仍适合在训练前统一执行并将结果缓存，而不进入在线推理主路径。这里的“离线阶段”是指正式推理前的预计算阶段；“离线预处理”则是指对图结构相关指标进行一次性批量计算并缓存，以降低后续参数构造与在线推理时的重复开销。
+因此，整体预处理代价可概括为以 $O(mK_{\text{eig}})$ 为核心、并叠加节点级指标统计项的离线一次性成本。当 $K_{\text{eig}}$ 取中等常数时，该流程总体上适合在训练前统一执行并将结果缓存，而不进入在线推理主路径。这里的“离线阶段”是指正式推理前的预计算阶段；“离线预处理”则是指对图结构相关指标进行一次性批量计算并缓存，以降低后续参数构造与在线推理时的重复开销。
 
-%%============================================================
 \section{本章小结}
 \label{sec:ch3-ch3-summary}
 

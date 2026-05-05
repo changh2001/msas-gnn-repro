@@ -5,7 +5,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s][%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 SEEDS = [42,123,456,789,2021,2022,2023,2024,2025,2026]
-DEFAULT_METHODS = ["gcn", "sgc", "pprgo", "glnn", "b0", "b5"]
+RECENT_METHODS = ["graphsaint", "nodeformer", "difformer", "sgformer", "nagphormer"]
+DEFAULT_METHODS = ["sgc", "pprgo", "glnn", *RECENT_METHODS, "gcn", "b0", "b5"]
 METHOD_ALIASES = {
     "sdgnn": "b0",
     "msas_gnn": "b5",

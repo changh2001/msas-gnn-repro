@@ -71,6 +71,28 @@ def test_baseline_registry_supports_sage():
     assert isinstance(model, GraphSAGE)
 
 
+def test_recent_baselines_are_instantiable_and_forward():
+    from msas_gnn.baselines.registry import get_baseline
+
+    x = torch.randn(6, 8)
+    edge_index = torch.tensor(
+        [[0, 1, 2, 3, 4, 5, 0, 2], [1, 2, 3, 4, 5, 0, 2, 0]],
+        dtype=torch.long,
+    )
+    for name in ["graphsaint", "nodeformer", "difformer", "sgformer", "nagphormer"]:
+        model = get_baseline(
+            name,
+            in_channels=8,
+            hidden_channels=4,
+            out_channels=3,
+            dropout=0.1,
+            num_layers=1,
+            K=2,
+        )
+        out = model(x, edge_index)
+        assert out.shape == (6, 3)
+
+
 def test_break_even_extracts_large_graph_seconds_from_efficiency_payload():
     from msas_gnn.evaluation.break_even import extract_break_even_inputs
 

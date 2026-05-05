@@ -148,7 +148,7 @@ def plot_tau_distribution(cfg, output_dir="outputs/figures"):
     src, dst = data.edge_index
     deg = degree(src[src != dst], num_nodes=data.num_nodes).cpu().numpy()
     tau_np = tau.cpu().numpy()
-    rho = float(np.corrcoef(np.log(deg + 1), np.log(tau_np + 1e-10))[0, 1])
+    pearson_r = float(np.corrcoef(np.log(deg + 1), np.log(tau_np + 1e-10))[0, 1])
 
     q1 = np.percentile(deg, 25)
     q3 = np.percentile(deg, 75)
@@ -159,9 +159,9 @@ def plot_tau_distribution(cfg, output_dir="outputs/figures"):
     }
     group_means = {name: float(values.mean()) for name, values in groups.items() if len(values) > 0}
     logger.info(
-        "[tau_dist] %s rho=%.4f low=%.4e mid=%.4e high=%.4e",
+        "[tau_dist] %s r_Pearson=%.4f low=%.4e mid=%.4e high=%.4e",
         dataset,
-        rho,
+        pearson_r,
         group_means.get("低度", float("nan")),
         group_means.get("中度", float("nan")),
         group_means.get("高度", float("nan")),
@@ -174,7 +174,7 @@ def plot_tau_distribution(cfg, output_dir="outputs/figures"):
     ax_scatter.set_yscale("log")
     ax_scatter.set_xlabel("节点度 d_i")
     ax_scatter.set_ylabel("τ(i)")
-    ax_scatter.set_title(f"τ(i) vs 节点度（{dataset}）\nPearson rho={rho:.3f}")
+    ax_scatter.set_title(f"τ(i) vs 节点度（{dataset}）\nr_Pearson={pearson_r:.3f}")
 
     box_data = [groups["低度"], groups["中度"], groups["高度"]]
     ax_box.boxplot(box_data, labels=["低度", "中度", "高度"], showfliers=False)

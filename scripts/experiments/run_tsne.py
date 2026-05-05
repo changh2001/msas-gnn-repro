@@ -3,7 +3,7 @@
 默认对三种表示做对照：
 - GCN 教师嵌入 H*
 - SDGNN(B0) 的稀疏近似表示 Ĥ
-- MSAS-GNN(B5) 的稀疏近似表示 Ĥ
+- MSAS-GNN(B5-full) 的稀疏近似表示 Ĥ
 """
 import argparse, logging, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))

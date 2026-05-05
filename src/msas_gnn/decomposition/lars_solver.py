@@ -22,19 +22,19 @@ import torch
 
 logger = logging.getLogger(__name__)
 
-def lars_lasso_single(r, phi_candidates, tau, budget, reg_eps=1e-8):
-    """r:[d] phi_candidates:[m,d] → theta:[m] 稀疏权重，非零数≤budget。"""
+def lars_lasso_single(residual, phi_candidates, tau, budget, reg_eps=1e-8):
+    """residual:[d] phi_candidates:[m,d] → theta:[m] 稀疏权重，非零数≤budget。"""
     m = phi_candidates.shape[0]
     if m == 0:
-        return torch.zeros(0, dtype=r.dtype)
+        return torch.zeros(0, dtype=residual.dtype)
     if budget == 0:
-        return torch.zeros(m, dtype=r.dtype)
+        return torch.zeros(m, dtype=residual.dtype)
     budget = min(budget, m)
-    d = int(r.shape[0])
+    d = int(residual.shape[0])
     if d == 0:
-        return torch.zeros(m, dtype=r.dtype)
+        return torch.zeros(m, dtype=residual.dtype)
 
-    y = r.detach().cpu().numpy().astype(np.float64)
+    y = residual.detach().cpu().numpy().astype(np.float64)
     x = phi_candidates.detach().cpu().numpy().astype(np.float64).T
     alpha = max(float(tau) / max(d, 1), 0.0)
 
@@ -55,11 +55,11 @@ def lars_lasso_single(r, phi_candidates, tau, budget, reg_eps=1e-8):
         theta = np.asarray(model.coef_, dtype=np.float32).reshape(-1)
     except Exception as exc:
         logger.warning("LassoLars 失败(%s)，回退为零向量", exc)
-        return torch.zeros(m, dtype=r.dtype)
+        return torch.zeros(m, dtype=residual.dtype)
 
     if theta.shape[0] != m:
         logger.warning("LassoLars 返回维度异常=%s，回退为零向量", theta.shape)
-        return torch.zeros(m, dtype=r.dtype)
+        return torch.zeros(m, dtype=residual.dtype)
 
     nonzero = np.flatnonzero(np.abs(theta) > 1e-8)
     if nonzero.size > budget:
@@ -68,4 +68,4 @@ def lars_lasso_single(r, phi_candidates, tau, budget, reg_eps=1e-8):
         pruned[keep] = theta[keep]
         theta = pruned
 
-    return torch.from_numpy(theta).to(dtype=r.dtype)
+    return torch.from_numpy(theta).to(dtype=residual.dtype)

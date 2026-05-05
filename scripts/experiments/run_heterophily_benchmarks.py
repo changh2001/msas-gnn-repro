@@ -4,7 +4,21 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s][%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 SEEDS=[42,123,456,789,2021,2022,2023,2024,2025,2026]
-DEFAULT_METHODS = ["gcn", "sgc", "pprgo", "geom_gcn", "h2gcn", "glnn", "b0", "b5"]
+DEFAULT_METHODS = [
+    "sgc",
+    "pprgo",
+    "geom_gcn",
+    "h2gcn",
+    "glnn",
+    "graphsaint",
+    "nodeformer",
+    "difformer",
+    "sgformer",
+    "nagphormer",
+    "gcn",
+    "b0",
+    "b5",
+]
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--datasets", nargs="+", default=["chameleon","squirrel"])

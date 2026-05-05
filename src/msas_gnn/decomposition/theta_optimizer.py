@@ -7,6 +7,18 @@ from msas_gnn.typing import AdaptiveParamSet, ThetaFixed
 logger = logging.getLogger(__name__)
 
 
+def _solve_self_channel(target, phi_self, tau):
+    """单变量 Lasso 自特征通道：min 1/2||a*phi_i-target||^2 + tau|a|."""
+    dot = float(torch.dot(phi_self, target).item())
+    denom = float(torch.dot(phi_self, phi_self).item())
+    if denom <= 1e-12:
+        return 0.0
+    shrink = max(abs(dot) - float(tau), 0.0)
+    if shrink == 0.0:
+        return 0.0
+    return float(torch.sign(torch.tensor(dot)).item() * shrink / denom)
+
+
 def _build_theta_fixed(n, phi_dtype, row_idx, col_idx, values, selected_counts, total_candidates, node_indices=None):
     if values:
         indices = torch.tensor([row_idx, col_idx], dtype=torch.long)
@@ -51,6 +63,15 @@ def run_phase_theta(
     total_candidates = 0
     for i in nodes:
         recon_i = torch.zeros_like(h_star[i])
+        tau_i = float(params.tau[i].item())
+        total_candidates += 1
+        self_value = _solve_self_channel(h_star[i], phi_tilde[i], tau_i)
+        if abs(self_value) > 1e-8:
+            row_idx.append(int(i))
+            col_idx.append(int(i))
+            values.append(self_value)
+            recon_i = recon_i + self_value * phi_tilde[i]
+            nnz_counts[i] += 1.0
         for l in range(L):
             hop_cands = candidate_sets[l]
             cands = hop_cands.get(i, [])
@@ -60,7 +81,6 @@ def run_phase_theta(
             budget = int(params.k_budget[i, l].item())
             if budget == 0:
                 continue
-            tau_i = float(params.tau[i].item())
             r_il = h_star[i] - recon_i
             phi_c = phi_tilde[cands]
             from msas_gnn.decomposition.lars_solver import lars_lasso_single
@@ -95,6 +115,81 @@ def run_phase_theta(
         theta_fixed.sparsity,
         theta_fixed.support_total,
         int(total_candidates),
+    )
+    return theta_fixed
+
+
+def _flatten_bfs_candidates(i, candidate_sets):
+    cands = [int(i)]
+    seen = {int(i)}
+    for hop in candidate_sets:
+        for j in hop.get(i, []):
+            j = int(j)
+            if j in seen:
+                continue
+            seen.add(j)
+            cands.append(j)
+    return cands
+
+
+def run_phase_theta_bfs_flat(
+    h_star,
+    phi_tilde,
+    params: AdaptiveParamSet,
+    candidate_sets,
+    cfg,
+    node_indices=None,
+) -> ThetaFixed:
+    """B0 Phase-Θ：分层 BFS 候选池展平后求解单个 LARS/Lasso 子问题。"""
+
+    n, _ = h_star.shape
+    nodes = range(n) if node_indices is None else [int(i) for i in node_indices]
+    row_idx = []
+    col_idx = []
+    values = []
+    nnz_counts = torch.zeros(n, dtype=torch.float32)
+    total_candidates = 0
+    max_lars_iter = int(cfg.get("lars", {}).get("k", 50) or 50)
+
+    from msas_gnn.decomposition.lars_solver import lars_lasso_single
+
+    for i in nodes:
+        cands = _flatten_bfs_candidates(i, candidate_sets)
+        total_candidates += len(cands)
+        if not cands:
+            continue
+        tau_i = float(params.tau[i].item())
+        budget = min(max_lars_iter, len(cands))
+        th = lars_lasso_single(h_star[i], phi_tilde[cands], tau_i, budget)
+        non_zero = 0
+        for idx, j in enumerate(cands):
+            if idx >= len(th):
+                break
+            value = float(th[idx].item())
+            if abs(value) <= 1e-8:
+                continue
+            row_idx.append(int(j))
+            col_idx.append(int(i))
+            values.append(value)
+            non_zero += 1
+        nnz_counts[i] = float(non_zero)
+
+    theta_fixed = _build_theta_fixed(
+        n=n,
+        phi_dtype=phi_tilde.dtype,
+        row_idx=row_idx,
+        col_idx=col_idx,
+        values=values,
+        selected_counts=nnz_counts,
+        total_candidates=total_candidates,
+        node_indices=nodes if node_indices is not None else None,
+    )
+    logger.info(
+        "Phase-Θ[B0-flat]完成 k̄=%.1f 候选剪枝率=%.4f (selected=%s candidates=%s)",
+        theta_fixed.k_bar,
+        theta_fixed.sparsity,
+        theta_fixed.support_total,
+        theta_fixed.candidate_total,
     )
     return theta_fixed
 

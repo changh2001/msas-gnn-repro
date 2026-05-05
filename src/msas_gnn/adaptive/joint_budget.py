@@ -52,7 +52,7 @@ def build_adaptive_params(bundle: MetricBundle | None, cfg: dict, data=None) -> 
             beta_tau=nc.get("beta_tau", 1.0),
             gamma=nc.get("gamma", 0.5) if use_cent else 0.0,
             delta=nc.get("delta", 0.3) if use_kc else 0.0,
-            eta=nc.get("eta", 0.2) if use_ent else 0.0,
+            omega_h=nc.get("omega_h", 0.2) if use_ent else 0.0,
             use_spectral_energy=use_spectral,
             use_centrality=use_cent,
             use_kcore=use_kc,
@@ -69,8 +69,13 @@ def build_adaptive_params(bundle: MetricBundle | None, cfg: dict, data=None) -> 
     k = cfg.get("lars", {}).get("k", 50)
     L = hc.get("L",3)
     kb = allocate_hop_budget(tau, k=k, L=L,
-                              strategy=hc.get("strategy","xi_budget"),
-                              xi_budget=hc.get("xi_budget",1.0))
+                              strategy=hc.get("strategy","spectral_gap_reference"),
+                              p_base=hc.get("p_base", 0.6),
+                              p_min=hc.get("p_min", 0.1),
+                              kappa=hc.get("kappa", 2.0),
+                              varrho=hc.get("varrho", 0.7),
+                              rho=hc.get("rho", 1.0),
+                              lambda_gap=cfg.get("lambda_gap", 0.0))
     params = AdaptiveParamSet(tau=tau, k_budget=kb, freq_weights=freq_weights)
     validate_adaptive_params(params, cfg)
     return params

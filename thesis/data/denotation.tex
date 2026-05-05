@@ -27,13 +27,19 @@
   \item[GraphSAINT] 基于图采样的归纳学习方法（Graph Sampling Based Inductive Learning Method）
   \item[DropEdge] 随机边丢弃正则化方法（DropEdge）
   \item[PPRGo] 基于近似 Personalized PageRank 的可扩展图神经网络（Scaling Graph Neural Networks with Approximate PageRank）
+  \item[NodeFormer] 可扩展图结构学习 Transformer（Scalable Graph Structure Learning Transformer）
+  \item[DIFFormer] 基于能量约束扩散的可扩展图 Transformer（Scalable Graph Transformers Induced by Energy Constrained Diffusion）
+  \item[SGFormer] 简化图 Transformer（Simplified Graph Transformer）
+  \item[NAGphormer] 邻域聚合图 Transformer（Neighborhood Aggregation Graph Transformer）
   \item[LARS] 最小角回归（Least Angle Regression）
   \item[MLP] 多层感知机（Multilayer Perceptron）
   \item[GSP] 图信号处理（Graph Signal Processing）
   \item[OGB] 开放图基准（Open Graph Benchmark）
   \item[Wilcoxon] Wilcoxon 符号秩检验（Wilcoxon Signed-Rank Test）
+  \item[GPU] 图形处理器（Graphics Processing Unit）
+  \item[Adam] 自适应矩估计优化器（Adaptive Moment Estimation）
   \item[$t$-SNE] $t$ 分布随机近邻嵌入（$t$-distributed Stochastic Neighbor Embedding）
-
+  
   %% ──────────────────────────────────────────────
   %% 二、图结构与基础任务符号
   %% ──────────────────────────────────────────────
@@ -75,10 +81,25 @@
   \item[$K_{\mathrm{poly}}$] 多项式谱滤波器的阶数
   \item[$\bar{\mathcal{L}}$] 平移后的拉普拉斯矩阵，$\bar{\mathcal{L}}:=\tilde{\mathcal{L}}-I$
   \item[$a_r$] 多项式谱滤波器单项式展开的第 $r$ 阶系数
+  \item[$S$] 无自环对称归一化传播算子，$S=D_{\mathrm{deg}}^{-1/2}AD_{\mathrm{deg}}^{-1/2}$
+  \item[$S_{\mathrm{lazy}}$] 懒化传播算子，$S_{\mathrm{lazy}}=(I+S)/2$
+  \item[$P$] 分层信息衰减分析中的线性传播算子，可取 $S$ 或 $S_{\mathrm{lazy}}$
+  \item[$\mu_k(P)$] 传播算子 $P$ 的第 $k$ 个特征值
   \item[$\mu_\star(P)$] 传播算子 $P$ 在 $\mathbf{1}^{\perp}$ 子空间上的第二谱半径
+  \item[$h_i^{[l]}$] 节点 $i$ 在第 $l$ 次线性传播后的累计表示
+  \item[$\Delta h_i^{[l]}$] 第 $l$ 次传播相对第 $l-1$ 次传播的边际表示增量
+  \item[$e_i$] 第 $i$ 个标准基向量
+  \item[$C_0$] 分层信息衰减界中的全局保守常数，$C_0=\|(P-I)X\|_F$
   \item[$\sigma$] 原图与稀疏图之间的谱相似性参数，$\sigma\ge 1$
   \item[$\widetilde{\sigma}_{\mathrm{proxy}}$] 基于 Lanczos 的 $\sigma$-谱相似性代理估计量
   \item[$K_{\mathrm{Lanczos}}$] 估计 $\widetilde{\sigma}_{\mathrm{proxy}}$ 时采用的 Lanczos 固定步数
+  \item[$\hat{G}$] 由稀疏结构诱导的稀疏图
+  \item[$\tilde{\mathcal{L}}_G$] 原图 $G$ 的归一化拉普拉斯矩阵
+  \item[$\tilde{\mathcal{L}}_{\hat{G}}$] 稀疏图 $\hat{G}$ 的归一化拉普拉斯矩阵
+  \item[$\Delta_{\mathcal{L}}$] 稀疏图与原图归一化拉普拉斯之差，$\Delta_{\mathcal{L}}=\tilde{\mathcal{L}}_{\hat{G}}-\tilde{\mathcal{L}}_G$
+  \item[$M$] 谱相似性推导中的半正定上界矩阵，$M=(\sigma-1)\tilde{\mathcal{L}}_G$
+  \item[$\lambda_{\max}(M)$] 矩阵 $M$ 的最大特征值
+  \item[$A\preceq B$] Loewner 半序，表示 $B-A$ 为半正定矩阵
   \item[$\eta$] 原图与稀疏图平移拉普拉斯之差的谱范数，$\eta=\|\bar{\mathcal{L}}_G-\bar{\mathcal{L}}_{\hat{G}}\|_2$
 
   %% ──────────────────────────────────────────────
@@ -111,17 +132,18 @@
   \item[$\tilde{\Phi}$] 行 $\ell_2$ 归一化后的特征变换矩阵
   \item[$\tilde{\Phi}^{\mathrm{cache}}$] 推理期缓存的归一化特征变换矩阵
   \item[$\theta_i$] 节点 $i$ 对应的稀疏权重向量
-  \item[$\Theta$] 全图稀疏权重矩阵，$\Theta=\{\theta_i\}_{i\in V}$
+  \item[$\Theta$] 全图稀疏权重矩阵，$\Theta\in\mathbb{R}^{n\times n}$，其第 $i$ 列为节点 $i$ 的稀疏权重向量 $\theta_i$
   \item[$\Theta^{\mathrm{fixed}}$] 推理期固化后的稀疏权重矩阵
   \item[$\hat{h}(i)$] 节点 $i$ 的稀疏推理表示
   \item[$\hat{H}$] 稀疏分解推理输出矩阵，$\hat{H}=\Theta^\top\tilde{\Phi}$
   \item[$m_{\mathrm{sparse}}$] 稀疏结构的非零元数，$m_{\mathrm{sparse}}:=\mathrm{nnz}(\Theta)$
   \item[$k_i$] 节点 $i$ 最终保留的非零邻居数，常记为 $k_i=\|\theta_i\|_0$
-  \item[$\bar{k}$] 全图平均稀疏预算，$\bar{k}=\frac{1}{n}\sum_{i=1}^n k_i^{\mathrm{total}}$
+  \item[$\bar{k}$] 全图平均非零权重数或平均稀疏预算，$\bar{k}=\frac{1}{n}\sum_{i=1}^n k_i$；按预算上限估计复杂度时，可用 $\frac{1}{n}\sum_i k_i^{\mathrm{total}}$ 近似
   \item[$\lambda_W$] 特征变换参数的 $\ell_2$ 正则系数
   \item[$\lambda_{\mathrm{reg}}$] SDGNN 使用的全局统一正则系数
   \item[$\mathcal{L}_{\mathrm{task}}$] 下游任务损失，在节点分类实验中取交叉熵损失
   \item[$\mathcal{E}_{\mathrm{approx}}$] 表示近似误差，定义为 $\mathcal{E}_{\mathrm{approx}}=\frac{1}{\sqrt{n}}\|H^*-\hat{H}\|_F$
+  \item[$\varepsilon_i^{\mathrm{rep}}$] 节点 $i$ 的表示误差范数，$\varepsilon_i^{\mathrm{rep}}=\|h_i^*-\hat{h}_i\|_2$
   \item[$\mathcal{S}(t)$] 在误差阈值 $t$ 下的节点子集，用于第3章的设计准则分析
   \item[$\varepsilon_0$] 第3章性能保持准则中的总体表示误差容许阈值
 
@@ -135,11 +157,18 @@
   \item[$\beta_{\tau}$] 节点谱能量到正则系数映射中的响应强度系数
   \item[$\gamma$] 多因子节点级正则系数中度中心性项的权重
   \item[$\delta$] 多因子节点级正则系数中 $k$-core 项的权重
-  \item[$\eta$] 多因子节点级正则系数中归一化局部熵项的权重
+  \item[$\omega_H$] 多因子节点级正则系数中归一化局部熵项的权重
   \item[$c_E$] 节点谱能量阈值的尺度系数
   \item[$E_{\mathrm{threshold}}$] 节点谱能量阈值，定义为 $E_{\mathrm{threshold}}=c_E\cdot \operatorname{median}_{j\in V}E_{\mathrm{spectral}}(j)$
   \item[$k_i^{\mathrm{total}}$] 节点 $i$ 的总稀疏预算
   \item[$p_l$] 第 $l$ 跳的保留率，满足 $p_l\in(0,1]$
+  \item[$\varrho$] 跳距保留率的几何衰减公比
+  \item[$p_{\mathrm{base}}$] 谱间隙自适应跳距分配中的第1跳基准保留率
+  \item[$p_{\min}$] 跳距保留率下界，用于避免高跳距预算被完全压缩
+  \item[$\kappa$] 谱间隙自适应跳距保留率中的响应系数，$\kappa>0$
+  \item[$\rho$] 跳距预算分配中的全局预算缩放系数，$\rho\in(0,1]$
+  \item[$\tilde{k}_i^{(l)}$] 节点 $i$ 第 $l$ 跳环层的连续预算上界
+  \item[$\operatorname{RoundQuota}(\cdot)$] 将连续预算上界转化为整数预算配额的舍入算子
   \item[$\xi$] 跳距预算分配中的整数化控制参数
   \item[$k_i^{(l)}$] 节点 $i$ 在第 $l$ 跳邻居环层上的预算配额，满足 $\sum_{l=1}^{L}k_i^{(l)}=k_i^{\mathrm{total}}$
   \item[$\varepsilon_l$] 第 $l$ 跳传播允许的信息损失预算
@@ -149,6 +178,15 @@
   %% 七、算法实现与复杂度分析符号
   %% ──────────────────────────────────────────────
   \item[$C_i$] 节点 $i$ 的候选节点集合，$C_i=\{i\}\cup \bigcup_{l=1}^{L}\mathcal{R}_l(i)$
+  \item[$\Omega_i$] 节点 $i$ 的目标表示向量，$\Omega_i:=H_{i,:}^{*}$
+  \item[$\tilde{\phi}_i$] 行归一化特征矩阵 $\tilde{\Phi}$ 的第 $i$ 行向量
+  \item[$\tilde{\Phi}_{\mathcal{R}_l(i)}$] $\tilde{\Phi}$ 在节点 $i$ 第 $l$ 跳邻居环层上的行子矩阵
+  \item[$\theta_i^{(0)}$] 节点 $i$ 的第0跳自特征通道系数
+  \item[$\theta_i^{(l)}$] 节点 $i$ 在第 $l$ 跳邻居环层上的稀疏系数向量
+  \item[$\theta_{i,\mathrm{share}}^{(l)}$] 共享目标方案下节点 $i$ 第 $l$ 个候选块的稀疏系数
+  \item[$r_i^{(l)}$] 节点 $i$ 完成第0跳至第 $l$ 跳拟合后的剩余残差
+  \item[$\Theta_{j,i}$] 稀疏权重矩阵 $\Theta$ 的第 $j$ 行第 $i$ 列元素
+  \item[$\operatorname{AdamStep}(\cdot)$] 对参数执行一次 Adam 更新的算子
   \item[$T_{\mathrm{epoch}}$] 第5章主循环中的外层交替优化轮数
   \item[$T_W$] 每轮外层迭代中 Phase $W$ 的更新步数
   \item[$\eta_W$] Phase $W$ 中的学习率
@@ -164,5 +202,9 @@
   \item[$\mathrm{Speedup}$] 推理加速比，$\mathrm{Speedup}=t_{\mathrm{dense}}/t_{\mathrm{sparse}}$
   \item[$t_{\mathrm{pre}}$] 总预处理时间，包括指标计算、LARS 求解与结构固化
   \item[$Q_{\mathrm{be}}$] 预处理的 break-even 调用次数，$Q_{\mathrm{be}}=t_{\mathrm{pre}}/(t_{\mathrm{dense}}-t_{\mathrm{sparse}})$
+  \item[$B_t$] 第 $t$ 轮 mini-batch 中采样的节点子集
+  \item[\texttt{batch\_size}] mini-batch 训练或批次推理中的批大小
+  \item[$p$ 值] 统计检验中的显著性概率值
+  \item[$r_{\mathrm{Pearson}}$] Pearson 相关系数，用于描述实验可视化中的线性相关程度
 
 \end{denotation}

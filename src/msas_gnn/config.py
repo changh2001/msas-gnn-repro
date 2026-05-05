@@ -20,8 +20,8 @@ BASE_MODEL_BY_ABLATION = {
     "b5_frozen": "msas_gnn_b5",
     "b2_rnd": "msas_gnn_b5",
     "hop_uniform": "msas_gnn_b5",
-    "hop_xi05": "msas_gnn_b5",
-    "hop_xi10": "msas_gnn_b5",
+    "hop_near_engineering": "msas_gnn_b5",
+    "hop_spectral_gap_reference": "msas_gnn_b5",
     "hop_reverse": "msas_gnn_b5",
 }
 
@@ -36,8 +36,8 @@ ABLATION_CONFIGS = {
     "b5_frozen": "configs/ablations/b5_frozen.yaml",
     "b2_rnd": "configs/ablations/b2_rnd_control.yaml",
     "hop_uniform": "configs/ablations/hop_uniform.yaml",
-    "hop_xi05": "configs/ablations/hop_xi05.yaml",
-    "hop_xi10": "configs/ablations/hop_xi10.yaml",
+    "hop_near_engineering": "configs/ablations/hop_near_engineering.yaml",
+    "hop_spectral_gap_reference": "configs/ablations/hop_spectral_gap_reference.yaml",
     "hop_reverse": "configs/ablations/hop_reverse.yaml",
 }
 

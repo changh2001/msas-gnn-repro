@@ -2,14 +2,14 @@ name: sdgnn
 ablation_id: b0
 # B0 仅代表“SDGNN-compatible”口径：
 # - 全局统一 lambda；
-# - 仍沿用本仓库的分层 BFS 候选集与残差级联 Phase-Theta。
+# - 使用分层 BFS 候选池上的单次平坦 LARS/Lasso Phase-Theta。
 teacher: gcn
 lambda_reg: 1.0e-3
 lars:
   k: 50
-  scheme: residual_cascade
+  scheme: bfs_flat_lars_lasso
 alternating_opt:
-  protocol: b5_full
+  protocol: b0_flat
   max_outer_iter: 20
   patience: 5
   t_w: 5

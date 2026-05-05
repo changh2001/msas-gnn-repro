@@ -1,6 +1,6 @@
 name: gcn
-layers: 2
-hidden_dim: 128
+layers: 3
+hidden_dim: 64
 dropout: 0.3
 lr: 0.005
 weight_decay: 5.0e-4

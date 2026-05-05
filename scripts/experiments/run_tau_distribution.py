@@ -1,4 +1,4 @@
-"""tau(i)分布可视化（论文图6.x）。预期：Pearson rho(log tau, log 度) 约 -0.68。"""
+"""tau(i)分布可视化（论文图6.x）。预期：r_Pearson(log tau, log 度) 约 -0.68。"""
 import argparse, logging, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../src"))
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")

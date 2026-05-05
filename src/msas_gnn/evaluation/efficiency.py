@@ -257,7 +257,19 @@ def run_efficiency_benchmark(cfg, methods=None):
 
     dataset = cfg.get("dataset", "cora")
     eff_cfg = cfg.get("efficiency", {})
-    methods = methods or eff_cfg.get("methods") or ["gcn", "sgc", "pprgo", "glnn", "sdgnn", "msas_gnn"]
+    methods = methods or eff_cfg.get("methods") or [
+        "gcn",
+        "sgc",
+        "pprgo",
+        "glnn",
+        "sdgnn",
+        "msas_gnn",
+        "graphsaint",
+        "nodeformer",
+        "difformer",
+        "sgformer",
+        "nagphormer",
+    ]
     batch_size = int(cfg.get("train", {}).get("batch_size", cfg.get("batch_size", 1024)))
     warmup = int(eff_cfg.get("warmup_runs", 10))
     repeat = int(eff_cfg.get("repeat_runs", 100))

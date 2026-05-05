@@ -21,7 +21,7 @@ EFFICIENCY = [
 ]
 SUPPLEMENTAL = [
     ("scripts/visualization/build_paper_tables.py", ["--supplemental"]),
-    ("scripts/visualization/plot_xi_sweep.py", []),
+    ("scripts/visualization/plot_retention_sweep.py", []),
     ("scripts/visualization/plot_sensitivity_supplemental.py", []),
     ("scripts/visualization/plot_sigma_proxy.py", []),
 ]

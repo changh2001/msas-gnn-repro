@@ -96,6 +96,30 @@ def test_phase_theta_subset_keeps_residual_cascade():
     assert torch.allclose(theta_dense[:, 1:], torch.zeros_like(theta_dense[:, 1:]))
 
 
+def test_phase_theta_writes_self_channel_diagonal():
+    from msas_gnn.decomposition.theta_optimizer import run_phase_theta
+    from msas_gnn.typing import AdaptiveParamSet
+
+    h_star = torch.tensor([[1.0, 0.0], [0.0, 0.0]])
+    phi_tilde = torch.tensor([[1.0, 0.0], [0.0, 1.0]])
+    params = AdaptiveParamSet(
+        tau=torch.zeros(2),
+        k_budget=torch.zeros((2, 1), dtype=torch.long),
+        freq_weights=torch.ones(1),
+    )
+    theta_fixed = run_phase_theta(
+        h_star,
+        phi_tilde,
+        params,
+        candidate_sets=[{0: [], 1: []}],
+        cfg={},
+        node_indices=[0],
+    )
+    theta_dense = theta_fixed.theta.to_dense()
+    assert theta_dense[0, 0] != 0
+    assert theta_fixed.candidate_total == 1
+
+
 def test_phase_theta_sdgnn_uses_flat_candidate_pool():
     from msas_gnn.decomposition.theta_optimizer import run_phase_theta_sdgnn
     from msas_gnn.typing import AdaptiveParamSet
@@ -133,3 +157,29 @@ def test_phase_theta_sdgnn_uses_flat_candidate_pool():
     assert theta_dense[2, 0] != 0
     assert theta_fixed.support_total == 2
     assert theta_fixed.candidate_total == 2
+
+
+def test_phase_theta_b0_uses_flat_bfs_pool():
+    from msas_gnn.decomposition.theta_optimizer import run_phase_theta_bfs_flat
+    from msas_gnn.typing import AdaptiveParamSet
+
+    h_star = torch.tensor([[1.0, 1.0], [0.0, 0.0], [0.0, 0.0]])
+    phi_tilde = torch.tensor([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]])
+    params = AdaptiveParamSet(
+        tau=torch.zeros(3),
+        k_budget=torch.zeros((3, 2), dtype=torch.long),
+        freq_weights=torch.ones(1),
+    )
+    candidate_sets = [{0: [1], 1: [], 2: []}, {0: [2], 1: [], 2: []}]
+    theta_fixed = run_phase_theta_bfs_flat(
+        h_star,
+        phi_tilde,
+        params,
+        candidate_sets,
+        cfg={"lars": {"k": 3}},
+        node_indices=[0],
+    )
+    theta_dense = theta_fixed.theta.to_dense()
+    assert theta_dense[1, 0] != 0
+    assert theta_dense[2, 0] != 0
+    assert theta_fixed.candidate_total == 3

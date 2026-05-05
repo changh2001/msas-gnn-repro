@@ -20,36 +20,48 @@ DATASET_LABELS = {
     "squirrel": "Squirrel",
 }
 MAIN_HOMOPHILY_ROWS = [
-    ("gcn", "GCN", False),
     ("sgc", "SGC", False),
     ("pprgo", "PPRGo", False),
     ("glnn", "GLNN", False),
+    ("graphsaint", "GraphSAINT", False),
+    ("nodeformer", "NodeFormer", False),
+    ("difformer", "DIFFormer", False),
+    ("sgformer", "SGFormer", False),
+    ("nagphormer", "NAGphormer", False),
+    ("gcn", "GCN教师模型", False),
     ("b0", "SDGNN", False),
     ("b5", "MSAS-GNN", True),
 ]
 MAIN_HETEROPHILY_ROWS = [
-    ("gcn", "GCN", False),
     ("sgc", "SGC", False),
     ("pprgo", "PPRGo", False),
-    ("geom_gcn", "\\textit{Geom-GCN}", False),
-    ("h2gcn", "\\textit{H2GCN}", False),
+    ("geom_gcn", "\\textit{Geom-GCN（补充参照）}", False),
+    ("h2gcn", "\\textit{H2GCN（补充参照）}", False),
     ("glnn", "GLNN", False),
+    ("graphsaint", "GraphSAINT", False),
+    ("nodeformer", "NodeFormer", False),
+    ("difformer", "DIFFormer", False),
+    ("sgformer", "SGFormer", False),
+    ("nagphormer", "NAGphormer", False),
+    ("gcn", "GCN教师模型", False),
     ("b0", "SDGNN", False),
     ("b5", "MSAS-GNN", True),
 ]
 ABLATION_ROWS = [
-    ("b0", "B0", "SDGNN基线", False),
-    ("b1", "B1", "+谱能量$E_{\\text{spectral}}(i)$（第4章节点级正则系数设计的核心项）", False),
+    ("sdgnn_pure", "SDGNN", "原始协议基线（全局统一 $\\lambda$，$K$-hop + $D$-hop fanout 平坦候选池）", False),
+    ("b0", "B0", "分层 BFS 候选池 + 全局统一 $\\lambda$", False),
+    ("b1", "B1", "B0 + 谱能量驱动的节点级正则系数 $\\tau(i)$", False),
     ("b2", "B2", "+度中心性$C_{\\text{deg}}(i)$", False),
     ("b3", "B3", "+$k$-core指数", False),
     ("b4", "B4", "+局部图熵$H(i)$", False),
-    ("b5", "B5", "+分层跳距预算$k_i^{(l)}$（第4章跳距预算分配结论）", True),
+    ("b5_frozen", "B5-frozen", "B4 + 分层跳距预算 $k_i^{(l)}$，冻结 $W_\\phi$", False),
+    ("b5", "B5-full", "B5-frozen + 完整交替优化更新 $W_\\phi$", True),
     ("b2_rnd", "B2-RND", "B2 + 随机扰动$\\tau(i)$（对照）", False),
 ]
 HOP_ROWS = [
     ("uniform", "均匀分配（各层相等）", False),
-    ("xi10", "$\\xi=1.0$（工程近似）", False),
-    ("xi05", "$\\xi=0.5$（第4章第4.3节分配参考形式）", True),
+    ("near_engineering", "近邻优先（工程近似）", False),
+    ("spectral_gap_reference", "谱间隙参考分配", True),
     ("reverse", "反向分配（深层更多）", False),
 ]
 EFFICIENCY_ROWS = [
@@ -59,6 +71,24 @@ EFFICIENCY_ROWS = [
     ("glnn", "GLNN", False),
     ("sdgnn", "SDGNN", False),
     ("msas_gnn", "MSAS-GNN", True),
+]
+RECENT_EFFICIENCY_ROWS = [
+    ("gcn", "GCN", "稠密消息传递", False),
+    ("graphsaint", "GraphSAINT", "采样式子图推理", False),
+    ("nodeformer", "NodeFormer", "线性化全局交互", False),
+    ("difformer", "DIFFormer", "扩散式全局交互", False),
+    ("sgformer", "SGFormer", "简化图 Transformer", False),
+    ("nagphormer", "NAGphormer", "Hop2Token 表示", False),
+    ("sdgnn", "SDGNN", "固化稀疏权重推理", False),
+    ("msas_gnn", "MSAS-GNN", "固化自适应稀疏权重推理", True),
+]
+DATASET_STATS_ROWS = [
+    ("Cora", "2,708", "5,278", "1,433", "7", "3.9", "引文网络"),
+    ("Citeseer", "3,327", "4,552", "3,703", "6", "2.7", "引文网络"),
+    ("PubMed", "19,717", "44,338", "500", "3", "4.5", "引文网络"),
+    ("ogbn-arxiv", "169,343", "1,166,243", "128", "40", "13.8", "大规模引文图"),
+    ("Chameleon", "2,277", "36,101", "2,325", "5", "31.7", "维基页面"),
+    ("Squirrel", "5,201", "217,073", "2,089", "5", "83.5", "维基页面"),
 ]
 EFFICIENCY_PARAM_FALLBACK = {
     "gcn": 0.47,
@@ -339,9 +369,39 @@ def _write_table(path: Path, lines: list[str]) -> None:
 
 
 def build_main_tables(results_dir: Path, output_root: Path) -> list[Path]:
-    main_results = _main_results(results_dir)
-    efficiency_payload = _efficiency_payload(results_dir)
+    try:
+        main_results = _main_results(results_dir)
+    except FileNotFoundError:
+        main_results = {}
     outputs: list[Path] = []
+
+    dataset_lines = [
+        r"\begin{table}[htbp]",
+        r"  \centering",
+        r"  \caption{节点分类数据集统计信息}",
+        r"  \label{tab:ch6-datasets}",
+        r"  \begin{threeparttable}",
+        r"    \begin{tabular}{>{\centering\arraybackslash}m{1.72cm} >{\centering\arraybackslash}m{1.43cm} >{\centering\arraybackslash}m{1.55cm} >{\centering\arraybackslash}m{1.43cm} >{\centering\arraybackslash}m{1.18cm} >{\centering\arraybackslash}m{1.43cm} >{\centering\arraybackslash}m{1.72cm}}",
+        r"\toprule",
+        r"\textbf{数据集} & \textbf{节点数} & \textbf{边数} & \textbf{特征维度} & \textbf{类别数} & \textbf{平均度 $\bar{d}$} & \textbf{类型} \\",
+        r"\midrule",
+    ]
+    for row in DATASET_STATS_ROWS:
+        dataset_lines.append(" & ".join(row) + r" \\")
+    dataset_lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular}",
+            r"    \begin{tablenotes}",
+            r"\item 注：表中边数按无向边数 $|E|$ 统计；平均度按 $\bar{d}=2|E|/n$ 计算。全文复杂度分析中使用的图规模参数统一记为 $m=\mathrm{nnz}(A)$，在无向图对称邻接矩阵口径下满足 $m=2|E|$。",
+            r"\end{tablenotes}",
+            r"  \end{threeparttable}",
+            r"\end{table}",
+        ]
+    )
+    dataset_path = output_root / "table_6_1_datasets.tex"
+    _write_table(dataset_path, dataset_lines)
+    outputs.append(dataset_path)
 
     homophily_lines = [
         r"\begin{table}[htbp]",
@@ -349,9 +409,9 @@ def build_main_tables(results_dir: Path, output_root: Path) -> list[Path]:
         r"  \caption{引文网络与大规模图节点分类准确率（\%，均值$\pm$标准差，10次重复）}",
         r"  \label{tab:ch6-homophily-large}",
         r"  \begin{threeparttable}",
-        r"    \begin{tabular}{>{\centering\arraybackslash}m{2.34cm} >{\centering\arraybackslash}m{1.63cm} >{\centering\arraybackslash}m{1.93cm} >{\centering\arraybackslash}m{1.73cm} >{\centering\arraybackslash}m{2.56cm} >{\centering\arraybackslash}m{2.44cm}}",
+        r"    \begin{tabular}{>{\centering\arraybackslash}m{2.7cm} >{\centering\arraybackslash}m{1.8cm} >{\centering\arraybackslash}m{1.8cm} >{\centering\arraybackslash}m{1.8cm} >{\centering\arraybackslash}m{2.4cm}}",
         r"\toprule",
-        r"\textbf{方法} & \textbf{Cora} & \textbf{Citeseer} & \textbf{PubMed} & \textbf{ogbn-arxiv（测试）} & \textbf{ogbn-arxiv 推理时间（ms/batch）} \\",
+        r"\textbf{方法} & \textbf{Cora} & \textbf{Citeseer} & \textbf{PubMed} & \textbf{ogbn-arxiv（测试）} \\",
         r"\midrule",
     ]
     for method_id, label, highlight in MAIN_HOMOPHILY_ROWS:
@@ -359,14 +419,13 @@ def build_main_tables(results_dir: Path, output_root: Path) -> list[Path]:
         for dataset in ("cora", "citeseer", "pubmed", "ogbn_arxiv"):
             payload = main_results.get((method_id, dataset), {})
             row.append(_maybe_bold(_format_acc_pm(payload.get("mean_acc"), payload.get("std_acc")), highlight))
-        row.append(_maybe_bold(_time_cell(efficiency_payload, "ogbn_arxiv", method_id), highlight))
         homophily_lines.append(" & ".join(row) + r" \\")
     homophily_lines.extend(
         [
             r"\bottomrule",
             r"\end{tabular}",
             r"    \begin{tablenotes}",
-            r"\item 注：若当前效率日志尚未生成，则 ogbn-arxiv 推理时间列以“--”占位；重新运行效率实验后可自动补齐该列。",
+            r"\item 注：缺失方法会以“--”占位；新增近期方法为本仓库自包含复现实测口径。",
             r"\end{tablenotes}",
             r"  \end{threeparttable}",
             r"\end{table}",
@@ -382,16 +441,22 @@ def build_main_tables(results_dir: Path, output_root: Path) -> list[Path]:
         r"  \caption{网页图节点分类准确率（\%，均值$\pm$标准差，10次重复）}",
         r"  \label{tab:ch6-heterophily}",
         r"  \begin{threeparttable}",
-        r"    \begin{tabular}{>{\centering\arraybackslash}m{2.54cm} >{\centering\arraybackslash}m{2.09cm} >{\centering\arraybackslash}m{2.09cm}}",
+        r"    \begin{tabular}{>{\centering\arraybackslash}m{4cm} >{\centering\arraybackslash}m{2.85cm} >{\centering\arraybackslash}m{2.85cm} >{\centering\arraybackslash}m{2.45cm}}",
         r"\toprule",
-        r"\textbf{方法} & \textbf{Chameleon} & \textbf{Squirrel} \\",
+        r"\textbf{方法} & \textbf{Chameleon} & \textbf{Squirrel} & \textbf{平均准确率} \\",
         r"\midrule",
     ]
     for method_id, label, highlight in MAIN_HETEROPHILY_ROWS:
         row = [_maybe_bold(label, highlight)]
+        means = []
         for dataset in ("chameleon", "squirrel"):
             payload = main_results.get((method_id, dataset), {})
+            mean_value = _safe_float(payload.get("mean_acc"))
+            if mean_value is not None:
+                means.append(mean_value)
             row.append(_maybe_bold(_format_acc_pm(payload.get("mean_acc"), payload.get("std_acc")), highlight))
+        avg = None if len(means) != 2 else sum(means) / 2.0
+        row.append(_maybe_bold(_format_percent(avg), highlight))
         heterophily_lines.append(" & ".join(row) + r" \\")
     heterophily_lines.extend(
         [
@@ -421,7 +486,7 @@ def build_ablation_tables(results_dir: Path, output_root: Path) -> list[Path]:
         r"  \begin{threeparttable}",
         r"    \begin{tabular}{>{\centering\arraybackslash}m{1.3cm} >{\centering\arraybackslash}m{3.6cm} >{\centering\arraybackslash}m{1.9cm} >{\centering\arraybackslash}m{1.9cm} >{\centering\arraybackslash}m{1.5cm} >{\centering\arraybackslash}m{1.5cm}}",
         r"\toprule",
-        r"\textbf{配置} & \textbf{模块组成} & \textbf{干净图准确率} & \textbf{30\%噪声准确率} & \textbf{稀疏度（\%）} & \textbf{推理时间（ms）} \\",
+        r"\textbf{配置} & \textbf{模块组成} & \textbf{干净图准确率} & \textbf{30\%噪声准确率} & \textbf{候选集剪枝率（\%）} & \textbf{推理时间（ms）} \\",
         r"\midrule",
     ]
     for ablation_id, label, desc, highlight in ABLATION_ROWS:
@@ -538,7 +603,7 @@ def build_efficiency_tables(results_dir: Path, output_root: Path) -> list[Path]:
             r"\bottomrule",
             r"\end{tabular}",
             r"    \begin{tablenotes}",
-            r"\item 注：参数量列优先读取 `efficiency_*.json` 中的真实统计字段；仅对旧版日志保留回退值兼容。",
+            r"\item 注：Cora 与 ogbn-arxiv 两列报告代表性批次前向时间（ms/batch）。平均加速比不是由本表展示的 Cora 与 ogbn-arxiv 两列直接计算，而是按 Cora、Citeseer、PubMed 与 ogbn-arxiv 四个数据集完整日志中的 $t_{\text{GCN}}/t_{\text{method}}$ 取算术平均。参数量列优先读取 `efficiency_*.json` 中的真实统计字段；仅对旧版日志保留回退值兼容。",
             r"\end{tablenotes}",
             r"  \end{threeparttable}",
             r"\end{table}",
@@ -547,6 +612,48 @@ def build_efficiency_tables(results_dir: Path, output_root: Path) -> list[Path]:
     efficiency_path = output_root / "table_6_6_efficiency.tex"
     _write_table(efficiency_path, efficiency_lines)
     outputs.append(efficiency_path)
+
+    recent_lines = [
+        r"\begin{table}[htbp]",
+        r"  \centering",
+        r"  \caption{近年高效图学习方法推理效率补充对比（ogbn-arxiv，GPU，$\text{batch\_size}=1024$）}",
+        r"  \label{tab:ch6-infer-recent}",
+        r"  \begin{threeparttable}",
+        r"    \begin{tabular}{>{\centering\arraybackslash}m{2.4cm} >{\centering\arraybackslash}m{2.3cm} >{\centering\arraybackslash}m{2.2cm} >{\centering\arraybackslash}m{2.2cm} >{\centering\arraybackslash}m{3.2cm}}",
+        r"\toprule",
+        r"\textbf{方法} & \textbf{测试准确率（\%）} & \textbf{批次前向时间（ms）} & \textbf{峰值显存（MB）} & \textbf{推理范式} \\",
+        r"\midrule",
+    ]
+    try:
+        main_results = _main_results(results_dir)
+    except FileNotFoundError:
+        main_results = {}
+    for method_id, label, paradigm, highlight in RECENT_EFFICIENCY_ROWS:
+        result_key = {"sdgnn": "b0", "msas_gnn": "b5"}.get(method_id, method_id)
+        acc_payload = main_results.get((result_key, "ogbn_arxiv"), {})
+        eff_payload = per_dataset.get("ogbn_arxiv", {}).get(method_id, {})
+        row = [
+            _maybe_bold(label, highlight),
+            _maybe_bold(_format_percent(acc_payload.get("mean_acc"), digits=2), highlight),
+            _maybe_bold(_format_ms(eff_payload.get("median_ms_per_batch")), highlight),
+            _maybe_bold(_format_memory_mb(eff_payload.get("peak_memory_mb")), highlight),
+            _maybe_bold(paradigm, highlight),
+        ]
+        recent_lines.append(" & ".join(row) + r" \\")
+    recent_lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{tabular}",
+            r"    \begin{tablenotes}",
+            r"\item 注：表中准确率读取主实验 ogbn-arxiv 测试结果，与表~\ref{tab:ch6-homophily-large} 保持一致；GraphSAINT 与图 Transformer 类方法采用本仓库自包含复现实测口径。批次前向时间仅统计推理阶段，不包含训练、预处理或超参数搜索时间。",
+            r"\end{tablenotes}",
+            r"  \end{threeparttable}",
+            r"\end{table}",
+        ]
+    )
+    recent_path = output_root / "table_6_6b_infer_recent.tex"
+    _write_table(recent_path, recent_lines)
+    outputs.append(recent_path)
 
     breakeven_payload = _breakeven_payload(results_dir)
     breakeven_lines = [
@@ -579,7 +686,7 @@ def build_efficiency_tables(results_dir: Path, output_root: Path) -> list[Path]:
             r"\bottomrule",
             r"\end{tabular}",
             r"    \begin{tablenotes}",
-            r"\item 注：本表直接读取 `breakeven_analysis.json`；若只跑了部分数据集，未生成的数据集会以“--”占位。",
+            r"\item 注：$t_{\text{pre}}$ 不包含教师模型训练与超参数搜索；$t_{\text{dense}}$ 与 $t_{\text{sparse}}$ 由完整推理日志中的代表性批次时间按 $\lceil n/1024\rceil$ 的批次数折算得到，其中 Cora 与 ogbn-arxiv 的批次时间已在表~\ref{tab:ch6-infer} 中展示，PubMed 使用对应完整日志中的批次时间。若只跑了部分数据集，未生成的数据集会以“--”占位。",
             r"\end{tablenotes}",
             r"  \end{threeparttable}",
             r"\end{table}",

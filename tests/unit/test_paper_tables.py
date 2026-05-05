@@ -28,15 +28,31 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
 
     _write_json(
         results_dir / "main_b5_cora_1.json",
-        {"dataset": "cora", "method_id": "b5", "mean_acc": 0.883, "std_acc": 0.007},
+        {"dataset": "cora", "method_id": "b5", "mean_acc": 0.880, "std_acc": 0.007},
+    )
+    _write_json(
+        results_dir / "main_b5_ogbn_1.json",
+        {"dataset": "ogbn_arxiv", "method_id": "b5", "mean_acc": 0.7513, "std_acc": 0.0023},
+    )
+    _write_json(
+        results_dir / "main_sgformer_ogbn_1.json",
+        {"dataset": "ogbn_arxiv", "method_id": "sgformer", "mean_acc": 0.7496, "std_acc": 0.0017},
+    )
+    _write_json(
+        results_dir / "main_gcn_ogbn_1.json",
+        {"dataset": "ogbn_arxiv", "method_id": "gcn", "mean_acc": 0.7442, "std_acc": 0.0020},
+    )
+    _write_json(
+        results_dir / "main_graphsaint_ogbn_1.json",
+        {"dataset": "ogbn_arxiv", "method_id": "graphsaint", "mean_acc": 0.7384, "std_acc": 0.0022},
     )
     _write_json(
         results_dir / "main_b5_chameleon_1.json",
-        {"dataset": "chameleon", "method_id": "b5", "mean_acc": 0.672, "std_acc": 0.009},
+        {"dataset": "chameleon", "method_id": "b5", "mean_acc": 0.656, "std_acc": 0.009},
     )
     _write_json(
         results_dir / "main_b5_squirrel_1.json",
-        {"dataset": "squirrel", "method_id": "b5", "mean_acc": 0.569, "std_acc": 0.012},
+        {"dataset": "squirrel", "method_id": "b5", "mean_acc": 0.559, "std_acc": 0.012},
     )
     _write_json(
         results_dir / "main_gcn_cora_1.json",
@@ -80,7 +96,7 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
             "ablation_id": "b5",
             "dataset": "cora",
             "clean_test_acc": 0.875,
-            "noise_test_acc": 0.830,
+            "noise_test_acc": 0.831,
             "pruning_sparsity": 0.9735,
             "candidate_total": 344138,
             "support_total": 9125,
@@ -116,7 +132,7 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
                     "mean_epsilon_approx": 0.182,
                     "relative_compute_overhead": 0.0,
                 },
-                "xi05": {
+                "near_engineering": {
                     "cora_mean_acc": 0.880,
                     "cora_std_acc": 0.007,
                     "chameleon_mean_acc": 0.673,
@@ -140,6 +156,8 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
                     "gcn": {"median_ms_per_batch": 125.3, "peak_memory_mb": 2500, "parameter_count_millions": 0.02},
                     "msas_gnn": {"median_ms_per_batch": 9.2, "peak_memory_mb": 630, "parameter_count_millions": 0.70},
                     "sdgnn": {"median_ms_per_batch": 8.5, "peak_memory_mb": 589, "parameter_count_millions": 0.68},
+                    "graphsaint": {"median_ms_per_batch": 73.0, "peak_memory_mb": 1860, "parameter_count_millions": 0.55},
+                    "sgformer": {"median_ms_per_batch": 39.0, "peak_memory_mb": 1180, "parameter_count_millions": 0.31},
                 },
             },
             "summary": {
@@ -192,22 +210,42 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
         output_dir,
         {"main", "ablation", "efficiency", "supplemental"},
     )
-    assert len(outputs) == 7
+    assert len(outputs) == 9
+
+    dataset_table = (output_dir / "table_6_1_datasets.tex").read_text(encoding="utf-8")
+    assert r"\label{tab:ch6-datasets}" in dataset_table
+    assert "ogbn-arxiv" in dataset_table
+    assert "Squirrel & 5,201 & 217,073 & 2,089 & 5 & 83.5" in dataset_table
+    assert r"$|E|$" in dataset_table
+    assert r"$\bar{d}=2|E|/n$" in dataset_table
 
     main_table = (output_dir / "table_6_2_homophily_large.tex").read_text(encoding="utf-8")
     assert r"\label{tab:ch6-homophily-large}" in main_table
-    assert r"\textbf{88.3$\pm$0.7}" in main_table
-    assert r"\textbf{9.2}" in main_table
+    assert r"\textbf{88.0$\pm$0.7}" in main_table
+    assert "SGFormer" in main_table
 
     ablation_table = (output_dir / "table_6_4_ablation.tex").read_text(encoding="utf-8")
     assert r"\label{tab:ch6-ablation}" in ablation_table
     assert r"\textbf{87.5}" in ablation_table
-    assert r"\textbf{83.0}" in ablation_table
+    assert r"\textbf{83.1}" in ablation_table
     assert r"\textbf{97.4}" in ablation_table
 
     efficiency_table = (output_dir / "table_6_6_efficiency.tex").read_text(encoding="utf-8")
     assert r"\label{tab:ch6-infer}" in efficiency_table
     assert r"\textbf{0.70}" in efficiency_table
+    assert "四个数据集完整日志" in efficiency_table
+
+    recent_table = (output_dir / "table_6_6b_infer_recent.tex").read_text(encoding="utf-8")
+    assert r"\label{tab:ch6-infer-recent}" in recent_table
+    assert "GCN & 74.42" in recent_table
+    assert "GraphSAINT & 73.84" in recent_table
+    assert "SGFormer" in recent_table
+    assert "39.0" in recent_table
+    assert r"表~\ref{tab:ch6-homophily-large}" in recent_table
+
+    breakeven_table = (output_dir / "table_6_7_breakeven.tex").read_text(encoding="utf-8")
+    assert "完整推理日志" in breakeven_table
+    assert "PubMed 使用对应完整日志" in breakeven_table
 
     supplemental_sigma = (output_dir / "supplemental/table_supp_spectral.tex").read_text(encoding="utf-8")
     assert r"\label{tab:supp-spectral}" in supplemental_sigma

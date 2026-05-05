@@ -3,11 +3,14 @@
 \chapter{谱驱动三维自适应稀疏机制}
 \label{chap:adaptive-sparse}
 
-第3章以四类图复杂度指标——谱间隙 \(\hat{\lambda}_{\text{gap}}\)、节点谱能量 \(E_{\text{spectral}}(i)\)、局部图熵 \(H(i)\) 以及节点中心性统计——作为可计算的结构输入，为自适应稀疏参数设计提供了量化基础。然而，这些量在第3章中仍主要停留在“指标定义与预处理输出”层面：它们分别刻画图结构的不同侧面，但如何将其进一步转化为具体的稀疏参数，即频率接口 \(w_k(i)\)、节点级正则系数 \(\tau(i)\) 与跳距保留率 \(p_l\) 及其对应的层预算约束，仍需在本章中分别建立清晰的设计映射。
+第~3~章已经给出四类可计算的图复杂度指标，包括谱间隙
+\(\hat{\lambda}_{\text{gap}}\)、节点谱能量
+\(E_{\text{spectral}}(i)\)、局部图熵 \(H(i)\) 以及节点中心性统计。
+这些指标分别从全局连通性、节点谱域参与强度、局部邻域复杂度和拓扑重要性等角度刻画图结构，为后续自适应稀疏参数设计提供了结构输入。需要进一步解决的是，这些预处理得到的结构量如何进入具体的稀疏推理机制：哪些量用于确定频率维输入，哪些量影响节点级正则系数 \(\tau(i)\)，以及哪些量用于控制不同跳距环层上的保留比例和预算分配。
 
-本章的任务是在第3章指标体系基础上，完成从“结构输入”到“稀疏参数”的映射构造。具体而言，频率维度首先对频率接口 \(w_k(i)\) 作出实例化，并将节点谱能量 \(E_{\text{spectral}}(i)\) 明确为后续设计所共享的统一谱输入；在此基础上，节点维度进一步结合度中心性、\(k\)-core 指数与局部图熵等结构统计量，构造节点级正则系数 \(\tau(i)\) 的可计算映射；跳距维度则依据谱间隙 \(\hat{\lambda}_{\text{gap}}\) 及分层信息衰减规律，给出跳距保留率 \(p_l\) 及相应层预算约束的设计形式。三维设计在逻辑上彼此区分，但在求解阶段相互衔接：其中，\(E_{\text{spectral}}(i)\) 直接作为节点维的谱输入，节点维输出 \(\tau(i)\)，跳距维输出 \(p_l\) 及其层预算约束，二者将在第5章的分层 LARS 过程中统一整合。
+本章的任务是在第~3~章指标体系基础上，完成从“结构输入”到“稀疏参数”的映射构造。频率维度不再重新定义节点谱能量，而是沿用第~3~章的等权实例化，将 \(E_{\text{spectral}}(i)\) 固定为后续设计共享的统一谱输入；节点维度在该谱输入的基础上，进一步结合度中心性、\(k\)-core 指数与局部图熵等结构统计量，构造节点级正则系数 \(\tau(i)\) 的可计算映射；跳距维度则依据谱间隙 \(\hat{\lambda}_{\text{gap}}\) 与多跳传播中的信息衰减关系，给出跳距保留率 \(p_l\) 及分层预算配额 \(k_i^{(l)}\) 的设计形式。三类参数的设计目标各不相同，但最终会在第~5~章的分层 LARS 求解过程中共同作用：\(\tau(i)\) 控制节点受到的稀疏正则强度，\(p_l\) 和 \(k_i^{(l)}\) 控制不同跳距环层的候选保留规模。
 
-本章结构如下：第~\ref{sec:ch4-freq}~节完成频率维度设计；第~\ref{sec:ch4-node}~节建立节点维度的理论与算法框架；第~\ref{sec:ch4-hop}~节给出跳距维度的分层预算设计策略；第~\ref{sec:ch4-summary}~节总结三维贡献并说明与第5章的接口关系。
+按照上述接口关系，本章首先在第~\ref{sec:ch4-freq}~节说明频率维输入的固定方式；随后，第~\ref{sec:ch4-node}~节构造节点级自适应正则系数；第~\ref{sec:ch4-hop}~节讨论跳距维度的分层预算设计；最后，第~\ref{sec:ch4-summary}~节总结三维参数之间的衔接关系，并说明其如何进入第~5~章的算法整合过程。
 
 本章整体框架如图~\ref{fig:ch4-overview} 所示。
 
@@ -28,33 +31,36 @@
 \section{频率维度：节点谱能量的统一谱输入}
 \label{sec:ch4-freq}
 \label{idx:theme:espectral}
-第3章已经给出节点谱能量的定义，并明确其作为后续节点级自适应正则系数
-\(\tau(i)\)
-的谱输入。沿用式~\eqref{eq:ch3-specenergy}，对节点 \(i\) 有
+
+第~3~章已经从归一化拉普拉斯谱分解出发，给出了节点谱能量的定义及其等权实例化。本章将节点谱能量作为三维自适应稀疏机制中的频率维输入，用于后续节点级正则系数的构造。因此，本节重点说明第~3~章输出的谱统计量如何进入第~4~章的参数设计接口，不再重复推导节点谱能量本身。
+
+沿用式~\eqref{eq:ch3-specenergy-general}，节点 \(i\) 的一般谱能量形式为
 \begin{equation}
   E_{\text{spectral}}(i)
   = \sum_{k=1}^{K_{\text{eig}}} w_k(i)\,\lambda_k\,|U_{ik}|^2.
   \label{eq:ch4-specenergy-general}
 \end{equation}
-式~\eqref{eq:ch4-specenergy-general}表明，节点谱能量由三部分共同决定：\(\lambda_k\) 表示第 \(k\) 个谱分量的频率尺度，\(|U_{ik}|^2\) 衡量节点 \(i\) 在该谱分量上的参与强度，\(w_k(i)\) 则用于完成多频率分量的聚合。因此，频率维度关注的不是节点局部连接数本身，而是节点在不同谱分量上的综合参与程度。
+其中，\(\lambda_k\) 表示第 \(k\) 个谱分量的频率尺度，\(|U_{ik}|^2\) 衡量节点 \(i\) 在该谱分量上的参与强度，\(w_k(i)\) 表示不同谱分量在聚合时的相对权重。式~\eqref{eq:ch4-specenergy-general}在本章中的作用，是提供一个可以被节点级稀疏参数调用的频率接口：它把节点在若干非平凡谱分量上的参与强度压缩为一个标量，使后续 \(\tau(i)\) 的设计能够同时利用空间域局部统计量与谱域结构信息。
 
-在本文的三维自适应框架中，频率维度的作用是为后续参数设计提供统一的谱域输入。相比度中心性、局部图熵等空间域统计量，节点谱能量能够直接反映节点与图整体结构模式之间的谱域联系，从而补充节点局部拓扑指标所不能刻画的频率信息。一般而言，\(w_k(i)\) 也可以采用随频率位置或节点局部结构而变化的非均匀形式，以突出某些谱分量在节点统计中的相对重要性；但本文此处更关注将谱域信息稳定地引入后续节点级参数构造，而非进一步区分不同频段的贡献差异，因此按照第3章的统一设定，对前 \(K_{\text{eig}}\) 个非平凡特征对采用一致权重，即
+在更一般的图学习设定中，频率权重 \(w_k(i)\) 可以根据图的同配或异配特征进行非均匀设计。例如，同配图中的类别信号通常更偏向低频成分，而异配图中的判别信息可能更多分布在中高频成分上；若能够准确获得图的同配性信息，就可以据此调节不同频段的权重。然而，本文的节点谱能量定位为离线结构预处理量，其目标是服务于任务无关的稀疏预算分配。若直接依据标签一致性计算同配率，并进一步用其修正 \(w_k(i)\)，则频率维设计会与下游标签、训练划分或具体分类任务发生绑定，不再是纯图结构输入。
+
+基于这一考虑，本文在正文主线中不引入同配率驱动的频率偏置，沿用第~3~章的等权设定：
 \begin{equation}
-  w_k(i)=\frac{1}{K_{\text{eig}}}, \qquad k=1,2,\dots,K_{\text{eig}},
+  w_k(i)=\frac{1}{K_{\text{eig}}}, \qquad k=1,2,\dots,K_{\text{eig}}.
   \label{eq:ch4-wk-uniform}
 \end{equation}
-于是式~\eqref{eq:ch4-specenergy-general}可写为
+该设定并不假设所有频段在任意任务中具有相同判别作用，而是将频率维度控制在任务无关的结构统计口径内。本文暂不判断某一图应当偏低频还是偏高频，而是先用等权方式刻画节点在前 \(K_{\text{eig}}\) 个非平凡谱分量上的整体参与程度，再将这一量交由后续节点级正则映射与其他结构指标共同使用。
+
+将式~\eqref{eq:ch4-wk-uniform}代入式~\eqref{eq:ch4-specenergy-general}，得到本章后续直接使用的节点谱能量：
 \begin{equation}
   E_{\text{spectral}}(i)
   = \frac{1}{K_{\text{eig}}}\sum_{k=1}^{K_{\text{eig}}}\lambda_k |U_{ik}|^2.
   \label{eq:ch4-specenergy}
 \end{equation}
-式~\eqref{eq:ch4-specenergy}给出的节点谱能量，实质上是节点 \(i\) 在前 \(K_{\text{eig}}\) 个非平凡谱分量上的加权平均参与强度。若节点在多个非平凡谱分量上均有较大投影，则其 \(E_{\text{spectral}}(i)\) 相对更高；反之，若节点在这些谱分量上的响应整体较弱，则该值相对较低。由此，\(E_{\text{spectral}}(i)\) 可以作为节点谱域结构参与程度的紧凑刻画。
 
-本节的作用仅在于明确频率维度的接口：将第3章得到的节点谱能量写成后续可直接调用的统一谱输入。下一节将在此基础上，把
-\(E_{\text{spectral}}(i)\)
-与局部图熵、中心性等结构统计量结合起来，进一步构造节点级自适应正则系数
-\(\tau(i)\)。
+式~\eqref{eq:ch4-specenergy}在后续设计中承担排序与调节作用，并不单独决定节点预算。若某个节点在前 \(K_{\text{eig}}\) 个非平凡谱分量上具有更强参与，则其 \(E_{\text{spectral}}(i)\) 相对较高，说明该节点与图的整体谱结构联系更明显；反之，该值较低的节点在这些谱分量上的参与较弱。后续节点级正则系数并不只依赖这一项，而是会进一步结合归一化局部图熵、度中心性和 \(k\)-core 指数，以避免单一谱指标对节点复杂度作出过强判断。
+
+因此，本节固定的频率维接口是：第~3~章计算得到的等权节点谱能量 \(E_{\text{spectral}}(i)\) 在第~4~章中作为统一谱输入，并与其他结构统计量共同参与节点级自适应正则系数 \(\tau(i)\) 的构造。下一节将在该接口基础上，进一步说明谱能量、局部图熵和中心性如何共同影响节点所受到的稀疏约束强度。
 
 % % ---- 图~\ref{fig:ch4-freq-energy}（背景动机示意图，可换 PDF）----
 % \begin{figure}[htbp]
@@ -93,46 +99,56 @@
 \label{subsec:ch4-tau-design}
 \label{idx:innov:tau}
 
-本节给出从 \(E_{\text{spectral}}(i)\) 到 \(\tau(i)\) 的可计算设计准则。需要说明的是，下述关系首先服务于节点级参数构造，其作用在于为后续 \(\tau(i)\) 的具体形式提供设计依据，而非在本节直接给出已经闭合的严格最优性定理；第5章将进一步讨论这一设计与全局谱近似误差之间的联系。
+本节讨论如何将频率维输入 \(E_{\text{spectral}}(i)\) 转化为节点级正则系数 \(\tau(i)\)。这里给出的关系首先服务于参数构造，其目标是为后续可计算公式提供设计依据；关于该设计与全局谱近似误差之间的关系，将在第~5~章结合稀疏化后的谱相似性进一步讨论。
 
-对节点 \(i\)，其对应的稀疏化子问题可写为
+对节点 \(i\)，其稀疏化子问题可写为
 \begin{equation}
-  \min_{\theta_i}\quad \frac{1}{2}\bigl\|\tilde{\Phi}^\top\theta_i - h_i^*\bigr\|_2^2 + \tau(i)\|\theta_i\|_1.
+  \min_{\theta_i}\quad
+  \frac{1}{2}\bigl\|\tilde{\Phi}^{\top}\theta_i - h_i^*\bigr\|_2^2
+  + \tau(i)\|\theta_i\|_1 .
   \label{eq:ch4-node-lasso}
 \end{equation}
-其中，\(h_i^*\) 表示教师 GNN 在节点 \(i\) 处的目标中间表示。由 Lasso/\(\mathrm{LARS}\) 的基本稀疏路径性质可知，在其余条件不变时，正则系数越大，解通常越容易沿更短路径停止并呈现更强稀疏性；反之，较小的正则系数通常对应更多保留下来的非零邻居权重。因此，\(\tau(i)\) 的大小将直接影响节点 \(i\) 在稀疏分解中可保留的邻居规模。
+其中，\(h_i^*\) 表示教师 GNN 在节点 \(i\) 处的目标中间表示，\(\tilde{\Phi}\) 表示行归一化后的特征变换矩阵。参考 Lasso 与 LARS 的稀疏路径性质\cite{Efron2004LARS}，以及 SDGNN 中采用 LARS 求解节点级 Lasso 子问题并通过稀疏权重控制感受野规模的做法\cite{Hu2024SDGNN}，在候选集和特征矩阵给定时，较大的 \(\ell_1\) 正则系数通常对应更强的稀疏化倾向，而较小的正则系数则更可能允许更多候选节点进入非零支撑集。因此，\(\tau(i)\) 的大小直接影响节点 \(i\) 在稀疏分解中最终保留的邻居规模。
 
-结合第4.1节给出的频率维输入，本文将节点谱能量 \(E_{\text{spectral}}(i)\) 作为刻画节点谱域参与程度的核心统计量。若节点 \(i\) 的 \(E_{\text{spectral}}(i)\) 较高，说明该节点在所选非平凡谱分量上的综合参与程度相对更强；在本文的设计口径下，这类节点在稀疏化过程中应采用相对保守的压缩策略，以避免关键结构信息被过早截断。相应地，若节点 \(i\) 的 \(E_{\text{spectral}}(i)\) 较低，则可对其施加相对更强的稀疏约束，以提升整体压缩效率。
+第~\ref{sec:ch4-freq}~节已经将 \(E_{\text{spectral}}(i)\) 固定为频率维输入。若节点 \(i\) 的 \(E_{\text{spectral}}(i)\) 较高，说明该节点在前 \(K_{\text{eig}}\) 个非平凡谱分量上的综合参与程度更强；在稀疏化过程中，对这类节点施加过强压缩，可能更容易截断其关键结构信息。相反，若节点的谱能量较低，则其在所选谱分量上的参与较弱，可以采用相对更强的稀疏约束，以提高整体压缩效率。基于这一判断，本文要求节点级正则系数满足如下单调关系：
+\begin{equation}
+  E_{\text{spectral}}(i)\ \text{越高}
+  \Rightarrow
+  \tau(i)\ \text{越小}
+  \Rightarrow
+  \ell_1\ \text{惩罚越弱}
+  \Rightarrow
+  \text{保留邻居更多}.
+  \label{eq:ch4-tau-monotone-principle}
+\end{equation}
+式~\eqref{eq:ch4-tau-monotone-principle}给出了本文节点级正则设计的基本方向。它并不声称 \(\tau(i)\) 是某个全局最优问题的闭式解，而是把节点谱能量作为结构参与程度的代理量，用于控制不同节点受到的稀疏压力。
 
-基于上述考虑，本文将 \(\tau(i)\) 设计为 \(E_{\text{spectral}}(i)\) 的单调递减函数，即
-\[
-E_{\text{spectral}}(i)\ \text{越高} \;\Longrightarrow\; \tau(i)\ \text{越小}
-\;\Longrightarrow\; \ell_1\ \text{惩罚越弱}
-\;\Longrightarrow\; \text{保留邻居更多}.
-\]
-这一关系给出了节点级正则系数构造的基本方向：高谱能量节点对应较弱惩罚，低谱能量节点对应较强惩罚。需要说明的是，这里给出的 \(\tau(i)\) 构造方式首先是一种由节点谱能量驱动的参数设计规则，而非在本节已经严格证明的全局最优映射。其推导过程中包含以节点谱能量表征结构参与程度、以局部稀疏化影响近似全局谱扰动等工程化处理；更正式的全局谱相似性分析与误差讨论留待第5章展开。
-
-满足上述单调设计准则的单因子工程实现可写为
+满足上述单调原则的一种平滑实现为
 \begin{equation}
   \tau_{\text{mono}}(i)=\mathrm{clip}\!\left(
-  \tau_{\text{base}}\exp\!\left(-\beta_{\tau}\frac{E_{\text{spectral}}(i)}{E_{\text{threshold}}}\right),
+  \tau_{\text{base}}
+  \exp\!\left(
+  -\beta_{\tau}\frac{E_{\text{spectral}}(i)}{E_{\text{threshold}}}
+  \right),
   \tau_{\min},\tau_{\text{base}}
   \right).
   \label{eq:ch4-tau-mono}
 \end{equation}
-其中，\(E_{\text{spectral}}(i)\) 由第3章式~\eqref{eq:ch3-specenergy}给出；\(\beta_{\tau}>0\) 为能量响应强度系数；\(\tau_{\min}\) 与 \(\tau_{\text{base}}\) 分别给出节点级正则系数的下界与基准上界。为使指数项具有可比较的尺度，本文进一步引入能量阈值
+其中，\(\beta_{\tau}>0\) 为谱能量响应强度系数，\(\tau_{\min}\) 与 \(\tau_{\text{base}}\) 分别表示节点级正则系数的下界与基准上界，\(\mathrm{clip}(\cdot)\) 用于将映射结果限制在给定区间内。指数项保证了 \(\tau_{\text{mono}}(i)\) 随 \(E_{\text{spectral}}(i)\) 增大而平滑下降；上下界截断则避免正则系数过小导致解过密，或过大导致节点邻域被过度压缩。
+
+为使不同数据集上的谱能量进入同一数量级的指数映射，本文引入能量阈值
 \begin{equation}
   E_{\text{threshold}}
   =
   c_E \cdot \operatorname{median}_{j\in V} E_{\text{spectral}}(j),
-  \qquad c_E>0,
+  \qquad c_E>0.
   \label{eq:ch4-ethreshold}
 \end{equation}
-其中，\(c_E\) 为无量纲尺度系数。这里将全图节点谱能量分布的中位数作为工程参考阈值，用于为 \(E_{\text{spectral}}(i)\) 的指数映射提供同口径的归一化尺度。这样处理的原因在于，节点级正则系数 \(\tau(i)\) 的设计直接由节点谱能量驱动，因此阈值也宜由 \(\{E_{\text{spectral}}(i)\}_{i=1}^n\) 的整体分布给出；采用中位数而非均值，则可减弱少量高能量节点对阈值的牵引，使映射在不同图上的数值表现更稳定。
+其中，\(c_E\) 为无量纲尺度系数。采用全图节点谱能量的中位数作为参考尺度，是因为 \(\tau(i)\) 的设计直接由 \(\{E_{\text{spectral}}(i)\}_{i=1}^n\) 驱动；相比均值，中位数对少量高谱能量节点不敏感，能够减弱极端节点对整体尺度的牵引，使不同图上的映射更加稳定。
 
-式~\eqref{eq:ch4-tau-mono}给出的并非唯一最优形式，而是满足“节点谱能量越高，对应正则系数越小”这一单调目标的平滑实现。其含义是：当 \(E_{\text{spectral}}(i)\) 较高时，节点 \(i\) 对应的 \(\tau(i)\) 更接近区间下界 \(\tau_{\min}\)，从而接受较弱的 \(\ell_1\) 惩罚；当 \(E_{\text{spectral}}(i)\) 较低时，\(\tau(i)\) 更接近基准值 \(\tau_{\text{base}}\)，对应相对更强的稀疏约束；而中等谱能量节点则落在两者之间，对应中等强度的正则控制。
+式~\eqref{eq:ch4-tau-mono}可以理解为节点级正则系数的单因子基线形式。当 \(E_{\text{spectral}}(i)\) 较高时，指数项较小，\(\tau_{\text{mono}}(i)\) 更接近下界 \(\tau_{\min}\)，节点受到较弱的稀疏惩罚；当 \(E_{\text{spectral}}(i)\) 较低时，\(\tau_{\text{mono}}(i)\) 更接近基准上界 \(\tau_{\text{base}}\)，节点受到更强的压缩。实际实现中，\(\tau_{\text{base}}\) 被视为控制整体稀疏强度的超参数，而非由式~\eqref{eq:ch4-tau-mono}直接推出的固定常数。本文在验证集上采用对数尺度搜索确定其取值；候选范围以默认值\(10^{-3}\) 为中心，向上下各扩展一个数量级，即\([10^{-4},\,10^{-2}]\)。这一范围主要用于覆盖从较强稀疏约束到较弱稀疏约束的常用工作区间，最终取值以验证集表现和平均非零邻居数 \(\bar{k}\) 的折中结果为准。\(\beta_{\tau}\) 的默认值取 \(1\)，用于给出单位尺度下的谱能量响应强度；其敏感性分析见第~6~章。
 
-实现上，\(\tau_{\text{base}}\) 通过验证集在对数尺度搜索确定，搜索范围取为 \([10^{-4},\,10^{-2}]\)，默认初值设为 \(10^{-3}\)。参数推荐值取 \(\beta_{\mathrm{f}}=\beta_{\mathrm{h}}=\beta_{\tau}=1\)，其敏感性分析见第6章。需要说明的是，式~\eqref{eq:ch4-tau-mono}仅作为单因子基线形式；后续式~\eqref{eq:ch4-alphadef}将在此基础上进一步整合局部图熵、中心性等因素，形成完整的多因子节点级正则系数。
+需要进一步说明的是，仅依赖节点谱能量仍不足以完整刻画节点的结构复杂度。具有相近谱能量的节点，可能在局部邻域不确定性、度中心性或 \(k\)-core 层次上存在明显差异。因而，式~\eqref{eq:ch4-tau-mono}只作为单因子设计基线；下一小节将在此基础上引入局部图熵、度中心性与 \(k\)-core 指数，形成多因子融合的节点级正则系数。
 
 \subsection{多因子融合的完整公式}
 \label{subsec:ch4-multifactor}
@@ -141,16 +157,17 @@ E_{\text{spectral}}(i)\ \text{越高} \;\Longrightarrow\; \tau(i)\ \text{越小}
 \begin{equation}
   \tau(i) = \mathrm{clip}\!\left(
     \frac{\tau_{\text{base}} \cdot \exp\!\left(-\beta_{\tau}\,E_{\text{spectral}}(i)/E_{\text{threshold}}\right)}
-         {1 + \gamma\,C_{\text{deg}}(i) + \delta\,\dfrac{\operatorname{core}(i)}{k_{\max}} + \eta\,H_{\text{norm}}(i)},
+         {1 + \gamma\,C_{\text{deg}}(i) + \delta\,\dfrac{\operatorname{core}(i)}{k_{\max}} + \omega_H\,H_{\text{norm}}(i)},
     \tau_{\min},\tau_{\text{base}}
   \right).
   \label{eq:ch4-alphadef}
 \end{equation}
-其中，\(k_{\max}=\max_{j\in V}\operatorname{core}(j)\)，\(E_{\text{threshold}}\) 与式~\eqref{eq:ch4-ethreshold} 定义相同，\(H_{\text{norm}}(i)\) 沿用第3章的归一化局部熵定义。本文默认取 \(\tau_{\min}=10^{-7}\)，参数初值设为 \((\beta_{\tau},\gamma,\delta,\eta)=(1.0,0.5,0.3,0.2)\)，其敏感性分析见第6章。
+其中，\(k_{\max}=\max_{j\in V}\operatorname{core}(j)\)，\(E_{\text{threshold}}\) 与式~\eqref{eq:ch4-ethreshold} 定义相同，\(H_{\text{norm}}(i)\) 沿用第3章的归一化局部熵定义。本文将 \(\tau_{\min}\) 设为 \(10^{-7}\)，以避免节点级正则系数过度接近 \(0\) 而削弱 \(\ell_1\) 约束。多因子融合参数以\((\beta_{\tau},\gamma,\delta,\omega_H)=(1.0,0.5,0.3,0.2)\)
+作为实验初值，其中 \(\beta_{\tau}\) 控制谱能量响应强度，\(\gamma,\delta,\omega_H\) 分别控制度中心性、\(k\)-core 指数和归一化局部图熵的相对影响。该组参数属于工程初始化设置，最终取值与稳定性通过第~6~章的敏感性分析进行验证。
 
 式~\eqref{eq:ch4-alphadef} 的含义是：节点谱能量 \(E_{\text{spectral}}(i)\) 仍作为主导性的谱输入，而度中心性、\(k\)-core 指数与归一化局部熵分别从节点拓扑位置、局部稠密层级与邻域分布多样性三个方面对 \(\tau(i)\) 作进一步修正。在本文的设计口径下，谱能量较高、中心性较强、处于更高 \(k\)-core 层级或邻域分布更复杂的节点，倾向于获得更小的正则系数，从而保留更多邻居；反之，则对应相对更强的稀疏约束。由此，稀疏预算能够在统一谱输入的基础上进一步向结构上更值得保留的节点倾斜。
 
-当 \(\gamma=\delta=\eta=0\) 时，式~\eqref{eq:ch4-alphadef} 退化为单因子形式~\eqref{eq:ch4-tau-mono}。因此，式~\eqref{eq:ch4-alphadef} 可以看作是在节点谱能量主导映射基础上，对空间域结构统计量的进一步整合。
+当 \(\gamma=\delta=\omega_H=0\) 时，式~\eqref{eq:ch4-alphadef} 退化为单因子形式~\eqref{eq:ch4-tau-mono}。因此，式~\eqref{eq:ch4-alphadef} 可以看作是在节点谱能量主导映射基础上，对空间域结构统计量的进一步整合。
 
 至此，节点级正则系数的多因子构造已经完成。下一小节将据此给出对应的算法实现。
 
@@ -201,14 +218,14 @@ $H_{\text{norm}}(i)$
 \subsection{算法实现}
 \label{subsec:ch4-tau-algo}
 
-算法~\ref{alg:ch4-tau-compute}给出节点级正则系数的完整批量计算流程。就离线预处理而言，Lanczos 分解的复杂度为 \(O(mK_{\text{eig}})\)，\(k\)-core 分解的复杂度为 \(O(m)\)，且二者均可一次性完成并在后续轮次中缓存复用。对固定图而言，在上述谱量与结构量已得到的前提下，节点谱能量、局部图熵、度中心性以及 \(\tau(i)\) 的批量计算复杂度不超过 \(O(mK_{\text{eig}})\)。需要说明的是，这里讨论的是渐近复杂度口径；并行实现仅影响实际运行常数，而不改变上述量级结论。
+算法~\ref{alg:ch4-tau-compute}~给出节点级正则系数的完整批量计算流程。就离线预处理而言，Lanczos 分解的复杂度为 \(O(mK_{\text{eig}})\)，\(k\)-core 分解的复杂度为 \(O(m)\)，且二者均可一次性完成并在后续轮次中缓存复用。对固定图而言，在上述谱量与结构量已得到的前提下，节点谱能量、局部图熵、度中心性以及 \(\tau(i)\) 的批量计算复杂度不超过 \(O(mK_{\text{eig}})\)。这里讨论的是渐近复杂度口径；并行实现仅影响实际运行常数，而不改变上述量级结论。
 
 \begin{algorithm}[htbp]
 \caption{节点级自适应正则系数批量计算流程}
 \label{alg:ch4-tau-compute}
 \begin{algorithmic}[1]
 \setlength{\algorithmicindent}{2em}
-\REQUIRE 图 \(G=(V,E)\)；第3章算法~\ref{alg:ch3-preprocess} 输出的节点谱能量 \(\{E_{\text{spectral}}(i)\}_{i\in V}\)、归一化局部熵 \(\{H_{\text{norm}}(i)\}_{i\in V}\)、度中心性 \(\{C_{\text{deg}}(i)\}_{i\in V}\)、\(k\)-core 指数 \(\{\operatorname{core}(i)\}_{i\in V}\)；参数 \(\tau_{\text{base}}\)（默认 \(10^{-3}\)）、\(\beta_{\tau}=1.0\)、\(\gamma=0.5\)、\(\delta=0.3\)、\(\eta=0.2\)、\(\tau_{\min}=10^{-7}\)、\(c_E>0\)
+\REQUIRE 图 \(G=(V,E)\)；第3章算法~\ref{alg:ch3-preprocess} 输出的节点谱能量 \(\{E_{\text{spectral}}(i)\}_{i\in V}\)、归一化局部熵 \(\{H_{\text{norm}}(i)\}_{i\in V}\)、度中心性 \(\{C_{\text{deg}}(i)\}_{i\in V}\)、\(k\)-core 指数 \(\{\operatorname{core}(i)\}_{i\in V}\)；参数 \(\tau_{\text{base}}\)（默认 \(10^{-3}\)）、\(\beta_{\tau}=1.0\)、\(\gamma=0.5\)、\(\delta=0.3\)、\(\omega_H=0.2\)、\(\tau_{\min}=10^{-7}\)、\(c_E>0\)
 \ENSURE 节点级正则系数 \(\{\tau(i)\}_{i\in V}\)
 
 \STATE \textbf{Step 1：统计量准备}
@@ -220,7 +237,7 @@ $H_{\text{norm}}(i)$
   \STATE \(\tau_{\text{raw}} \leftarrow \tau_{\text{base}}\cdot
   \exp\!\left(-\beta_{\tau}\,E_{\text{spectral}}(i)/E_{\text{threshold}}\right)\)
   \STATE \(\tau_{\text{raw}} \leftarrow \tau_{\text{raw}}\cdot
-  \left(1+\gamma\,C_{\text{deg}}(i)+\delta\,\dfrac{\operatorname{core}(i)}{k_{\max}}+\eta\,H_{\text{norm}}(i)\right)^{-1}\)
+  \left(1+\gamma\,C_{\text{deg}}(i)+\delta\,\dfrac{\operatorname{core}(i)}{k_{\max}}+\omega_H\,H_{\text{norm}}(i)\right)^{-1}\)
   \STATE \(\tau(i) \leftarrow \mathrm{clip}\!\left(\tau_{\text{raw}},\tau_{\min},\tau_{\text{base}}\right)\)
 \ENDFOR
 
@@ -250,65 +267,86 @@ $H_{\text{norm}}(i)$
 \subsection{分层信息衰减界分析}
 \label{subsec:ch4-lemma36}
 
-在上述分层预算框架下，核心问题转化为：各跳距预算应按何种比例分配。在线性化传播近似下，随传播次数增加，新增信息的边际贡献通常呈衰减趋势，因此较近跳的邻居原则上应获得更高配额。为对这一设计直觉作定量刻画，本文引入对称归一化传播算子
+在上述分层预算框架下，核心问题转化为：各跳距预算应按何种比例分配。在线性化传播近似下，随着传播次数增加，新增信息的边际贡献通常呈衰减趋势，因此较近跳的邻居原则上应获得更高配额。为对这一设计直觉作定量刻画，本文引入无自环的对称归一化传播算子
 \begin{equation}
-  S = D^{-1/2} A D^{-1/2},
+  S = D_{\deg}^{-1/2} A D_{\deg}^{-1/2},
   \label{eq:ch4-propagator}
 \end{equation}
-其特征值记为
-\[
-1=\mu_1(S)\ge \mu_2(S)\ge \cdots \ge \mu_n(S)\ge -1.
-\]
+其中，\(A\) 表示不含自环的原图邻接矩阵，\(D_{\deg}\) 为由 \(A\) 诱导的度矩阵，其对角元素满足
+\begin{equation}
+  (D_{\deg})_{ii}=d_i=\sum_{j=1}^{n}A_{ij}.
+  \label{eq:ch4-degree-matrix}
+\end{equation}
+本文在本节采用无自环传播算子，是为了与第~3~章归一化拉普拉斯
+\begin{equation}
+  \tilde{\mathcal{L}} = I - D_{\deg}^{-1/2} A D_{\deg}^{-1/2}
+  \label{eq:ch4-laplacian-propagator}
+\end{equation}
+的谱口径保持一致；节点自身项在候选集构造中单独处理，而不并入 \(A\)。在无孤立节点的无向图上，\(S\) 为实对称矩阵，其特征值可记为
+\begin{equation}
+  1=\mu_1(S)\ge \mu_2(S)\ge \cdots \ge \mu_n(S)\ge -1.
+  \label{eq:ch4-propagator-spectrum}
+\end{equation}
+由于归一化拉普拉斯满足
+\begin{equation}
+  \tilde{\mathcal{L}} = I - S,
+  \label{eq:ch4-laplacian-s-relation}
+\end{equation}
+因此，\(S\) 的非平凡谱性质与 \(\tilde{\mathcal{L}}\) 的谱间隙存在直接对应关系。
+
 对连通无向图，\(\mu_1(S)=1\) 为主特征值。进一步定义第二谱半径为
 \begin{equation}
   \mu_\star(S) := \max_{k \geq 2} |\mu_k(S)|.
   \label{eq:ch4-mustar}
 \end{equation}
-该量刻画了传播算子在去除主特征方向后的收缩强度：当图非二分时，有 \(\mu_\star(S)<1\)，于是 \(S^l\) 在主特征方向正交子空间上的作用随 \(l\) 以 \(\mu_\star(S)^l\) 的几何速度衰减；若图含有显著二分结构，则可能出现 \(\mu_\star(S)=1\)。为避免这一情形，本文改用懒化传播算子
+该量刻画了传播算子在去除主特征方向后的收缩强度：当图连通且非二分时，有 \(\mu_\star(S)<1\)，于是 \(S^l\) 在主特征方向正交子空间上的作用随 \(l\) 以 \(\mu_\star(S)^l\) 的几何速度衰减。若图含有显著二分或近二分结构，则可能出现接近 \(-1\) 的特征值，使 \(\mu_\star(S)\) 接近 \(1\)，从而导致传播过程出现振荡而非稳定衰减。为缓解这一问题，本文在该类情形下采用懒化传播算子
 \begin{equation}
-  S_{\text{lazy}}=\frac{I+S}{2}.
+  S_{\mathrm{lazy}}=\frac{I+S}{2}.
   \label{eq:ch4-slazy}
 \end{equation}
-从而保证 \(\mu_\star(S_{\text{lazy}})\in[0,1)\)，便于后续建立稳定的信息衰减界。
+对于连通图，懒化操作会将 \(S\) 的特征值由 \(\mu_k(S)\) 映射为 \((1+\mu_k(S))/2\)，从而把接近 \(-1\) 的振荡方向压缩到接近 \(0\) 的区域。严格的 \(\mu_\star(S_{\mathrm{lazy}})<1\) 依赖连通性以及去除主特征方向后的谱分析；若图不连通，则仍可能存在多个特征值等于 \(1\)，此时需先按连通分量处理或在分析中显式排除多重主特征方向。
 
 \phantomsection\label{lem:ch4-decay}\label{idx:theme:infodecay}
 在本文采用的线性化传播近似下，浅层邻域通常对应更高的边际表示增益，而深层邻域的新增贡献随传播次数增加逐步减弱。这一现象为第~\ref{subsec:ch4-plstrategy}~节的分层预算设计提供了理论动机。
 
-为对上述直觉作定量刻画，本文在线性传播模型下建立分层信息衰减界，并将其作为各跳距预算配额的理论参考。具体而言，记
-\[
-h_i^{[l]} = (P^l X)_{i,*}.
-\]
-其中 \(P\) 为传播算子，\(h_i^{[l]}\) 表示节点 \(i\) 在第 \(l\) 次传播后的累计表示。该写法与去除非线性激活和参数矩阵后的 SGC 传播形式同口径\cite{Wu2019SGC}。需要说明的是，这里分析的是由第 \(l-1\) 次传播提升至第 \(l\) 次传播时的边际表示增量，并将其作为第 \(l\) 跳预算分配的代理依据，而非对环层 \(\mathcal{R}_l(i)\) 的精确孤立分解。
+为对上述直觉作定量刻画，本文在线性传播模型下建立分层信息衰减界，并将其作为各跳距预算配额的理论参考。记
+\begin{equation}
+  h_i^{[l]} = (P^l X)_{i,*}.
+  \label{eq:ch4-linear-propagation}
+\end{equation}
+其中，\(P\) 为传播算子，\(h_i^{[l]}\) 表示节点 \(i\) 在第 \(l\) 次传播后的累计表示。该写法与去除非线性激活和参数矩阵后的 SGC 传播形式同口径\cite{Wu2019SGC}。这里分析的是由第 \(l-1\) 次传播提升至第 \(l\) 次传播时的边际表示增量，并将其作为第 \(l\) 跳预算分配的代理依据，而非对环层 \(\mathcal{R}_l(i)\) 的精确孤立分解。
 
 传播算子取为
 \begin{equation}
   P =
   \begin{cases}
-    S, & \text{若图非二分且 } \mu_\star(S) < 1, \\[4pt]
+    S, & \text{若图连通、非二分且 } \mu_\star(S) < 1, \\[4pt]
     S_{\mathrm{lazy}} = (I+S)/2, & \text{若图含二分或近二分结构}.
   \end{cases}
   \label{eq:ch4-propagator-choice}
 \end{equation}
-其中 \(S=D^{-1/2}AD^{-1/2}\) 为对称归一化传播算子，\(\mu_\star(\cdot)\) 表示第二谱半径。记第 \(l\) 次传播相对于第 \(l-1\) 次传播的边际表示增量为
+其中，\(S=D_{\deg}^{-1/2}AD_{\deg}^{-1/2}\) 为式~\eqref{eq:ch4-propagator}定义的对称归一化传播算子，\(\mu_\star(\cdot)\) 表示去除主特征方向后的第二谱半径。记第 \(l\) 次传播相对于第 \(l-1\) 次传播的边际表示增量为
 \begin{equation}
   \Delta h_i^{[l]}
   = h_i^{[l]} - h_i^{[l-1]}
   = e_i^\top (P^l - P^{l-1})X.
   \label{eq:ch4-deltah}
 \end{equation}
-其中 \(e_i\in\mathbb{R}^n\) 为第 \(i\) 个标准基向量。由于传播算子 \(P\) 为实对称矩阵，可作正交特征分解
+其中，\(e_i\in\mathbb{R}^n\) 为第 \(i\) 个标准基向量。
+
+由于传播算子 \(P\) 为实对称矩阵，可作正交特征分解
 \begin{equation}
   P = U \,\mathrm{diag}\!\bigl(\mu_1(P),\mu_2(P),\dots,\mu_n(P)\bigr) U^\top,
   \label{eq:ch4-p-spectral}
 \end{equation}
-其中 \(U=[u_1,\dots,u_n]\) 为正交特征向量组。对任意位于主特征方向正交子空间的向量 \(v\perp u_1\)，可写为
+其中，\(U=[u_1,\dots,u_n]\) 为正交特征向量组。\(v\in\mathbb{R}^n\) 表示定义在图节点上的任意单通道图信号。由于 \(P\) 为实对称矩阵，其特征向量组构成 \(\mathbb{R}^n\) 的一组正交基。对任意位于主特征方向正交子空间的图信号 \(v\perp u_1\)，可展开为
 \begin{equation}
-  v=\sum_{k\ge 2} a_k u_k.
+  v=\sum_{k\ge 2} a_k u_k,
   \label{eq:ch4-v-expand}
 \end{equation}
-于是经过 \(l\) 次传播后有
+其中，\(a_k=u_k^\top v\) 为该图信号在第 \(k\) 个谱方向上的投影系数。于是经过 \(l\) 次传播后有
 \begin{equation}
-  P^l v=\sum_{k\ge 2} a_k\,\mu_k(P)^l\,u_k,
+  P^l v=\sum_{k\ge 2} a_k\,\mu_k(P)^l\,u_k.
   \label{eq:ch4-plv-expand}
 \end{equation}
 从而
@@ -327,23 +365,18 @@ h_i^{[l]} = (P^l X)_{i,*}.
   \|P^l v\|_2 \le \mu_\star(P)^l \|v\|_2.
   \label{eq:ch4-plv-bound}
 \end{equation}
-将式~\eqref{eq:ch4-plv-bound}用于式~\eqref{eq:ch4-deltah}，并注意到
+式~\eqref{eq:ch4-plv-bound}说明，在去除主特征方向后，传播算子对非主方向信息具有由 \(\mu_\star(P)\) 控制的几何收缩作用。
+
+将该收缩性质用于边际表示增量。由式~\eqref{eq:ch4-deltah}可得
 \begin{equation}
   \Delta h_i^{[l]}
   =
   e_i^\top(P^l-P^{l-1})X
   =
-  e_i^\top P^{\,l-1}(P-I)X,
+  e_i^\top P^{\,l-1}(P-I)X.
   \label{eq:ch4-deltah-rewrite}
 \end{equation}
-可见第 \(l\) 次传播的边际表示增量等于初始增量 \((P-I)X\) 经 \(P^{\,l-1}\) 继续传播后的结果。下面对式~\eqref{eq:ch4-deltah-bound}的来源作进一步说明。由式~\eqref{eq:ch4-deltah-rewrite} 有
-\begin{equation}
-  \Delta h_i^{[l]}
-  =
-  e_i^\top P^{\,l-1}(P-I)X.
-  \label{eq:ch4-deltah-rewrite2}
-\end{equation}
-对其取二范数，并利用向量--矩阵乘积的次可乘性，可得
+可见，第 \(l\) 次传播的边际表示增量等于初始传播差异 \((P-I)X\) 经 \(P^{\,l-1}\) 继续传播后的结果。对式~\eqref{eq:ch4-deltah-rewrite}取二范数，并利用向量--矩阵乘积的次可乘性，可得
 \begin{equation}
   \|\Delta h_i^{[l]}\|_2
   \le
@@ -351,7 +384,7 @@ h_i^{[l]} = (P^l X)_{i,*}.
   \bigl\|P^{\,l-1}(P-I)X\bigr\|_F.
   \label{eq:ch4-deltah-step1}
 \end{equation}
-由于 \(e_i\) 为标准基向量，故 \(\|e_i^\top\|_2=1\)。进一步地，在主特征方向正交子空间上，由式~\eqref{eq:ch4-plv-bound} 可知 \(P^{\,l-1}\) 的作用满足几何收缩，因此
+由于 \(e_i\) 为标准基向量，故 \(\|e_i^\top\|_2=1\)。进一步地，\((P-I)X\) 的主特征方向成分在理想传播口径下被抵消，其主要贡献来自非主方向；在主特征方向正交子空间上，由式~\eqref{eq:ch4-plv-bound}可知 \(P^{\,l-1}\) 的作用满足几何收缩，因此
 \begin{equation}
   \bigl\|P^{\,l-1}(P-I)X\bigr\|_F
   \le
@@ -359,7 +392,7 @@ h_i^{[l]} = (P^l X)_{i,*}.
   \|(P-I)X\|_F.
   \label{eq:ch4-deltah-step2}
 \end{equation}
-将式~\eqref{eq:ch4-deltah-step2}代入式~\eqref{eq:ch4-deltah-step1}，可得
+将式~\eqref{eq:ch4-deltah-step2}代入式~\eqref{eq:ch4-deltah-step1}，得到
 \begin{equation}
   \|\Delta h_i^{[l]}\|_2
   \le
@@ -367,7 +400,7 @@ h_i^{[l]} = (P^l X)_{i,*}.
   \|(P-I)X\|_F.
   \label{eq:ch4-deltah-step3}
 \end{equation}
-于是只需将与 \(l\) 无关的项记为常数
+于是，将与 \(l\) 无关的项记为
 \begin{equation}
   C_0 := \|(P-I)X\|_F,
   \label{eq:ch4-c0-def}
@@ -378,20 +411,30 @@ h_i^{[l]} = (P^l X)_{i,*}.
   \le C_0\,\mu_\star(P)^{\,l-1}.
   \label{eq:ch4-deltah-bound}
 \end{equation}
-其中 \(C_0>0\) 为与图结构和输入特征有关、但与传播层数 \(l\) 无关的常数。该式表明，第 \(l\) 次传播所带来的边际表示增量主要由 \(\mu_\star(P)^{\,l-1}\) 控制，因而随传播层数增加呈几何衰减。
+其中，\(C_0>0\) 为与图结构和输入特征有关、但与传播层数 \(l\) 无关的常数。由于 \(C_0\) 采用全图 Frobenius 范数定义，式~\eqref{eq:ch4-deltah-bound}给出的是对单节点边际表示增量的全局保守上界，而不是对每个节点、每个跳距环层精确贡献的估计。该上界的作用在于为分层预算分配提供方向性依据：当 \(\mu_\star(P)<1\) 时，第 \(l\) 次传播所带来的边际表示增量随 \(l\) 增加呈几何衰减。
 
-式~\eqref{eq:ch4-deltah-bound}表明，随着传播层数增加，新增一跳邻域对节点表示带来的边际贡献按几何速度衰减，因此较近跳的邻居原则上应获得更高预算配额。基于这一衰减规律，后续第~\ref{subsec:ch4-plstrategy}~节将进一步构造分层跳距保留率 \(p_l\) 及其对应的整数配额 \(k_i^{(l)}\)。需要说明的是，这里给出的主要是分层预算设计的理论动机；更正式的误差分析与适用条件讨论留待第5章展开。
+式~\eqref{eq:ch4-deltah-bound}表明，随着传播层数增加，新增一跳邻域对节点表示带来的边际贡献上界按几何速度衰减，因此较近跳的邻居原则上应获得更高预算配额。基于这一衰减规律，后续第~\ref{subsec:ch4-plstrategy}~节将进一步构造分层跳距保留率 \(p_l\) 及其对应的整数配额 \(k_i^{(l)}\)。这里给出的主要是分层预算设计的理论动机；更正式的误差分析与适用条件讨论留待第~5~章展开。
 
 \phantomsection\label{thm:ch4-decay}
-基于式~\eqref{eq:ch4-deltah-bound} 的衰减结果，可进一步给出跳距保留率的参考下界。设第 \(l\) 次传播所对应的边际表示增量允许误差预算为 \(\varepsilon_l>0\)。若要求稀疏化后该跳的表示上界损失\((1-p_l)\cdot C_0\,\mu_\star(P)^{\,l-1}\)不超过 \(\varepsilon_l\)，则保留率 \(p_l\) 至少应满足
+基于式~\eqref{eq:ch4-deltah-bound}的衰减结果，可进一步给出跳距保留率的参考下界。设第 \(l\) 次传播所对应的边际表示增量允许误差预算为 \(\varepsilon_l>0\)。若将保留率 \(p_l\) 对该层边际贡献的影响近似为线性比例，并将未保留部分的上界损失近似写为
+\begin{equation}
+  (1-p_l)\,C_0\,\mu_\star(P)^{\,l-1},
+  \label{eq:ch4-pl-loss-proxy}
+\end{equation}
+则要求该参考损失不超过 \(\varepsilon_l\) 时，有
+\begin{equation}
+  (1-p_l)\,C_0\,\mu_\star(P)^{\,l-1}
+  \le \varepsilon_l.
+  \label{eq:ch4-pl-error-requirement}
+\end{equation}
+由式~\eqref{eq:ch4-pl-error-requirement}可得保留率 \(p_l\) 的参考下界：
 \begin{equation}
   p_l \geq \max\!\left\{0,\; 1 - \frac{\varepsilon_l}{C_0\,\mu_\star(P)^{\,l-1}}\right\}.
   \label{eq:ch4-pl-lowerbound}
 \end{equation}
-式~\eqref{eq:ch4-pl-lowerbound} 表明，当 \(l\) 增大时，\(\mu_\star(P)^{\,l-1}\) 逐步减小，从而该下界随之下降。这意味着在边际表示增量几何衰减的条件下，较高跳距对应的预算约束可以相对更宽松，因而允许更强的稀疏化。
+式~\eqref{eq:ch4-pl-lowerbound}是在线性比例近似和保守边际贡献上界下得到的预算设计参考，并非由最优稀疏误差精确推出的闭式解。它表明，当 \(l\) 增大时，\(\mu_\star(P)^{\,l-1}\) 逐步减小，从而该下界随之下降。这意味着在边际表示增量几何衰减的条件下，较高跳距对应的预算约束可以相对更宽松，因而允许更强的稀疏化。
 
-在实际分配中，本文进一步设定最小保留率 \(p_{\min}>0\)，以避免高跳距预算被完全压缩。需要说明的是，\(p_{\min}\) 的作用仅在于为跳距配额提供下界保护，而不直接保证全图连通性。由此，式~\eqref{eq:ch4-deltah-bound} 给出的衰减规律为后续两种 \(p_l\) 计算策略提供了共同的理论依据；第~\ref{subsec:ch4-plstrategy}~节将在此基础上分别给出均匀式与几何衰减式的具体构造。
-
+在实际分配中，本文进一步设定最小保留率 \(p_{\min}>0\)，以避免高跳距预算被完全压缩。\(p_{\min}\) 的作用仅在于为跳距配额提供下界保护，而不直接保证全图连通性。由此，式~\eqref{eq:ch4-deltah-bound}给出的衰减规律为后续两种 \(p_l\) 计算策略提供了共同的理论依据；第~\ref{subsec:ch4-plstrategy}~节将在此基础上分别给出均匀式与几何衰减式的具体构造。
 
 % ---- 图~\ref{fig:ch4-hop-decay}（示意图，可换 PDF）----
 \begin{figure}[htbp]
@@ -414,25 +457,65 @@ h_i^{[l]} = (P^l X)_{i,*}.
 
 均匀衰减方案（策略1）采用几何递减形式，其公比由首尾两端的保留率共同确定。记 \(p_1\) 为第1跳保留率，\(p_L\) 为第 \(L\) 跳保留率，则有
 \begin{equation}
-  p_l = p_1 \cdot r^{\,l-1},
+  p_l = p_1 \cdot \varrho^{\,l-1},
   \qquad
-  r=\left(\frac{p_L}{p_1}\right)^{\frac{1}{L-1}},
-  \qquad r\in(0,1).
+  \varrho=\left(\frac{p_L}{p_1}\right)^{\frac{1}{L-1}},
+  \qquad \varrho\in(0,1).
   \label{eq:ch4-pl-strategy1}
 \end{equation}
-其中，\(r\) 表示相邻两跳之间共享的衰减公比。式~\eqref{eq:ch4-pl-strategy1} 表明，当 \(p_1\) 与 \(p_L\) 给定后，中间各跳的保留率由同一公比自动确定，因此该方案在各跳距之间保持一致的衰减速度。例如，当 \(L=3\)、\(p_1=0.60\)、\(p_3=0.20\) 时，由式~\eqref{eq:ch4-pl-strategy1} 可得 \(r=\sqrt{0.20/0.60}\)，进一步得到 \(p_2=0.40\)，从而形成 \((p_1,p_2,p_3)=(0.60,0.40,0.20)\) 的典型配置。
+其中，\(\varrho\) 表示相邻两跳之间共享的衰减公比。式~\eqref{eq:ch4-pl-strategy1} 表明，当 \(p_1\) 与 \(p_L\) 给定后，中间各跳的保留率由同一公比自动确定，因此该方案在各跳距之间保持一致的衰减速度。例如，当 \(L=3\)、\(p_1=0.60\)、\(p_3=0.20\) 时，由式~\eqref{eq:ch4-pl-strategy1} 可得 \(\varrho=\sqrt{0.20/0.60}\)，进一步得到 \(p_2=0.40\)，从而形成 \((p_1,p_2,p_3)=(0.60,0.40,0.20)\) 的典型配置。
 
-谱间隙自适应方案（策略2）进一步将公比写为由图级谱量控制的自动参数化形式。记 \(\hat{\lambda}_{\text{gap}}\) 为第3章预处理阶段得到的谱间隙估计量，\(\kappa>0\) 为谱间隙响应系数，则取
-\(
-r=\exp(-\kappa\hat{\lambda}_{\text{gap}})
-\)。
-相应地，
+谱间隙自适应方案（策略2）进一步将跳距衰减速度与图级谱结构联系起来。由式~\eqref{eq:ch4-laplacian-s-relation}可知，
 \begin{equation}
-  p_l = \max\!\left\{p_{\min},\; p_{\text{base}} \exp\!\bigl(-\kappa \hat{\lambda}_{\text{gap}}(l-1)\bigr)\right\},
+  \tilde{\mathcal{L}} = I-S.
+  \label{eq:ch4-lap-s-for-gap}
+\end{equation}
+因此，若 \(u_k\) 同时作为 \(S\) 与 \(\tilde{\mathcal{L}}\) 的特征向量，且
+\(S u_k=\mu_k(S)u_k\)，则有
+\begin{equation}
+  \tilde{\mathcal{L}}u_k
+  =
+  (I-S)u_k
+  =
+  \bigl(1-\mu_k(S)\bigr)u_k.
+  \label{eq:ch4-lambda-mu-derive}
+\end{equation}
+由此可得对应特征值之间的关系
+\begin{equation}
+  \lambda_k = 1-\mu_k(S).
+  \label{eq:ch4-lambda-mu-relation}
+\end{equation}
+
+在连通图上，\(\lambda_{\mathrm{gap}}\) 为归一化拉普拉斯的最小非零特征值。若只考虑低频非平凡方向，则其对应的传播特征值满足
+\begin{equation}
+  \mu_2(S)=1-\lambda_{\mathrm{gap}}.
+  \label{eq:ch4-mu2-gap}
+\end{equation}
+这说明谱间隙越大，低频非主方向上的传播收缩越强，多次传播后的边际增量通常衰减更快；谱间隙越小，则低频非主方向的收缩较慢，较远跳邻居仍可能保留一定边际贡献。式~\eqref{eq:ch4-mu2-gap}刻画的是低频非平凡方向的收缩因子，并不等同于第二谱半径 \(\mu_\star(S)\) 的精确表达。第二谱半径定义为
+\begin{equation}
+  \mu_\star(S)=\max_{k\ge 2}|\mu_k(S)|.
+  \label{eq:ch4-mustar-repeat}
+\end{equation}
+其最大值还可能受到接近 \(-1\) 的高频方向影响。特别是在二分或近二分结构中，仅用 \(1-\lambda_{\mathrm{gap}}\) 不能完整描述非主方向的最慢衰减。因此，本文在策略2中将 \(\hat{\lambda}_{\mathrm{gap}}\) 作为控制跳距衰减速度的图级结构代理量，而不是将其视为 \(\mu_\star(S)\) 的严格替代。
+
+基于上述代理关系，记 \(\hat{\lambda}_{\mathrm{gap}}\) 为第~3~章预处理阶段得到的谱间隙估计量，\(\kappa>0\) 为谱间隙响应系数。本文将几何衰减公比参数化为
+\begin{equation}
+  r=\exp(-\kappa\hat{\lambda}_{\mathrm{gap}}).
+  \label{eq:ch4-gap-r}
+\end{equation}
+由于 \(\hat{\lambda}_{\mathrm{gap}}\geq 0\)，式~\eqref{eq:ch4-gap-r} 保证 \(r\in(0,1]\)。当 \(\hat{\lambda}_{\mathrm{gap}}\) 较大时，\(r\) 较小，表示跳距保留率随 \(l\) 增大衰减更快；当 \(\hat{\lambda}_{\mathrm{gap}}\) 较小时，\(r\) 接近 \(1\)，表示远跳邻居的预算下降更加缓和。于是得到谱间隙自适应的跳距保留率：
+\begin{equation}
+  p_l = \max\!\left\{p_{\min},\;
+  p_{\text{base}} \exp\!\bigl(-\kappa \hat{\lambda}_{\mathrm{gap}}(l-1)\bigr)
+  \right\},
   \qquad \kappa > 0.
   \label{eq:ch4-pl-strategy2}
 \end{equation}
-其中，\(p_{\text{base}}\in(0,1]\) 表示第1跳的基准保留率，本文默认取 \(p_{\text{base}}=0.6\)；\(p_{\min}\in(0,1]\) 表示允许的最小保留率，本文默认取 \(p_{\min}=0.1\)；\(\kappa\) 控制保留率随跳距递减的快慢。式~\eqref{eq:ch4-pl-strategy2} 的含义是：在其余条件相同的情况下，\(\hat{\lambda}_{\text{gap}}\) 越大，指数项衰减越快，从而 \(p_l\) 随跳距的下降越明显；与策略1相比，策略2无需再单独显式指定公比 \(r\)，而是通过图级谱量 \(\hat{\lambda}_{\text{gap}}\) 自动调节衰减速度。
+其中，\(p_{\text{base}}\in(0,1]\) 表示第1跳的基准保留率，本文默认取
+\(p_{\text{base}}=0.6\)；\(p_{\min}\in(0,1]\) 表示允许的最小保留率，本文默认取
+\(p_{\min}=0.1\)；\(\kappa\) 控制保留率对谱间隙变化的响应强度。式~\eqref{eq:ch4-pl-strategy2} 的含义是：在其余条件相同的情况下，\(\hat{\lambda}_{\mathrm{gap}}\) 越大，低频非主方向上的传播收缩越快，深层邻居的边际贡献通常衰减更明显，因此 \(p_l\) 随跳距下降更快；\(\hat{\lambda}_{\mathrm{gap}}\) 越小，则说明传播收缩较慢，远跳邻居不宜被过早压缩。
+
+式~\eqref{eq:ch4-pl-strategy2} 的定位是预算分配策略，并非第二谱半径衰减界的严格闭式解。它利用谱间隙对低频非主方向收缩速度的刻画，为跳距保留率提供图级自适应调节依据；对于二分性较强或高频负特征值影响显著的图，其适用性还需要结合懒化传播算子和第~5~章的谱相似性误差分析进一步说明。
 
 两种策略的系统对比见表~\ref{tab:ch4-pl-strategies}。
 
@@ -486,7 +569,7 @@ r=\exp(-\kappa\hat{\lambda}_{\text{gap}})
 \end{equation}
 其中，\(\operatorname{RoundQuota}(\cdot)\) 的实现方式为：先对各层连续预算逐项下取整，再按最大小数部分依次补足舍入误差；若某一跳已达到容量上界 \(|\mathcal{R}_l(i)|\)，则跳过该层并将剩余预算补偿到未饱和跳距。由此，式~\eqref{eq:ch4-hop-budget-round} 在保证整数化的同时，仍尽量保持原始比例关系。
 
-在工程实现中，为减少额外的节点级预算求解开销，本文将式~\eqref{eq:ch4-hop-budget-round} 视为各跳候选集的预算上界构造规则，而不将其解释为必须严格达到的最终非零数。换言之，\(k_i^{(l)}\) 描述的是“第 \(l\) 跳最多允许保留多少候选邻居”，而节点 \(i\) 在该跳的实际非零数仍由第5章 LARS 求解过程中的节点级正则系数 \(\tau(i)\)、候选集容量以及路径提前停止共同决定。因而，跳距维度提供的是层间预算约束，节点维度提供的是节点间稀疏强度差异，二者在求解阶段联合发挥作用。
+在工程实现中，为减少额外的节点级预算求解开销，本文将式~\eqref{eq:ch4-hop-budget-round} 视为各跳候选集的预算上界构造规则，而不将其解释为必须严格达到的最终非零数。\(k_i^{(l)}\) 描述的是“第 \(l\) 跳最多允许保留多少候选邻居”，而节点 \(i\) 在该跳的实际非零数仍由第5章 LARS 求解过程中的节点级正则系数 \(\tau(i)\)、候选集容量以及路径提前停止共同决定。因而，跳距维度提供的是层间预算约束，节点维度提供的是节点间稀疏强度差异，二者在求解阶段联合发挥作用。
 
 由此，跳距维度的作用可概括为：节点级正则系数 \(\tau(i)\) 决定节点 \(i\) 在整体上应承受多强的稀疏约束，而跳距保留率 \(p_l\) 与环层容量 \(|\mathcal{R}_l(i)|\) 共同决定该约束在不同跳距上的预算上界分布。前者回答“不同节点在整体上应承受多强的稀疏约束”，后者回答“各跳环层在候选容量约束下应分配多少预算上界”。至此，频率、节点、跳距三维参数体系已经完整建立，第5章将进一步以分层 LARS 过程统一整合三维输出。
 

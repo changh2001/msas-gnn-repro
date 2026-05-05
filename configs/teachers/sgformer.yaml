@@ -1,0 +1,8 @@
+name: sgformer
+layers: 2
+hidden_dim: 64
+dropout: 0.5
+lr: 0.005
+weight_decay: 5.0e-4
+epochs: 200
+early_stopping_patience: 20

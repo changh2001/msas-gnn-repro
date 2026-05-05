@@ -1,0 +1,6 @@
+\beamer@sectionintoc {1}{研究背景与问题动机}{3}{0}{1}
+\beamer@sectionintoc {2}{问题形式化与图复杂度指标}{6}{0}{2}
+\beamer@sectionintoc {3}{三维自适应稀疏机制}{8}{0}{3}
+\beamer@sectionintoc {4}{算法整合与理论分析}{10}{0}{4}
+\beamer@sectionintoc {5}{实验评估}{12}{0}{5}
+\beamer@sectionintoc {6}{总结与展望}{17}{0}{6}

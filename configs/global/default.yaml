@@ -9,7 +9,7 @@ train:
   batch_size: 1024
 teacher:
   name: gcn
-  layers: 2
+  layers: 3
   hidden_dim: 64
 lars:
   k: 50

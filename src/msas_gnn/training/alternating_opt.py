@@ -7,12 +7,11 @@
 
 第6章的大图工程口径在本实现中以“显式 W_phi + 按需重算 Φ̃”落地：
 - 小图保持 full-batch；
-- 大图按节点 mini-batch 交替执行 Phase-Θ / Phase-W；
+- 大图仅在 Phase-W 使用节点 mini-batch，Phase-Θ 始终在全图上对齐；
 - 训练结束后固定最终 Φ̃，再对全图补做一次 Phase-Θ 重对齐。
 """
 import logging
 import torch, torch.nn.functional as F
-from msas_gnn.decomposition.warm_start import warm_start_phi_tilde
 from msas_gnn.decomposition.inference import infer_h_hat
 from msas_gnn.training.feature_transform import (
     compute_phi_tilde,
@@ -36,6 +35,7 @@ class AlternatingOptimizer:
         self.seed = int(cfg.get("seed", 42))
 
     def run(self, h_star, data, params):
+        ablation_id = str(self.cfg.get("ablation_id", "b5"))
         h_star = h_star.to(self.device)
         x = data.x.to(self.device)
         feature_cfg = self.cfg.get("feature_transform", {})
@@ -45,8 +45,9 @@ class AlternatingOptimizer:
             ridge=float(feature_cfg.get("ridge", 1e-4)),
             device=self.device,
         )
-        phi_tilde = warm_start_phi_tilde(h_star)
-        logger.info(f"热启动完成 协议={self.protocol}")
+        with torch.no_grad():
+            phi_tilde = compute_phi_tilde(feature_transform, x).detach()
+        logger.info("W_phi岭回归热启动完成 协议=%s", self.protocol)
         data_cpu = data.cpu() if hasattr(data, "cpu") else data
         if self.protocol == "sdgnn_orig":
             from msas_gnn.decomposition.candidate_builder import build_sdgnn_candidate_set
@@ -81,6 +82,28 @@ class AlternatingOptimizer:
             keep_complete_hops=candidate_cfg.get("keep_complete_hops"),
             sampled_max_candidates=candidate_cfg.get("sampled_max_candidates"),
         )
+        from msas_gnn.adaptive.hop_budget import allocate_hop_budget_for_candidates
+
+        params = params._replace(
+            k_budget=allocate_hop_budget_for_candidates(
+                cands,
+                params.tau,
+                cfg=self.cfg,
+                lambda_gap=self._lambda_gap_from_params_or_cfg(params),
+            )
+        )
+        if ablation_id == "b0" or self.protocol == "b0_flat":
+            theta_fixed, phi_tilde = self._run_b0_flat(
+                h_star,
+                x,
+                phi_tilde,
+                feature_transform,
+                params,
+                cands,
+            )
+            if theta_fixed is None:
+                raise RuntimeError("B0平坦Phase-Θ未执行")
+            return theta_fixed, phi_tilde
         batch_mode = self._resolve_batch_mode(getattr(data, "num_nodes", h_star.shape[0]))
         logger.info("交替优化批模式=%s batch_size=%s", batch_mode, self.batch_size)
         if batch_mode == "mini_batch":
@@ -103,6 +126,12 @@ class AlternatingOptimizer:
             )
         if theta_fixed is None: raise RuntimeError("交替优化未执行")
         return theta_fixed, phi_tilde
+
+    def _lambda_gap_from_params_or_cfg(self, params):
+        # The spectral-gap driven hop strategy uses lambda_gap when the metric bundle
+        # was available upstream. Older configs/tests may not carry it, so fall back
+        # to zero, which yields the slowest decay and remains valid.
+        return float(self.cfg.get("lambda_gap", 0.0) or 0.0)
 
     def _run_sdgnn_orig(self, h_star, x, phi_tilde, feature_transform, params, candidate_set):
         best_loss = float("inf")
@@ -132,6 +161,22 @@ class AlternatingOptimizer:
                 n_steps=self.phase_w_steps,
                 lr=self.phase_w_lr,
             )
+        return theta_fixed, phi_tilde
+
+    def _run_b0_flat(self, h_star, x, phi_tilde, feature_transform, params, candidate_sets):
+        from msas_gnn.decomposition.theta_optimizer import run_phase_theta_bfs_flat
+
+        h_star_cpu = h_star.cpu()
+        theta_fixed = run_phase_theta_bfs_flat(
+            h_star_cpu,
+            phi_tilde.cpu(),
+            params,
+            candidate_sets,
+            self.cfg,
+        )
+        h_hat = infer_h_hat(theta_fixed, phi_tilde.cpu())
+        loss = F.mse_loss(h_hat, h_star_cpu).item()
+        logger.info("B0平坦Phase-Θ完成: loss=%.6f k̄=%.1f", loss, theta_fixed.k_bar)
         return theta_fixed, phi_tilde
 
     def _resolve_batch_mode(self, num_nodes):
@@ -186,19 +231,11 @@ class AlternatingOptimizer:
         from msas_gnn.decomposition.theta_optimizer import run_phase_theta
 
         for it in range(self.max_iter):
+            theta_fixed = run_phase_theta(h_star_cpu, phi_tilde.cpu(), params, candidate_sets, self.cfg)
             epoch_losses = []
-            epoch_kbars = []
             for batch_nodes in self._iter_node_batches(h_star_cpu.shape[0], epoch=it):
-                theta_batch = run_phase_theta(
-                    h_star_cpu,
-                    phi_tilde.cpu(),
-                    params,
-                    candidate_sets,
-                    self.cfg,
-                    node_indices=batch_nodes,
-                )
                 feature_transform, phi_tilde = self._phase_w(
-                    theta_batch,
+                    theta_fixed,
                     feature_transform,
                     x,
                     h_star,
@@ -206,20 +243,18 @@ class AlternatingOptimizer:
                     lr=self.phase_w_lr,
                     batch_indices=batch_nodes,
                 )
-                h_batch = infer_h_hat(theta_batch, phi_tilde.cpu())[batch_nodes]
+                h_batch = infer_h_hat(theta_fixed, phi_tilde.cpu())[batch_nodes]
                 batch_loss = F.mse_loss(h_batch, h_star_cpu[batch_nodes]).item()
                 epoch_losses.append(batch_loss)
-                epoch_kbars.append(theta_batch.k_bar)
 
             if not epoch_losses:
                 raise RuntimeError("mini-batch 交替优化未生成任何批次")
             loss = float(sum(epoch_losses) / len(epoch_losses))
-            mean_kbar = float(sum(epoch_kbars) / len(epoch_kbars))
             logger.info(
-                "外迭代%s[minibatch]: mean_loss=%.6f mean_k̄=%.1f batches=%s",
+                "外迭代%s[minibatch Phase-W]: mean_loss=%.6f full_k̄=%.1f batches=%s",
                 it + 1,
                 loss,
-                mean_kbar,
+                theta_fixed.k_bar,
                 len(epoch_losses),
             )
             if loss < best_loss * 0.999:

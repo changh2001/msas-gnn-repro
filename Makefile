@@ -33,7 +33,7 @@ reproduce-efficiency:
 	python scripts/visualization/build_paper_figures.py --efficiency
 
 reproduce-supplemental:
-	python scripts/experiments/supplemental/run_xi_sweep.py --datasets cora chameleon
+	python scripts/experiments/supplemental/run_retention_sweep.py --datasets cora chameleon
 	python scripts/experiments/supplemental/run_sensitivity_supplemental.py --datasets chameleon ogbn_arxiv
 	python scripts/experiments/supplemental/run_spectral_proxy.py --datasets citeseer ogbn_arxiv
 	python scripts/visualization/build_paper_figures.py --supplemental

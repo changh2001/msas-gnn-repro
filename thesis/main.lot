@@ -1,14 +1,15 @@
 \contentsline {table}{\numberline {2.1}{\ignorespaces 现有方法研究空白与后续章节对应关系汇总}}{14}{table.caption.24}%
-\contentsline {table}{\numberline {4.1}{\ignorespaces 节点级正则系数因子方案及其作用特征（具体准确率见第~6~章消融实验）}}{31}{table.caption.34}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces 策略1与策略2的对比分析}}{37}{table.caption.40}%
-\contentsline {table}{\numberline {5.1}{\ignorespaces 各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text {sparse}}=n\bar {k}$，$K_{\text {eig}}\in [50,100]$ 视为常数）}}{55}{table.caption.44}%
-\contentsline {table}{\numberline {6.1}{\ignorespaces MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}}{59}{table.caption.45}%
-\contentsline {table}{\numberline {6.2}{\ignorespaces 节点分类数据集统计信息}}{60}{table.caption.47}%
-\contentsline {table}{\numberline {6.3}{\ignorespaces 引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{61}{table.caption.49}%
-\contentsline {table}{\numberline {6.4}{\ignorespaces 网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{62}{table.caption.51}%
-\contentsline {table}{\numberline {6.5}{\ignorespaces 综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}}{64}{table.caption.53}%
-\contentsline {table}{\numberline {6.6}{\ignorespaces 跳距预算分配策略消融（准确率\%）}}{65}{table.caption.55}%
-\contentsline {table}{\numberline {6.7}{\ignorespaces 推理效率与显存占用综合对比（GPU，$\text {batch\_size}=1024$）}}{67}{table.caption.58}%
-\contentsline {table}{\numberline {6.8}{\ignorespaces 预处理摊销与break-even估计（时间单位统一为秒）}}{68}{table.caption.60}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces 节点级正则系数因子方案及其作用特征（具体准确率见第~6~章消融实验）}}{36}{table.caption.32}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces 策略1与策略2的对比分析}}{43}{table.caption.38}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces 各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text {sparse}}=n\bar {k}$，$K_{\text {eig}}\in [50,100]$ 视为常数）}}{63}{table.caption.42}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}}{66}{table.6.1}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces 节点分类数据集统计信息}}{69}{table.caption.43}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces 引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{71}{table.caption.45}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces 网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{72}{table.caption.47}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces 综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}}{75}{table.caption.49}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces 跳距预算分配策略消融（准确率\%）}}{76}{table.caption.51}%
+\contentsline {table}{\numberline {6.7}{\ignorespaces 推理效率与显存占用综合对比（GPU，$\text {batch\_size}=1024$）}}{78}{table.caption.54}%
+\contentsline {table}{\numberline {6.8}{\ignorespaces 近年高效图学习方法推理效率补充对比（ogbn-arxiv，GPU，$\text {batch\_size}=1024$）}}{79}{table.caption.56}%
+\contentsline {table}{\numberline {6.9}{\ignorespaces 预处理摊销与 break-even 估计（时间单位统一为秒）}}{80}{table.caption.58}%
 \contentsfinish 
 \contentsfinish 

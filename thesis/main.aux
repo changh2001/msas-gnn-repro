@@ -7,8 +7,8 @@
 \HyPL@Entry{3<</S/R>>}
 \@writefile{toc}{\contentsline {chapter}{符号和缩略语说明}{XII}{section*.17}\protected@file@percent }
 \citation{JSJX202201003}
-\HyPL@Entry{19<</S/D>>}
-\pp@pagectr{footnote}{1}{20}{1}
+\HyPL@Entry{20<</S/D>>}
+\pp@pagectr{footnote}{1}{21}{1}
 \@writefile{toc}{\contentsline {chapter}{\numberline {第1章}绪论}{1}{chapter.1}\protected@file@percent }
 \newlabel{chap:intro}{{1}{1}{绪论}{chapter.1}{}}
 \newlabel{idx:name:msasgnn}{{1}{1}{绪论}{chapter.1}{}}
@@ -74,11 +74,20 @@
 \@writefile{lof}{\contentsline {figure}{\numberline {1.2}{\ignorespaces 本文技术路线与章节接口示意图}}{7}{figure.caption.20}\protected@file@percent }
 \newlabel{fig:ch1-tech-route}{{1.2}{7}{本文技术路线与章节接口示意图}{figure.caption.20}{}}
 \citation{Hu2024SDGNN}
-\pp@pagectr{footnote}{2}{27}{8}
+\pp@pagectr{footnote}{2}{28}{8}
 \@writefile{toc}{\contentsline {chapter}{\numberline {第2章}相关工作}{8}{chapter.2}\protected@file@percent }
 \newlabel{chap:related}{{2}{8}{相关工作}{chapter.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces 本章三条文献脉络与后续方法章节的对应关系}}{8}{figure.caption.21}\protected@file@percent }
-\newlabel{fig:ch2-roadmap}{{2.1}{8}{本章三条文献脉络与后续方法章节的对应关系}{figure.caption.21}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}图神经网络基础与谱图理论}{8}{section.2.1}\protected@file@percent }
+\newlabel{sec:ch2-gnn-basics}{{2.1}{8}{图神经网络基础与谱图理论}{section.2.1}{}}
+\newlabel{eq:ch2-degree-matrix}{{2-1}{8}{图神经网络基础与谱图理论}{equation.2.1}{}}
+\newlabel{idx:theme:normlaplacian}{{2.1}{8}{图神经网络基础与谱图理论}{equation.2.1}{}}
+\newlabel{eq:ch2-normlaplacian}{{2-2}{8}{图神经网络基础与谱图理论}{equation.2.2}{}}
+\citation{anderson1985eigenvalues,AlonMilman1985,Chung1997}
+\citation{Shuman2013GSP,Ortega2018GSP}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.1}{\ignorespaces 本章三条文献脉络与后续方法章节的对应关系}}{9}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:ch2-roadmap}{{2.1}{9}{本章三条文献脉络与后续方法章节的对应关系}{figure.caption.21}{}}
+\newlabel{eq:ch2-laplacian-spectrum-range}{{2-3}{9}{图神经网络基础与谱图理论}{equation.2.3}{}}
+\newlabel{eq:ch2-polynomial-filter}{{2-4}{9}{图神经网络基础与谱图理论}{equation.2.4}{}}
 \citation{Gilmer2017MPNN}
 \citation{Kipf2017GCN}
 \citation{Velickovic2018GAT}
@@ -86,327 +95,377 @@
 \citation{Xu2019GIN}
 \citation{Wu2019SGC}
 \citation{Li2018OverSmoothing,Alon2021OverSquashing}
-\@writefile{toc}{\contentsline {section}{\numberline {2.1}图神经网络基础与谱图理论}{9}{section.2.1}\protected@file@percent }
-\newlabel{sec:ch2-gnn-basics}{{2.1}{9}{图神经网络基础与谱图理论}{section.2.1}{}}
-\newlabel{idx:theme:normlaplacian}{{2.1}{9}{图神经网络基础与谱图理论}{equation.2.1}{}}
-\newlabel{eq:ch2-normlaplacian}{{2-2}{9}{图神经网络基础与谱图理论}{equation.2.2}{}}
-\newlabel{eq:ch2-laplacian-spectrum-range}{{2-3}{9}{图神经网络基础与谱图理论}{equation.2.3}{}}
-\newlabel{eq:ch2-polynomial-filter}{{2-4}{9}{图神经网络基础与谱图理论}{equation.2.4}{}}
 \citation{Hamilton2017GraphSAGE}
 \citation{Chen2018FastGCN}
 \citation{Zeng2020GraphSAINT}
 \citation{Wu2019SGC}
 \citation{Frasca2020SIGN}
 \citation{Gasteiger2019APPNP}
-\citation{Hu2024SDGNN}
 \@writefile{lof}{\contentsline {figure}{\numberline {2.2}{\ignorespaces 消息传递GNN感受野扩张与在线推理瓶颈示意图}}{10}{figure.caption.22}\protected@file@percent }
 \newlabel{fig:ch2-bottleneck}{{2.2}{10}{消息传递GNN感受野扩张与在线推理瓶颈示意图}{figure.caption.22}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2.2}高效与稀疏图神经网络方法}{10}{section.2.2}\protected@file@percent }
 \newlabel{sec:ch2-efficient}{{2.2}{10}{高效与稀疏图神经网络方法}{section.2.2}{}}
+\citation{Hu2024SDGNN}
 \citation{Bojchevski2020PPRGo}
 \citation{Zhang2022GLNN}
-\citation{Pei2020GeomGCN,Zhu2020H2GCN}
+\citation{Wu2022NodeFormer}
+\citation{Wu2023DIFFormer}
+\citation{Wu2023SGFormer}
+\citation{Chen2023NAGphormer}
 \newlabel{eq:ch2-sdgnn-infer}{{2-5}{11}{高效与稀疏图神经网络方法}{equation.2.5}{}}
 \newlabel{eq:ch2-sdgnn-lasso}{{2-6}{11}{高效与稀疏图神经网络方法}{equation.2.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2.3}复杂图结构与谱视角相关方法}{11}{section.2.3}\protected@file@percent }
-\newlabel{sec:ch2-heterophily}{{2.3}{11}{复杂图结构与谱视角相关方法}{section.2.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}图结构差异与频率响应}{11}{subsection.2.3.1}\protected@file@percent }
-\newlabel{subsec:ch2-homophily}{{2.3.1}{11}{图结构差异与频率响应}{subsection.2.3.1}{}}
+\newlabel{idx:theme:sparsegraphtransformer}{{2.2}{11}{高效与稀疏图神经网络方法}{equation.2.6}{}}
+\newlabel{idx:name:nodeformer}{{2.2}{11}{高效与稀疏图神经网络方法}{equation.2.6}{}}
+\newlabel{idx:name:difformer}{{2.2}{11}{高效与稀疏图神经网络方法}{equation.2.6}{}}
+\newlabel{idx:name:sgformer}{{2.2}{11}{高效与稀疏图神经网络方法}{equation.2.6}{}}
+\citation{Pei2020GeomGCN,Zhu2020H2GCN}
 \citation{Zhu2020H2GCN}
 \citation{Chien2021GPRGNN}
 \citation{Bo2021FAGCN}
 \citation{Lim2021LINKX}
 \citation{Li2022GloGNN}
+\newlabel{idx:name:nagphormer}{{2.2}{12}{高效与稀疏图神经网络方法}{equation.2.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.3}复杂图结构与谱视角相关方法}{12}{section.2.3}\protected@file@percent }
+\newlabel{sec:ch2-heterophily}{{2.3}{12}{复杂图结构与谱视角相关方法}{section.2.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}图结构差异与频率响应}{12}{subsection.2.3.1}\protected@file@percent }
+\newlabel{subsec:ch2-homophily}{{2.3.1}{12}{图结构差异与频率响应}{subsection.2.3.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3.2}代表性复杂图结构处理方法}{12}{subsection.2.3.2}\protected@file@percent }
 \newlabel{subsec:ch2-heteromethods}{{2.3.2}{12}{代表性复杂图结构处理方法}{subsection.2.3.2}{}}
 \newlabel{eq:ch2-gprgnn}{{2-7}{12}{代表性复杂图结构处理方法}{equation.2.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2.4}本章小结与研究空白}{12}{section.2.4}\protected@file@percent }
-\newlabel{sec:ch2-summary}{{2.4}{12}{本章小结与研究空白}{section.2.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2.4}本章小结与研究空白}{13}{section.2.4}\protected@file@percent }
+\newlabel{sec:ch2-summary}{{2.4}{13}{本章小结与研究空白}{section.2.4}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {2.1}{\ignorespaces 现有方法研究空白与后续章节对应关系汇总}}{14}{table.caption.24}\protected@file@percent }
 \newlabel{tab:ch2-research-gaps}{{2.1}{14}{现有方法研究空白与后续章节对应关系汇总}{table.caption.24}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces 三大研究空白与本文方法链的对应关系图}}{14}{figure.caption.25}\protected@file@percent }
-\newlabel{fig:ch2-research-gaps}{{2.3}{14}{三大研究空白与本文方法链的对应关系图}{figure.caption.25}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2.3}{\ignorespaces 三大研究空白与本文方法链的对应关系图}}{15}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:ch2-research-gaps}{{2.3}{15}{三大研究空白与本文方法链的对应关系图}{figure.caption.25}{}}
 \citation{Hu2024SDGNN}
+\pp@pagectr{footnote}{3}{36}{16}
+\@writefile{toc}{\contentsline {chapter}{\numberline {第3章}问题形式化与图复杂度指标体系}{16}{chapter.3}\protected@file@percent }
+\newlabel{chap:problem-formulation}{{3}{16}{问题形式化与图复杂度指标体系}{chapter.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}问题形式化与优化目标}{16}{section.3.1}\protected@file@percent }
+\newlabel{sec:ch3-problem}{{3.1}{16}{问题形式化与优化目标}{section.3.1}{}}
+\newlabel{sec:ch3-obj-sec}{{3.1}{16}{问题形式化与优化目标}{section.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}图学习基本设定与SDGNN基准}{16}{subsection.3.1.1}\protected@file@percent }
+\newlabel{subsec:ch3-graph-setup}{{3.1.1}{16}{图学习基本设定与SDGNN基准}{subsection.3.1.1}{}}
+\newlabel{subsec:ch3-sdgnn}{{3.1.1}{16}{图学习基本设定与SDGNN基准}{subsection.3.1.1}{}}
+\newlabel{eq:ch2-nnz-a}{{3-1}{16}{图学习基本设定与SDGNN基准}{equation.3.1}{}}
+\newlabel{eq:ch2-self-loop-degree}{{3-2}{16}{图学习基本设定与SDGNN基准}{equation.3.2}{}}
+\newlabel{eq:ch2-normalized-adj}{{3-3}{16}{图学习基本设定与SDGNN基准}{equation.3.3}{}}
+\newlabel{eq:ch2-normalized-laplacian}{{3-4}{16}{图学习基本设定与SDGNN基准}{equation.3.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces 第3章整体流程图：从图输入到四类复杂度指标输出}}{17}{figure.caption.26}\protected@file@percent }
+\newlabel{fig:ch3-overview}{{3.1}{17}{第3章整体流程图：从图输入到四类复杂度指标输出}{figure.caption.26}{}}
 \citation{anderson1985eigenvalues}
 \citation{anderson1985eigenvalues}
 \citation{anderson1985eigenvalues}
 \citation{anderson1985eigenvalues}
-\pp@pagectr{footnote}{3}{34}{15}
-\@writefile{toc}{\contentsline {chapter}{\numberline {第3章}问题形式化与图复杂度指标体系}{15}{chapter.3}\protected@file@percent }
-\newlabel{chap:problem-formulation}{{3}{15}{问题形式化与图复杂度指标体系}{chapter.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.1}问题形式化与优化目标}{15}{section.3.1}\protected@file@percent }
-\newlabel{sec:ch3-problem}{{3.1}{15}{问题形式化与优化目标}{section.3.1}{}}
-\newlabel{sec:ch3-obj-sec}{{3.1}{15}{问题形式化与优化目标}{section.3.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}图学习基本设定与SDGNN基准}{15}{subsection.3.1.1}\protected@file@percent }
-\newlabel{subsec:ch3-graph-setup}{{3.1.1}{15}{图学习基本设定与SDGNN基准}{subsection.3.1.1}{}}
-\newlabel{subsec:ch3-sdgnn}{{3.1.1}{15}{图学习基本设定与SDGNN基准}{subsection.3.1.1}{}}
-\newlabel{eq:ch3-eigenvalue}{{3-1}{15}{图学习基本设定与SDGNN基准}{equation.3.1}{}}
-\newlabel{eq:ch3-prediction}{{3-2}{15}{图学习基本设定与SDGNN基准}{equation.3.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.1}{\ignorespaces 第3章整体流程图：从图输入到四类复杂度指标输出}}{16}{figure.caption.26}\protected@file@percent }
-\newlabel{fig:ch3-overview}{{3.1}{16}{第3章整体流程图：从图输入到四类复杂度指标输出}{figure.caption.26}{}}
-\newlabel{eq:ch3-taskloss}{{3-3}{16}{图学习基本设定与SDGNN基准}{equation.3.3}{}}
 \citation{Kipf2017GCN}
+\newlabel{eq:ch2-laplacian-eigendecomposition}{{3-5}{18}{图学习基本设定与SDGNN基准}{equation.3.5}{}}
+\newlabel{eq:ch3-eigenvalue}{{3-6}{18}{图学习基本设定与SDGNN基准}{equation.3.6}{}}
+\newlabel{eq:ch3-prediction}{{3-7}{18}{图学习基本设定与SDGNN基准}{equation.3.7}{}}
+\newlabel{eq:ch3-taskloss}{{3-8}{18}{图学习基本设定与SDGNN基准}{equation.3.8}{}}
+\newlabel{eq:ch2-gcn-layer}{{3-9}{18}{图学习基本设定与SDGNN基准}{equation.3.9}{}}
 \citation{Hu2024SDGNN}
-\newlabel{eq:ch3-degreevar}{{3-4}{17}{图学习基本设定与SDGNN基准}{equation.3.4}{}}
-\newlabel{eq:ch3-sdgnn-infer}{{3-5}{17}{图学习基本设定与SDGNN基准}{equation.3.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces SDGNN全局统一稀疏预算失效示意图}}{17}{figure.caption.27}\protected@file@percent }
-\newlabel{fig:ch3-sdgnn-fail}{{3.2}{17}{SDGNN全局统一稀疏预算失效示意图}{figure.caption.27}{}}
+\newlabel{eq:ch2-gcn-linearized}{{3-10}{19}{图学习基本设定与SDGNN基准}{equation.3.10}{}}
+\newlabel{eq:ch3-sdgnn-infer}{{3-11}{19}{图学习基本设定与SDGNN基准}{equation.3.11}{}}
+\newlabel{eq:ch2-average-sparse-budget}{{3-12}{19}{图学习基本设定与SDGNN基准}{equation.3.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}统一优化目标与预算约束}{19}{subsection.3.1.2}\protected@file@percent }
+\newlabel{subsec:ch3-objective}{{3.1.2}{19}{统一优化目标与预算约束}{subsection.3.1.2}{}}
+\newlabel{eq:ch3-feature-transform}{{3-13}{19}{统一优化目标与预算约束}{equation.3.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3.2}{\ignorespaces SDGNN全局统一稀疏预算失效示意图}}{20}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:ch3-sdgnn-fail}{{3.2}{20}{SDGNN全局统一稀疏预算失效示意图}{figure.caption.27}{}}
+\newlabel{eq:ch3-normalized-feature}{{3-14}{20}{统一优化目标与预算约束}{equation.3.14}{}}
+\newlabel{eq:ch3-main-objective}{{3-15}{20}{统一优化目标与预算约束}{equation.3.15}{}}
+\newlabel{eq:ch3-node-sparse-size}{{3-16}{20}{统一优化目标与预算约束}{equation.3.16}{}}
 \citation{Efron2004LARS}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}统一优化目标与预算约束}{18}{subsection.3.1.2}\protected@file@percent }
-\newlabel{subsec:ch3-objective}{{3.1.2}{18}{统一优化目标与预算约束}{subsection.3.1.2}{}}
-\newlabel{eq:ch3-main-objective}{{3-6}{18}{统一优化目标与预算约束}{equation.3.6}{}}
-\newlabel{eq:ch3-feature-transform}{{3-7}{18}{统一优化目标与预算约束}{equation.3.7}{}}
-\newlabel{eq:ch3-normalized-feature}{{3-8}{18}{统一优化目标与预算约束}{equation.3.8}{}}
-\newlabel{eq:ch3-kbar}{{3-9}{18}{统一优化目标与预算约束}{equation.3.9}{}}
-\newlabel{idx:theme:lars}{{3.1.2}{18}{统一优化目标与预算约束}{equation.3.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.3}近似误差度量与三项设计准则}{19}{subsection.3.1.3}\protected@file@percent }
-\newlabel{subsec:ch3-criteria}{{3.1.3}{19}{近似误差度量与三项设计准则}{subsection.3.1.3}{}}
-\newlabel{eq:ch3-approx-error}{{3-10}{19}{近似误差度量与三项设计准则}{equation.3.10}{}}
-\newlabel{eq:ch3-large-error-set}{{3-11}{19}{近似误差度量与三项设计准则}{equation.3.11}{}}
-\newlabel{eq:ch3-delta-z}{{3-12}{19}{近似误差度量与三项设计准则}{equation.3.12}{}}
-\newlabel{eq:ch3-large-error-bound}{{3-13}{19}{近似误差度量与三项设计准则}{equation.3.13}{}}
-\newlabel{eq:ch3-speedup}{{3-14}{20}{近似误差度量与三项设计准则}{equation.3.14}{}}
-\newlabel{eq:ch3-crit3}{{3-15}{20}{近似误差度量与三项设计准则}{equation.3.15}{}}
+\newlabel{eq:ch3-kbar}{{3-17}{21}{统一优化目标与预算约束}{equation.3.17}{}}
+\newlabel{idx:theme:lars}{{3.1.2}{21}{统一优化目标与预算约束}{equation.3.17}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.3}近似误差度量与三项设计准则}{21}{subsection.3.1.3}\protected@file@percent }
+\newlabel{subsec:ch3-criteria}{{3.1.3}{21}{近似误差度量与三项设计准则}{subsection.3.1.3}{}}
+\newlabel{eq:ch3-approx-error}{{3-18}{21}{近似误差度量与三项设计准则}{equation.3.18}{}}
+\newlabel{eq:ch3-delta-z}{{3-19}{21}{近似误差度量与三项设计准则}{equation.3.19}{}}
+\newlabel{eq:ch3-node-error}{{3-20}{22}{近似误差度量与三项设计准则}{equation.3.20}{}}
+\newlabel{eq:ch3-rms-node-error}{{3-21}{22}{近似误差度量与三项设计准则}{equation.3.21}{}}
+\newlabel{eq:ch3-large-error-set}{{3-22}{22}{近似误差度量与三项设计准则}{equation.3.22}{}}
+\newlabel{eq:ch3-large-error-sum-bound}{{3-23}{22}{近似误差度量与三项设计准则}{equation.3.23}{}}
+\newlabel{eq:ch3-large-error-intermediate}{{3-24}{22}{近似误差度量与三项设计准则}{equation.3.24}{}}
+\newlabel{eq:ch3-large-error-bound}{{3-25}{22}{近似误差度量与三项设计准则}{equation.3.25}{}}
+\newlabel{eq:ch3-markov-expectation}{{3-26}{22}{近似误差度量与三项设计准则}{equation.3.26}{}}
+\newlabel{eq:ch3-markov-derivation}{{3-27}{22}{近似误差度量与三项设计准则}{equation.3.27}{}}
+\newlabel{eq:ch3-speedup}{{3-28}{23}{近似误差度量与三项设计准则}{equation.3.28}{}}
+\newlabel{eq:ch3-crit3}{{3-29}{23}{近似误差度量与三项设计准则}{equation.3.29}{}}
 \citation{AlonMilman1985,Chung1997}
-\@writefile{toc}{\contentsline {section}{\numberline {3.2}图复杂度量化指标体系}{21}{section.3.2}\protected@file@percent }
-\newlabel{sec:ch3-complexity}{{3.2}{21}{图复杂度量化指标体系}{section.3.2}{}}
-\newlabel{subsec:ch3-indices}{{3.2}{21}{图复杂度量化指标体系}{section*.28}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}频率接口的等权约束与泄漏边界}{21}{subsection.3.2.1}\protected@file@percent }
-\newlabel{subsec:ch3-homophily}{{3.2.1}{21}{频率接口的等权约束与泄漏边界}{subsection.3.2.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}节点谱能量、局部图熵与中心性}{21}{subsection.3.2.2}\protected@file@percent }
-\newlabel{subsec:ch3-specenergy}{{3.2.2}{21}{节点谱能量、局部图熵与中心性}{subsection.3.2.2}{}}
-\newlabel{def:ch3-specenergy}{{3.2.2}{21}{节点谱能量、局部图熵与中心性}{section*.29}{}}
-\newlabel{eq:ch3-specenergy}{{3-16}{21}{节点谱能量、局部图熵与中心性}{equation.3.16}{}}
-\citation{Shuman2013GSP,Ortega2018GSP}
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}图复杂度量化指标体系}{24}{section.3.2}\protected@file@percent }
+\newlabel{sec:ch3-complexity}{{3.2}{24}{图复杂度量化指标体系}{section.3.2}{}}
+\newlabel{subsec:ch3-indices}{{3.2}{24}{图复杂度量化指标体系}{section*.28}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}谱间隙与节点谱能量}{24}{subsection.3.2.1}\protected@file@percent }
+\newlabel{subsec:ch3-specenergy}{{3.2.1}{24}{谱间隙与节点谱能量}{subsection.3.2.1}{}}
+\newlabel{def:ch3-specenergy}{{3.2.1}{24}{谱间隙与节点谱能量}{subsection.3.2.1}{}}
+\newlabel{eq:ch3-laplacian-eigendecomposition}{{3-30}{24}{谱间隙与节点谱能量}{equation.3.30}{}}
+\newlabel{eq:ch3-specenergy-general}{{3-31}{24}{谱间隙与节点谱能量}{equation.3.31}{}}
 \citation{Lanczos1950}
-\newlabel{def:ch3-entropy}{{3.2.2}{22}{节点谱能量、局部图熵与中心性}{section*.30}{}}
-\newlabel{eq:ch3-gaussian-weight}{{3-17}{22}{节点谱能量、局部图熵与中心性}{equation.3.17}{}}
-\newlabel{eq:ch3-gaussian-bandwidth}{{3-18}{22}{节点谱能量、局部图熵与中心性}{equation.3.18}{}}
+\newlabel{eq:ch3-equal-frequency-weight}{{3-32}{25}{谱间隙与节点谱能量}{equation.3.32}{}}
+\newlabel{eq:ch3-specenergy}{{3-33}{25}{谱间隙与节点谱能量}{equation.3.33}{}}
 \citation{BatageljZaversnik2003}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}局部图熵}{26}{subsection.3.2.2}\protected@file@percent }
+\newlabel{subsec:ch3-local-entropy}{{3.2.2}{26}{局部图熵}{subsection.3.2.2}{}}
+\newlabel{def:ch3-entropy}{{3.2.2}{26}{局部图熵}{subsection.3.2.2}{}}
+\newlabel{eq:ch3-gaussian-weight}{{3-34}{26}{局部图熵}{equation.3.34}{}}
+\newlabel{eq:ch3-gaussian-bandwidth}{{3-35}{26}{局部图熵}{equation.3.35}{}}
+\newlabel{eq:ch3-entropy-prob}{{3-36}{26}{局部图熵}{equation.3.36}{}}
+\newlabel{eq:ch3-entropy}{{3-37}{26}{局部图熵}{equation.3.37}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.3}节点中心性}{26}{subsection.3.2.3}\protected@file@percent }
+\newlabel{subsec:ch3-centrality}{{3.2.3}{26}{节点中心性}{subsection.3.2.3}{}}
+\newlabel{eq:ch3-degcent}{{3-38}{26}{节点中心性}{equation.3.38}{}}
+\newlabel{eq:ch3-kcore}{{3-39}{26}{节点中心性}{equation.3.39}{}}
 \citation{BatageljZaversnik2003}
-\newlabel{eq:ch3-entropy-prob}{{3-19}{23}{节点谱能量、局部图熵与中心性}{equation.3.19}{}}
-\newlabel{eq:ch3-entropy}{{3-20}{23}{节点谱能量、局部图熵与中心性}{equation.3.20}{}}
-\newlabel{eq:ch3-degcent}{{3-21}{23}{节点谱能量、局部图熵与中心性}{equation.3.21}{}}
-\newlabel{eq:ch3-kcore}{{3-22}{23}{节点谱能量、局部图熵与中心性}{equation.3.22}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3.1}{\ignorespaces 图复杂度指标预处理（含谱估计、节点谱能量与局部图熵批量计算）}}{24}{algorithm.3.1}\protected@file@percent }
-\newlabel{alg:ch3-preprocess}{{3.1}{24}{图复杂度指标预处理（含谱估计、节点谱能量与局部图熵批量计算）}{algorithm.3.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3.3}本章小结}{25}{section.3.3}\protected@file@percent }
-\newlabel{sec:ch3-ch3-summary}{{3.3}{25}{本章小结}{section.3.3}{}}
-\pp@pagectr{footnote}{4}{45}{26}
-\@writefile{toc}{\contentsline {chapter}{\numberline {第4章}谱驱动三维自适应稀疏机制}{26}{chapter.4}\protected@file@percent }
-\newlabel{chap:adaptive-sparse}{{4}{26}{谱驱动三维自适应稀疏机制}{chapter.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.1}频率维度：节点谱能量的统一谱输入}{26}{section.4.1}\protected@file@percent }
-\newlabel{sec:ch4-freq}{{4.1}{26}{频率维度：节点谱能量的统一谱输入}{section.4.1}{}}
-\newlabel{idx:theme:espectral}{{4.1}{26}{频率维度：节点谱能量的统一谱输入}{section.4.1}{}}
-\newlabel{eq:ch4-specenergy-general}{{4-1}{26}{频率维度：节点谱能量的统一谱输入}{equation.4.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces 第4章三维自适应稀疏机制整体框架图}}{27}{figure.caption.31}\protected@file@percent }
-\newlabel{fig:ch4-overview}{{4.1}{27}{第4章三维自适应稀疏机制整体框架图}{figure.caption.31}{}}
-\newlabel{eq:ch4-wk-uniform}{{4-2}{27}{频率维度：节点谱能量的统一谱输入}{equation.4.2}{}}
-\newlabel{eq:ch4-specenergy}{{4-3}{27}{频率维度：节点谱能量的统一谱输入}{equation.4.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.2}节点维度：节点级自适应正则系数}{28}{section.4.2}\protected@file@percent }
-\newlabel{sec:ch4-node}{{4.2}{28}{节点维度：节点级自适应正则系数}{section.4.2}{}}
-\newlabel{idx:theme:tau}{{4.2}{28}{节点维度：节点级自适应正则系数}{section.4.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces 节点级正则系数 $\mittau (i)$ 的三维自适应框架示意图}}{28}{figure.caption.32}\protected@file@percent }
-\newlabel{fig:ch4-budget}{{4.2}{28}{节点级正则系数 $\tau (i)$ 的三维自适应框架示意图}{figure.caption.32}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}节点级正则系数的构造原则}{28}{subsection.4.2.1}\protected@file@percent }
-\newlabel{subsec:ch4-tau-design}{{4.2.1}{28}{节点级正则系数的构造原则}{subsection.4.2.1}{}}
-\newlabel{idx:innov:tau}{{4.2.1}{28}{节点级正则系数的构造原则}{subsection.4.2.1}{}}
-\newlabel{eq:ch4-node-lasso}{{4-4}{29}{节点级正则系数的构造原则}{equation.4.4}{}}
-\newlabel{eq:ch4-tau-mono}{{4-5}{29}{节点级正则系数的构造原则}{equation.4.5}{}}
-\newlabel{eq:ch4-ethreshold}{{4-6}{29}{节点级正则系数的构造原则}{equation.4.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}多因子融合的完整公式}{30}{subsection.4.2.2}\protected@file@percent }
-\newlabel{subsec:ch4-multifactor}{{4.2.2}{30}{多因子融合的完整公式}{subsection.4.2.2}{}}
-\newlabel{idx:theme:entropy}{{4.2.2}{30}{多因子融合的完整公式}{subsection.4.2.2}{}}
-\newlabel{eq:ch4-alphadef}{{4-7}{30}{多因子融合的完整公式}{equation.4.7}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces 节点级正则系数因子方案及其作用特征（具体准确率见第~6~章消融实验）}}{31}{table.caption.34}\protected@file@percent }
-\newlabel{tab:ch4-tau-factors}{{4.1}{31}{节点级正则系数因子方案及其作用特征（具体准确率见第~6~章消融实验）}{table.caption.34}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}算法实现}{31}{subsection.4.2.3}\protected@file@percent }
-\newlabel{subsec:ch4-tau-algo}{{4.2.3}{31}{算法实现}{subsection.4.2.3}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4.1}{\ignorespaces 节点级自适应正则系数批量计算流程}}{31}{algorithm.4.1}\protected@file@percent }
-\newlabel{alg:ch4-tau-compute}{{4.1}{31}{节点级自适应正则系数批量计算流程}{algorithm.4.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.3}层级维度：分层跳距预算分配}{32}{section.4.3}\protected@file@percent }
-\newlabel{sec:ch4-hop}{{4.3}{32}{层级维度：分层跳距预算分配}{section.4.3}{}}
-\newlabel{idx:theme:hopbudget}{{4.3}{32}{层级维度：分层跳距预算分配}{section.4.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces 层级维度——分层跳距预算分配示意图}}{32}{figure.caption.35}\protected@file@percent }
-\newlabel{fig:ch4-speedup}{{4.3}{32}{层级维度——分层跳距预算分配示意图}{figure.caption.35}{}}
-\citation{Wu2019SGC}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}分层信息衰减界分析}{33}{subsection.4.3.1}\protected@file@percent }
-\newlabel{subsec:ch4-lemma36}{{4.3.1}{33}{分层信息衰减界分析}{subsection.4.3.1}{}}
-\newlabel{eq:ch4-propagator}{{4-8}{33}{分层信息衰减界分析}{equation.4.8}{}}
-\newlabel{eq:ch4-mustar}{{4-9}{33}{分层信息衰减界分析}{equation.4.9}{}}
-\newlabel{eq:ch4-slazy}{{4-10}{33}{分层信息衰减界分析}{equation.4.10}{}}
-\newlabel{lem:ch4-decay}{{4.3.1}{33}{分层信息衰减界分析}{section*.36}{}}
-\newlabel{idx:theme:infodecay}{{4.3.1}{33}{分层信息衰减界分析}{section*.36}{}}
-\newlabel{eq:ch4-propagator-choice}{{4-11}{33}{分层信息衰减界分析}{equation.4.11}{}}
-\newlabel{eq:ch4-deltah}{{4-12}{34}{分层信息衰减界分析}{equation.4.12}{}}
-\newlabel{eq:ch4-p-spectral}{{4-13}{34}{分层信息衰减界分析}{equation.4.13}{}}
-\newlabel{eq:ch4-v-expand}{{4-14}{34}{分层信息衰减界分析}{equation.4.14}{}}
-\newlabel{eq:ch4-plv-expand}{{4-15}{34}{分层信息衰减界分析}{equation.4.15}{}}
-\newlabel{eq:ch4-plv-bound-squared}{{4-16}{34}{分层信息衰减界分析}{equation.4.16}{}}
-\newlabel{eq:ch4-plv-bound}{{4-17}{34}{分层信息衰减界分析}{equation.4.17}{}}
-\newlabel{eq:ch4-deltah-rewrite}{{4-18}{34}{分层信息衰减界分析}{equation.4.18}{}}
-\newlabel{eq:ch4-deltah-rewrite2}{{4-19}{34}{分层信息衰减界分析}{equation.4.19}{}}
-\newlabel{eq:ch4-deltah-step1}{{4-20}{34}{分层信息衰减界分析}{equation.4.20}{}}
-\newlabel{eq:ch4-deltah-step2}{{4-21}{34}{分层信息衰减界分析}{equation.4.21}{}}
-\newlabel{eq:ch4-deltah-step3}{{4-22}{34}{分层信息衰减界分析}{equation.4.22}{}}
-\newlabel{eq:ch4-c0-def}{{4-23}{35}{分层信息衰减界分析}{equation.4.23}{}}
-\newlabel{eq:ch4-deltah-bound}{{4-24}{35}{分层信息衰减界分析}{equation.4.24}{}}
-\newlabel{thm:ch4-decay}{{4.3.1}{35}{分层信息衰减界分析}{section*.37}{}}
-\newlabel{eq:ch4-pl-lowerbound}{{4-25}{35}{分层信息衰减界分析}{equation.4.25}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}分层保留率 $p_l$ 的两种策略}{35}{subsection.4.3.2}\protected@file@percent }
-\newlabel{subsec:ch4-plstrategy}{{4.3.2}{35}{分层保留率 $p_l$ 的两种策略}{subsection.4.3.2}{}}
-\newlabel{idx:innov:hopdist}{{4.3.2}{35}{分层保留率 $p_l$ 的两种策略}{subsection.4.3.2}{}}
-\newlabel{eq:ch4-pl-strategy1}{{4-26}{35}{分层保留率 $p_l$ 的两种策略}{equation.4.26}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces 跳距预算衰减分配示意图（策略1 vs 策略2）}}{36}{figure.caption.38}\protected@file@percent }
-\newlabel{fig:ch4-hop-decay}{{4.4}{36}{跳距预算衰减分配示意图（策略1 vs 策略2）}{figure.caption.38}{}}
-\newlabel{eq:ch4-pl-strategy2}{{4-27}{36}{分层保留率 $p_l$ 的两种策略}{equation.4.27}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces 策略1与策略2的对比分析}}{37}{table.caption.40}\protected@file@percent }
-\newlabel{tab:ch4-pl-strategies}{{4.2}{37}{策略1与策略2的对比分析}{table.caption.40}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}节点-跳距联合预算分配策略}{37}{subsection.4.3.3}\protected@file@percent }
-\newlabel{subsec:ch4-theorem33}{{4.3.3}{37}{节点-跳距联合预算分配策略}{subsection.4.3.3}{}}
-\newlabel{idx:innov:joint_budget}{{4.3.3}{37}{节点-跳距联合预算分配策略}{subsection.4.3.3}{}}
-\newlabel{eq:ch4-hop-budget-raw}{{4-28}{37}{节点-跳距联合预算分配策略}{equation.4.28}{}}
-\newlabel{eq:ch4-hop-budget-round}{{4-29}{37}{节点-跳距联合预算分配策略}{equation.4.29}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4.4}本章小结}{38}{section.4.4}\protected@file@percent }
-\newlabel{sec:ch4-summary}{{4.4}{38}{本章小结}{section.4.4}{}}
+\newlabel{eq:ch3-preprocess-complexity-full}{{3-40}{27}{节点中心性}{equation.3.40}{}}
+\newlabel{eq:ch3-preprocess-complexity}{{3-41}{27}{节点中心性}{equation.3.41}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}本章小结}{27}{section.3.3}\protected@file@percent }
+\newlabel{sec:ch3-ch3-summary}{{3.3}{27}{本章小结}{section.3.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3.1}{\ignorespaces 图复杂度指标预处理（含谱估计、节点谱能量与局部图熵批量计算）}}{28}{algorithm.3.1}\protected@file@percent }
+\newlabel{alg:ch3-preprocess}{{3.1}{28}{图复杂度指标预处理（含谱估计、节点谱能量与局部图熵批量计算）}{algorithm.3.1}{}}
+\pp@pagectr{footnote}{4}{50}{30}
+\@writefile{toc}{\contentsline {chapter}{\numberline {第4章}谱驱动三维自适应稀疏机制}{30}{chapter.4}\protected@file@percent }
+\newlabel{chap:adaptive-sparse}{{4}{30}{谱驱动三维自适应稀疏机制}{chapter.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}频率维度：节点谱能量的统一谱输入}{30}{section.4.1}\protected@file@percent }
+\newlabel{sec:ch4-freq}{{4.1}{30}{频率维度：节点谱能量的统一谱输入}{section.4.1}{}}
+\newlabel{idx:theme:espectral}{{4.1}{30}{频率维度：节点谱能量的统一谱输入}{section.4.1}{}}
+\newlabel{eq:ch4-specenergy-general}{{4-1}{30}{频率维度：节点谱能量的统一谱输入}{equation.4.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.1}{\ignorespaces 第4章三维自适应稀疏机制整体框架图}}{31}{figure.caption.29}\protected@file@percent }
+\newlabel{fig:ch4-overview}{{4.1}{31}{第4章三维自适应稀疏机制整体框架图}{figure.caption.29}{}}
+\newlabel{eq:ch4-wk-uniform}{{4-2}{32}{频率维度：节点谱能量的统一谱输入}{equation.4.2}{}}
+\newlabel{eq:ch4-specenergy}{{4-3}{32}{频率维度：节点谱能量的统一谱输入}{equation.4.3}{}}
 \citation{Efron2004LARS}
-\pp@pagectr{footnote}{5}{58}{39}
-\@writefile{toc}{\contentsline {chapter}{\numberline {第5章}算法整合、误差分析与复杂度分析}{39}{chapter.5}\protected@file@percent }
-\newlabel{chap:algorithm-theory}{{5}{39}{算法整合、误差分析与复杂度分析}{chapter.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.1}LARS分层稀疏求解与交替优化}{39}{section.5.1}\protected@file@percent }
-\newlabel{sec:ch5-lars}{{5.1}{39}{LARS分层稀疏求解与交替优化}{section.5.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}分层LARS的候选集构造与方案选定}{39}{subsection.5.1.1}\protected@file@percent }
-\newlabel{subsec:ch5-candidateset}{{5.1.1}{39}{分层LARS的候选集构造与方案选定}{subsection.5.1.1}{}}
-\newlabel{eq:ch5-target-vector}{{5-1}{40}{分层LARS的候选集构造与方案选定}{equation.5.1}{}}
-\newlabel{eq:ch5-self-channel}{{5-2}{40}{分层LARS的候选集构造与方案选定}{equation.5.2}{}}
-\newlabel{eq:ch5-initial-residual}{{5-3}{40}{分层LARS的候选集构造与方案选定}{equation.5.3}{}}
-\newlabel{eq:ch5-shared-target}{{5-4}{40}{分层LARS的候选集构造与方案选定}{equation.5.4}{}}
-\newlabel{eq:ch5-self-channel}{{5-5}{40}{分层LARS的候选集构造与方案选定}{equation.5.5}{}}
-\newlabel{eq:ch5-initial-residual}{{5-6}{41}{分层LARS的候选集构造与方案选定}{equation.5.6}{}}
-\newlabel{eq:ch5-tau-full}{{5-7}{41}{分层LARS的候选集构造与方案选定}{equation.5.7}{}}
-\newlabel{eq:ch5-residual-update}{{5-8}{41}{分层LARS的候选集构造与方案选定}{equation.5.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}完整交替优化算法}{41}{subsection.5.1.2}\protected@file@percent }
-\newlabel{subsec:ch5-mainloop}{{5.1.2}{41}{完整交替优化算法}{subsection.5.1.2}{}}
-\newlabel{eq:ch5-hhat-matrix}{{5-9}{41}{完整交替优化算法}{equation.5.9}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces 共享目标与残差级联两种分层 LARS 方案对比}}{42}{figure.caption.41}\protected@file@percent }
-\newlabel{fig:ch5-lars-compare}{{5.1}{42}{共享目标与残差级联两种分层 LARS 方案对比}{figure.caption.41}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {5.1}{\ignorespaces MSAS-GNN三维自适应稀疏分解主循环（完整交替优化版）}}{43}{algorithm.5.1}\protected@file@percent }
-\newlabel{alg:ch5-main}{{5.1}{43}{MSAS-GNN三维自适应稀疏分解主循环（完整交替优化版）}{algorithm.5.1}{}}
+\citation{Hu2024SDGNN}
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}节点维度：节点级自适应正则系数}{33}{section.4.2}\protected@file@percent }
+\newlabel{sec:ch4-node}{{4.2}{33}{节点维度：节点级自适应正则系数}{section.4.2}{}}
+\newlabel{idx:theme:tau}{{4.2}{33}{节点维度：节点级自适应正则系数}{section.4.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.2}{\ignorespaces 节点级正则系数 $\mittau (i)$ 的三维自适应框架示意图}}{33}{figure.caption.30}\protected@file@percent }
+\newlabel{fig:ch4-budget}{{4.2}{33}{节点级正则系数 $\tau (i)$ 的三维自适应框架示意图}{figure.caption.30}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}节点级正则系数的构造原则}{33}{subsection.4.2.1}\protected@file@percent }
+\newlabel{subsec:ch4-tau-design}{{4.2.1}{33}{节点级正则系数的构造原则}{subsection.4.2.1}{}}
+\newlabel{idx:innov:tau}{{4.2.1}{33}{节点级正则系数的构造原则}{subsection.4.2.1}{}}
+\newlabel{eq:ch4-node-lasso}{{4-4}{33}{节点级正则系数的构造原则}{equation.4.4}{}}
+\newlabel{eq:ch4-tau-monotone-principle}{{4-5}{34}{节点级正则系数的构造原则}{equation.4.5}{}}
+\newlabel{eq:ch4-tau-mono}{{4-6}{34}{节点级正则系数的构造原则}{equation.4.6}{}}
+\newlabel{eq:ch4-ethreshold}{{4-7}{34}{节点级正则系数的构造原则}{equation.4.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}多因子融合的完整公式}{35}{subsection.4.2.2}\protected@file@percent }
+\newlabel{subsec:ch4-multifactor}{{4.2.2}{35}{多因子融合的完整公式}{subsection.4.2.2}{}}
+\newlabel{idx:theme:entropy}{{4.2.2}{35}{多因子融合的完整公式}{subsection.4.2.2}{}}
+\newlabel{eq:ch4-alphadef}{{4-8}{35}{多因子融合的完整公式}{equation.4.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.1}{\ignorespaces 节点级正则系数因子方案及其作用特征（具体准确率见第~6~章消融实验）}}{36}{table.caption.32}\protected@file@percent }
+\newlabel{tab:ch4-tau-factors}{{4.1}{36}{节点级正则系数因子方案及其作用特征（具体准确率见第~6~章消融实验）}{table.caption.32}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.3}算法实现}{36}{subsection.4.2.3}\protected@file@percent }
+\newlabel{subsec:ch4-tau-algo}{{4.2.3}{36}{算法实现}{subsection.4.2.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4.1}{\ignorespaces 节点级自适应正则系数批量计算流程}}{36}{algorithm.4.1}\protected@file@percent }
+\newlabel{alg:ch4-tau-compute}{{4.1}{36}{节点级自适应正则系数批量计算流程}{algorithm.4.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}层级维度：分层跳距预算分配}{37}{section.4.3}\protected@file@percent }
+\newlabel{sec:ch4-hop}{{4.3}{37}{层级维度：分层跳距预算分配}{section.4.3}{}}
+\newlabel{idx:theme:hopbudget}{{4.3}{37}{层级维度：分层跳距预算分配}{section.4.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.3}{\ignorespaces 层级维度——分层跳距预算分配示意图}}{37}{figure.caption.33}\protected@file@percent }
+\newlabel{fig:ch4-speedup}{{4.3}{37}{层级维度——分层跳距预算分配示意图}{figure.caption.33}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.1}分层信息衰减界分析}{37}{subsection.4.3.1}\protected@file@percent }
+\newlabel{subsec:ch4-lemma36}{{4.3.1}{37}{分层信息衰减界分析}{subsection.4.3.1}{}}
+\newlabel{eq:ch4-propagator}{{4-9}{38}{分层信息衰减界分析}{equation.4.9}{}}
+\newlabel{eq:ch4-degree-matrix}{{4-10}{38}{分层信息衰减界分析}{equation.4.10}{}}
+\newlabel{eq:ch4-laplacian-propagator}{{4-11}{38}{分层信息衰减界分析}{equation.4.11}{}}
+\newlabel{eq:ch4-propagator-spectrum}{{4-12}{38}{分层信息衰减界分析}{equation.4.12}{}}
+\newlabel{eq:ch4-laplacian-s-relation}{{4-13}{38}{分层信息衰减界分析}{equation.4.13}{}}
+\newlabel{eq:ch4-mustar}{{4-14}{38}{分层信息衰减界分析}{equation.4.14}{}}
+\newlabel{eq:ch4-slazy}{{4-15}{38}{分层信息衰减界分析}{equation.4.15}{}}
+\newlabel{lem:ch4-decay}{{4.3.1}{38}{分层信息衰减界分析}{section*.34}{}}
+\newlabel{idx:theme:infodecay}{{4.3.1}{38}{分层信息衰减界分析}{section*.34}{}}
+\citation{Wu2019SGC}
+\newlabel{eq:ch4-linear-propagation}{{4-16}{39}{分层信息衰减界分析}{equation.4.16}{}}
+\newlabel{eq:ch4-propagator-choice}{{4-17}{39}{分层信息衰减界分析}{equation.4.17}{}}
+\newlabel{eq:ch4-deltah}{{4-18}{39}{分层信息衰减界分析}{equation.4.18}{}}
+\newlabel{eq:ch4-p-spectral}{{4-19}{39}{分层信息衰减界分析}{equation.4.19}{}}
+\newlabel{eq:ch4-v-expand}{{4-20}{39}{分层信息衰减界分析}{equation.4.20}{}}
+\newlabel{eq:ch4-plv-expand}{{4-21}{39}{分层信息衰减界分析}{equation.4.21}{}}
+\newlabel{eq:ch4-plv-bound-squared}{{4-22}{39}{分层信息衰减界分析}{equation.4.22}{}}
+\newlabel{eq:ch4-plv-bound}{{4-23}{39}{分层信息衰减界分析}{equation.4.23}{}}
+\newlabel{eq:ch4-deltah-rewrite}{{4-24}{40}{分层信息衰减界分析}{equation.4.24}{}}
+\newlabel{eq:ch4-deltah-step1}{{4-25}{40}{分层信息衰减界分析}{equation.4.25}{}}
+\newlabel{eq:ch4-deltah-step2}{{4-26}{40}{分层信息衰减界分析}{equation.4.26}{}}
+\newlabel{eq:ch4-deltah-step3}{{4-27}{40}{分层信息衰减界分析}{equation.4.27}{}}
+\newlabel{eq:ch4-c0-def}{{4-28}{40}{分层信息衰减界分析}{equation.4.28}{}}
+\newlabel{eq:ch4-deltah-bound}{{4-29}{40}{分层信息衰减界分析}{equation.4.29}{}}
+\newlabel{thm:ch4-decay}{{4.3.1}{40}{分层信息衰减界分析}{section*.35}{}}
+\newlabel{eq:ch4-pl-loss-proxy}{{4-30}{40}{分层信息衰减界分析}{equation.4.30}{}}
+\newlabel{eq:ch4-pl-error-requirement}{{4-31}{41}{分层信息衰减界分析}{equation.4.31}{}}
+\newlabel{eq:ch4-pl-lowerbound}{{4-32}{41}{分层信息衰减界分析}{equation.4.32}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4.4}{\ignorespaces 跳距预算衰减分配示意图（策略1 vs 策略2）}}{41}{figure.caption.36}\protected@file@percent }
+\newlabel{fig:ch4-hop-decay}{{4.4}{41}{跳距预算衰减分配示意图（策略1 vs 策略2）}{figure.caption.36}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.2}分层保留率 $p_l$ 的两种策略}{41}{subsection.4.3.2}\protected@file@percent }
+\newlabel{subsec:ch4-plstrategy}{{4.3.2}{41}{分层保留率 $p_l$ 的两种策略}{subsection.4.3.2}{}}
+\newlabel{idx:innov:hopdist}{{4.3.2}{41}{分层保留率 $p_l$ 的两种策略}{subsection.4.3.2}{}}
+\newlabel{eq:ch4-pl-strategy1}{{4-33}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.33}{}}
+\newlabel{eq:ch4-lap-s-for-gap}{{4-34}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.34}{}}
+\newlabel{eq:ch4-lambda-mu-derive}{{4-35}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.35}{}}
+\newlabel{eq:ch4-lambda-mu-relation}{{4-36}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.36}{}}
+\newlabel{eq:ch4-mu2-gap}{{4-37}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.37}{}}
+\newlabel{eq:ch4-mustar-repeat}{{4-38}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.38}{}}
+\newlabel{eq:ch4-gap-r}{{4-39}{42}{分层保留率 $p_l$ 的两种策略}{equation.4.39}{}}
+\newlabel{eq:ch4-pl-strategy2}{{4-40}{43}{分层保留率 $p_l$ 的两种策略}{equation.4.40}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4.2}{\ignorespaces 策略1与策略2的对比分析}}{43}{table.caption.38}\protected@file@percent }
+\newlabel{tab:ch4-pl-strategies}{{4.2}{43}{策略1与策略2的对比分析}{table.caption.38}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3.3}节点-跳距联合预算分配策略}{43}{subsection.4.3.3}\protected@file@percent }
+\newlabel{subsec:ch4-theorem33}{{4.3.3}{43}{节点-跳距联合预算分配策略}{subsection.4.3.3}{}}
+\newlabel{idx:innov:joint_budget}{{4.3.3}{43}{节点-跳距联合预算分配策略}{subsection.4.3.3}{}}
+\newlabel{eq:ch4-hop-budget-raw}{{4-41}{44}{节点-跳距联合预算分配策略}{equation.4.41}{}}
+\newlabel{eq:ch4-hop-budget-round}{{4-42}{44}{节点-跳距联合预算分配策略}{equation.4.42}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}本章小结}{44}{section.4.4}\protected@file@percent }
+\newlabel{sec:ch4-summary}{{4.4}{44}{本章小结}{section.4.4}{}}
+\citation{Efron2004LARS}
+\pp@pagectr{footnote}{5}{66}{46}
+\@writefile{toc}{\contentsline {chapter}{\numberline {第5章}算法整合、误差分析与复杂度分析}{46}{chapter.5}\protected@file@percent }
+\newlabel{chap:algorithm-theory}{{5}{46}{算法整合、误差分析与复杂度分析}{chapter.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}LARS分层稀疏求解与交替优化}{46}{section.5.1}\protected@file@percent }
+\newlabel{sec:ch5-lars}{{5.1}{46}{LARS分层稀疏求解与交替优化}{section.5.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.1}分层LARS的候选集构造与方案选定}{46}{subsection.5.1.1}\protected@file@percent }
+\newlabel{subsec:ch5-candidateset}{{5.1.1}{46}{分层LARS的候选集构造与方案选定}{subsection.5.1.1}{}}
+\newlabel{eq:ch5-candidate-set}{{5-1}{46}{分层LARS的候选集构造与方案选定}{equation.5.1}{}}
+\newlabel{eq:ch5-self-ring}{{5-2}{46}{分层LARS的候选集构造与方案选定}{equation.5.2}{}}
+\newlabel{eq:ch5-fixed-inference}{{5-3}{47}{分层LARS的候选集构造与方案选定}{equation.5.3}{}}
+\newlabel{eq:ch5-target-vector}{{5-4}{47}{分层LARS的候选集构造与方案选定}{equation.5.4}{}}
+\newlabel{eq:ch5-shared-target}{{5-5}{47}{分层LARS的候选集构造与方案选定}{equation.5.5}{}}
+\newlabel{eq:ch5-self-channel}{{5-6}{48}{分层LARS的候选集构造与方案选定}{equation.5.6}{}}
+\newlabel{eq:ch5-initial-residual}{{5-7}{48}{分层LARS的候选集构造与方案选定}{equation.5.7}{}}
+\newlabel{eq:ch5-tau-full}{{5-8}{48}{分层LARS的候选集构造与方案选定}{equation.5.8}{}}
+\newlabel{eq:ch5-residual-update}{{5-9}{48}{分层LARS的候选集构造与方案选定}{equation.5.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.2}完整交替优化算法}{48}{subsection.5.1.2}\protected@file@percent }
+\newlabel{subsec:ch5-mainloop}{{5.1.2}{48}{完整交替优化算法}{subsection.5.1.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces 共享目标与残差级联两种分层 LARS 方案对比}}{49}{figure.caption.39}\protected@file@percent }
+\newlabel{fig:ch5-lars-compare}{{5.1}{49}{共享目标与残差级联两种分层 LARS 方案对比}{figure.caption.39}{}}
+\newlabel{eq:ch5-hhat-matrix}{{5-10}{50}{完整交替优化算法}{equation.5.10}{}}
+\newlabel{eq:ch5-phaseW-objective}{{5-11}{50}{完整交替优化算法}{equation.5.11}{}}
+\newlabel{eq:ch5-fixed-inference}{{5-12}{50}{完整交替优化算法}{equation.5.12}{}}
+\newlabel{eq:ch5-msparse}{{5-13}{50}{完整交替优化算法}{equation.5.13}{}}
+\newlabel{eq:ch5-kbar}{{5-14}{50}{完整交替优化算法}{equation.5.14}{}}
+\newlabel{eq:ch5-msparse-kbar}{{5-15}{50}{完整交替优化算法}{equation.5.15}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {5.1}{\ignorespaces MSAS-GNN三维自适应稀疏分解主循环（完整交替优化版）}}{51}{algorithm.5.1}\protected@file@percent }
+\newlabel{alg:ch5-main}{{5.1}{51}{MSAS-GNN三维自适应稀疏分解主循环（完整交替优化版）}{algorithm.5.1}{}}
 \citation{Tseng2001,Razaviyayn2013}
-\newlabel{eq:ch5-phaseW-objective}{{5-10}{44}{完整交替优化算法}{equation.5.10}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {5.2}{\ignorespaces 推理期稀疏固化}}{44}{algorithm.5.2}\protected@file@percent }
-\newlabel{alg:ch5-fixed}{{5.2}{44}{推理期稀疏固化}{algorithm.5.2}{}}
-\newlabel{eq:ch5-fixed-inference}{{5-11}{44}{完整交替优化算法}{equation.5.11}{}}
-\newlabel{eq:ch5-msparse}{{5-12}{44}{完整交替优化算法}{equation.5.12}{}}
-\newlabel{eq:ch5-kbar}{{5-13}{44}{完整交替优化算法}{equation.5.13}{}}
-\newlabel{eq:ch5-msparse-kbar}{{5-14}{44}{完整交替优化算法}{equation.5.14}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.3}优化稳定性与实现说明}{44}{subsection.5.1.3}\protected@file@percent }
-\newlabel{subsec:ch5-convergence}{{5.1.3}{44}{优化稳定性与实现说明}{subsection.5.1.3}{}}
 \citation{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {5.2}{\ignorespaces 推理期稀疏固化}}{52}{algorithm.5.2}\protected@file@percent }
+\newlabel{alg:ch5-fixed}{{5.2}{52}{推理期稀疏固化}{algorithm.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1.3}优化稳定性与实现说明}{52}{subsection.5.1.3}\protected@file@percent }
+\newlabel{subsec:ch5-convergence}{{5.1.3}{52}{优化稳定性与实现说明}{subsection.5.1.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}误差分析与适用条件}{52}{section.5.2}\protected@file@percent }
+\newlabel{sec:ch5-spectral}{{5.2}{52}{误差分析与适用条件}{section.5.2}{}}
+\newlabel{idx:innov:sigma}{{5.2}{52}{误差分析与适用条件}{section.5.2}{}}
 \citation{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}自适应参数设计与误差分析的接口}{53}{subsection.5.2.1}\protected@file@percent }
+\newlabel{subsec:ch5-param-error-interface}{{5.2.1}{53}{自适应参数设计与误差分析的接口}{subsection.5.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}谱相似性与图稀疏化}{53}{subsection.5.2.2}\protected@file@percent }
+\newlabel{subsec:ch5-spectralsim}{{5.2.2}{53}{谱相似性与图稀疏化}{subsection.5.2.2}{}}
+\newlabel{idx:theme:spectralsim}{{5.2.2}{53}{谱相似性与图稀疏化}{subsection.5.2.2}{}}
+\citation{Spielman2011SpectralSparsification,SpielmanSrivastava2011}
+\citation{Spielman2011SpectralSparsification,SpielmanSrivastava2011}
+\citation{Spielman2011SpectralSparsification,SpielmanSrivastava2011}
+\citation{Spielman2011SpectralSparsification,SpielmanSrivastava2011}
 \citation{Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}误差分析与适用条件}{45}{section.5.2}\protected@file@percent }
-\newlabel{sec:ch5-spectral}{{5.2}{45}{误差分析与适用条件}{section.5.2}{}}
-\newlabel{idx:innov:sigma}{{5.2}{45}{误差分析与适用条件}{section.5.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}谱相似性与图稀疏化}{45}{subsection.5.2.1}\protected@file@percent }
-\newlabel{subsec:ch5-spectralsim}{{5.2.1}{45}{谱相似性与图稀疏化}{subsection.5.2.1}{}}
-\newlabel{idx:theme:spectralsim}{{5.2.1}{45}{谱相似性与图稀疏化}{subsection.5.2.1}{}}
-\newlabel{eq:ch5-sigma-sim}{{5-15}{45}{谱相似性与图稀疏化}{equation.5.15}{}}
 \citation{Chung1997,Hammond2011Wavelets,Shuman2013GSP}
-\newlabel{idx:theme:specpreserve}{{5.2.1}{46}{谱相似性与图稀疏化}{equation.5.15}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}多项式谱滤波器的近似误差界}{46}{subsection.5.2.2}\protected@file@percent }
-\newlabel{subsec:ch5-polyfilter}{{5.2.2}{46}{多项式谱滤波器的近似误差界}{subsection.5.2.2}{}}
-\newlabel{eq:ch5-L-eig}{{5-16}{46}{多项式谱滤波器的近似误差界}{equation.5.16}{}}
-\newlabel{eq:ch5-L-spectrum}{{5-17}{46}{多项式谱滤波器的近似误差界}{equation.5.17}{}}
-\newlabel{eq:ch5-gpoly-def}{{5-18}{46}{多项式谱滤波器的近似误差界}{equation.5.18}{}}
-\newlabel{eq:ch5-gpoly-output}{{5-19}{46}{多项式谱滤波器的近似误差界}{equation.5.19}{}}
-\newlabel{eq:ch5-barL-def}{{5-20}{46}{多项式谱滤波器的近似误差界}{equation.5.20}{}}
+\newlabel{eq:ch5-sigma-sim}{{5-16}{54}{谱相似性与图稀疏化}{equation.5.16}{}}
+\newlabel{idx:theme:specpreserve}{{5.2.2}{54}{谱相似性与图稀疏化}{equation.5.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.3}多项式谱滤波器的近似误差界}{54}{subsection.5.2.3}\protected@file@percent }
+\newlabel{subsec:ch5-polyfilter}{{5.2.3}{54}{多项式谱滤波器的近似误差界}{subsection.5.2.3}{}}
+\newlabel{eq:ch5-L-eig}{{5-17}{54}{多项式谱滤波器的近似误差界}{equation.5.17}{}}
+\newlabel{eq:ch5-L-spectrum}{{5-18}{54}{多项式谱滤波器的近似误差界}{equation.5.18}{}}
 \citation{Hammond2011Wavelets,Shuman2013GSP}
 \citation{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}
-\newlabel{eq:ch5-barL-spectrum}{{5-21}{47}{多项式谱滤波器的近似误差界}{equation.5.21}{}}
-\newlabel{eq:ch5-poly-monomial}{{5-22}{47}{多项式谱滤波器的近似误差界}{equation.5.22}{}}
-\newlabel{eq:ch5-eta-def}{{5-23}{47}{多项式谱滤波器的近似误差界}{equation.5.23}{}}
-\newlabel{eq:ch5-shift-invariance}{{5-24}{47}{多项式谱滤波器的近似误差界}{equation.5.24}{}}
-\newlabel{eq:ch5-barL-norm}{{5-25}{47}{多项式谱滤波器的近似误差界}{equation.5.25}{}}
-\newlabel{eq:ch5-power-diff}{{5-26}{47}{多项式谱滤波器的近似误差界}{equation.5.26}{}}
-\newlabel{eq:ch5-power-diff-inst}{{5-27}{48}{多项式谱滤波器的近似误差界}{equation.5.27}{}}
-\newlabel{eq:ch5-triangle-ineq}{{5-28}{48}{多项式谱滤波器的近似误差界}{equation.5.28}{}}
-\newlabel{eq:ch5-Mt-def}{{5-29}{48}{多项式谱滤波器的近似误差界}{equation.5.29}{}}
-\newlabel{eq:ch5-power-diff-step1}{{5-30}{48}{多项式谱滤波器的近似误差界}{equation.5.30}{}}
-\newlabel{eq:ch5-submultiplicative-abc}{{5-31}{48}{多项式谱滤波器的近似误差界}{equation.5.31}{}}
-\newlabel{eq:ch5-power-diff-step2}{{5-32}{48}{多项式谱滤波器的近似误差界}{equation.5.32}{}}
-\newlabel{eq:ch5-power-diff-step3}{{5-33}{48}{多项式谱滤波器的近似误差界}{equation.5.33}{}}
-\newlabel{eq:ch5-power-diff-bound}{{5-34}{48}{多项式谱滤波器的近似误差界}{equation.5.34}{}}
-\newlabel{eq:ch5-poly-diff-expand}{{5-35}{48}{多项式谱滤波器的近似误差界}{equation.5.35}{}}
-\newlabel{eq:ch5-zero-order-cancel}{{5-36}{48}{多项式谱滤波器的近似误差界}{equation.5.36}{}}
+\newlabel{eq:ch5-gpoly-def}{{5-19}{55}{多项式谱滤波器的近似误差界}{equation.5.19}{}}
+\newlabel{eq:ch5-gpoly-output}{{5-20}{55}{多项式谱滤波器的近似误差界}{equation.5.20}{}}
+\newlabel{eq:ch5-barL-def}{{5-21}{55}{多项式谱滤波器的近似误差界}{equation.5.21}{}}
+\newlabel{eq:ch5-barL-spectrum}{{5-22}{55}{多项式谱滤波器的近似误差界}{equation.5.22}{}}
+\newlabel{eq:ch5-poly-monomial}{{5-23}{55}{多项式谱滤波器的近似误差界}{equation.5.23}{}}
+\newlabel{eq:ch5-eta-def}{{5-24}{55}{多项式谱滤波器的近似误差界}{equation.5.24}{}}
+\newlabel{eq:ch5-shift-invariance}{{5-25}{55}{多项式谱滤波器的近似误差界}{equation.5.25}{}}
+\citation{HornJohnson2012}
+\newlabel{eq:ch5-barL-norm}{{5-26}{56}{多项式谱滤波器的近似误差界}{equation.5.26}{}}
+\newlabel{eq:ch5-power-diff}{{5-27}{56}{多项式谱滤波器的近似误差界}{equation.5.27}{}}
+\newlabel{eq:ch5-power-diff-inst}{{5-28}{56}{多项式谱滤波器的近似误差界}{equation.5.28}{}}
+\newlabel{eq:ch5-triangle-ineq}{{5-29}{56}{多项式谱滤波器的近似误差界}{equation.5.29}{}}
+\newlabel{eq:ch5-Mt-def}{{5-30}{56}{多项式谱滤波器的近似误差界}{equation.5.30}{}}
+\newlabel{eq:ch5-power-diff-step1}{{5-31}{56}{多项式谱滤波器的近似误差界}{equation.5.31}{}}
+\newlabel{eq:ch5-submultiplicative-abc}{{5-32}{56}{多项式谱滤波器的近似误差界}{equation.5.32}{}}
+\newlabel{eq:ch5-power-diff-step2}{{5-33}{56}{多项式谱滤波器的近似误差界}{equation.5.33}{}}
+\newlabel{eq:ch5-power-diff-step3}{{5-34}{56}{多项式谱滤波器的近似误差界}{equation.5.34}{}}
+\newlabel{eq:ch5-power-diff-bound}{{5-35}{56}{多项式谱滤波器的近似误差界}{equation.5.35}{}}
 \citation{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}
-\newlabel{eq:ch5-poly-diff-expand2}{{5-37}{49}{多项式谱滤波器的近似误差界}{equation.5.37}{}}
-\newlabel{eq:ch5-poly-bound-step1}{{5-38}{49}{多项式谱滤波器的近似误差界}{equation.5.38}{}}
-\newlabel{eq:ch5-frobenius-submult}{{5-39}{49}{多项式谱滤波器的近似误差界}{equation.5.39}{}}
-\newlabel{eq:ch5-poly-bound-step2}{{5-40}{49}{多项式谱滤波器的近似误差界}{equation.5.40}{}}
-\newlabel{eq:ch5-poly-eta-bound}{{5-41}{49}{多项式谱滤波器的近似误差界}{equation.5.41}{}}
-\newlabel{eq:ch5-poly-coeff-weight}{{5-42}{49}{多项式谱滤波器的近似误差界}{equation.5.42}{}}
-\newlabel{eq:ch5-sigma-loewner}{{5-43}{49}{多项式谱滤波器的近似误差界}{equation.5.43}{}}
-\newlabel{eq:ch5-sigma-leftshift}{{5-44}{49}{多项式谱滤波器的近似误差界}{equation.5.44}{}}
-\newlabel{eq:ch5-sigma-rightshift}{{5-45}{49}{多项式谱滤波器的近似误差界}{equation.5.45}{}}
-\newlabel{eq:ch5-sigma-ineq}{{5-46}{49}{多项式谱滤波器的近似误差界}{equation.5.46}{}}
+\newlabel{eq:ch5-poly-diff-expand}{{5-36}{57}{多项式谱滤波器的近似误差界}{equation.5.36}{}}
+\newlabel{eq:ch5-zero-order-cancel}{{5-37}{57}{多项式谱滤波器的近似误差界}{equation.5.37}{}}
+\newlabel{eq:ch5-poly-diff-expand2}{{5-38}{57}{多项式谱滤波器的近似误差界}{equation.5.38}{}}
+\newlabel{eq:ch5-poly-bound-step1}{{5-39}{57}{多项式谱滤波器的近似误差界}{equation.5.39}{}}
+\newlabel{eq:ch5-frobenius-submult}{{5-40}{57}{多项式谱滤波器的近似误差界}{equation.5.40}{}}
+\newlabel{eq:ch5-poly-bound-step2}{{5-41}{57}{多项式谱滤波器的近似误差界}{equation.5.41}{}}
+\newlabel{eq:ch5-poly-eta-bound}{{5-42}{57}{多项式谱滤波器的近似误差界}{equation.5.42}{}}
+\newlabel{eq:ch5-poly-coeff-weight}{{5-43}{57}{多项式谱滤波器的近似误差界}{equation.5.43}{}}
+\newlabel{eq:ch5-sigma-loewner}{{5-44}{57}{多项式谱滤波器的近似误差界}{equation.5.44}{}}
 \citation{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}
 \citation{Chung1997}
 \citation{HornJohnson2012,Parlett1998}
-\newlabel{eq:ch5-sigma-diff-order}{{5-47}{50}{多项式谱滤波器的近似误差界}{equation.5.47}{}}
-\newlabel{eq:ch5-DM-def}{{5-48}{50}{多项式谱滤波器的近似误差界}{equation.5.48}{}}
-\newlabel{eq:ch5-D-bounded-by-M}{{5-49}{50}{多项式谱滤波器的近似误差界}{equation.5.49}{}}
-\newlabel{eq:ch5-M-psd-proof}{{5-52}{50}{多项式谱滤波器的近似误差界}{equation.5.52}{}}
-\newlabel{eq:ch5-D-quadratic-bound}{{5-54}{50}{多项式谱滤波器的近似误差界}{equation.5.54}{}}
-\newlabel{eq:ch5-M-rayleigh-bound}{{5-55}{50}{多项式谱滤波器的近似误差界}{equation.5.55}{}}
-\newlabel{eq:ch5-D-rayleigh-bound}{{5-56}{50}{多项式谱滤波器的近似误差界}{equation.5.56}{}}
+\newlabel{eq:ch5-sigma-leftshift}{{5-45}{58}{多项式谱滤波器的近似误差界}{equation.5.45}{}}
+\newlabel{eq:ch5-sigma-rightshift}{{5-46}{58}{多项式谱滤波器的近似误差界}{equation.5.46}{}}
+\newlabel{eq:ch5-sigma-ineq}{{5-47}{58}{多项式谱滤波器的近似误差界}{equation.5.47}{}}
+\newlabel{eq:ch5-sigma-diff-order}{{5-48}{58}{多项式谱滤波器的近似误差界}{equation.5.48}{}}
+\newlabel{eq:ch5-DM-def}{{5-49}{58}{多项式谱滤波器的近似误差界}{equation.5.49}{}}
+\newlabel{eq:ch5-D-bounded-by-M}{{5-50}{58}{多项式谱滤波器的近似误差界}{equation.5.50}{}}
+\newlabel{eq:ch5-M-psd-proof}{{5-53}{58}{多项式谱滤波器的近似误差界}{equation.5.53}{}}
+\newlabel{eq:ch5-D-quadratic-bound}{{5-55}{58}{多项式谱滤波器的近似误差界}{equation.5.55}{}}
 \citation{HornJohnson2012}
+\newlabel{eq:ch5-M-rayleigh-bound}{{5-56}{59}{多项式谱滤波器的近似误差界}{equation.5.56}{}}
+\newlabel{eq:ch5-D-rayleigh-bound}{{5-57}{59}{多项式谱滤波器的近似误差界}{equation.5.57}{}}
+\newlabel{eq:ch5-D-eigpair}{{5-58}{59}{多项式谱滤波器的近似误差界}{equation.5.58}{}}
+\newlabel{eq:ch5-D-eig-bound}{{5-59}{59}{多项式谱滤波器的近似误差界}{equation.5.59}{}}
+\newlabel{eq:ch5-D-eig-interval}{{5-60}{59}{多项式谱滤波器的近似误差界}{equation.5.60}{}}
+\newlabel{eq:ch5-DM-norm}{{5-61}{59}{多项式谱滤波器的近似误差界}{equation.5.61}{}}
+\newlabel{eq:ch5-eta-from-sigma-step}{{5-62}{59}{多项式谱滤波器的近似误差界}{equation.5.62}{}}
+\newlabel{eq:ch5-L-norm2}{{5-63}{59}{多项式谱滤波器的近似误差界}{equation.5.63}{}}
+\newlabel{eq:ch5-sigma-to-eta}{{5-64}{59}{多项式谱滤波器的近似误差界}{equation.5.64}{}}
+\newlabel{eq:ch5-poly-sigma-bound}{{5-65}{59}{多项式谱滤波器的近似误差界}{equation.5.65}{}}
 \citation{Spielman2011EffectiveResistances,Spielman2011SpectralSparsification,Batson2013SpectralSparsificationSurvey}
-\newlabel{eq:ch5-D-eigpair}{{5-57}{51}{多项式谱滤波器的近似误差界}{equation.5.57}{}}
-\newlabel{eq:ch5-D-eig-bound}{{5-58}{51}{多项式谱滤波器的近似误差界}{equation.5.58}{}}
-\newlabel{eq:ch5-D-eig-interval}{{5-59}{51}{多项式谱滤波器的近似误差界}{equation.5.59}{}}
-\newlabel{eq:ch5-DM-norm}{{5-60}{51}{多项式谱滤波器的近似误差界}{equation.5.60}{}}
-\newlabel{eq:ch5-eta-from-sigma-step}{{5-61}{51}{多项式谱滤波器的近似误差界}{equation.5.61}{}}
-\newlabel{eq:ch5-L-norm2}{{5-62}{51}{多项式谱滤波器的近似误差界}{equation.5.62}{}}
-\newlabel{eq:ch5-sigma-to-eta}{{5-63}{51}{多项式谱滤波器的近似误差界}{equation.5.63}{}}
-\newlabel{eq:ch5-poly-sigma-bound}{{5-64}{51}{多项式谱滤波器的近似误差界}{equation.5.64}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.3}复杂度分析}{52}{section.5.3}\protected@file@percent }
-\newlabel{sec:ch5-time}{{5.3}{52}{复杂度分析}{section.5.3}{}}
-\newlabel{eq:ch5-prop31}{{5-65}{52}{复杂度分析}{equation.5.65}{}}
-\newlabel{eq:ch5-infer-msparse}{{5-66}{52}{复杂度分析}{equation.5.66}{}}
-\newlabel{eq:ch5-kbar-time}{{5-67}{52}{复杂度分析}{equation.5.67}{}}
-\newlabel{eq:ch5-infer-nkbd}{{5-68}{52}{复杂度分析}{equation.5.68}{}}
-\newlabel{eq:ch5-prop31b}{{5-69}{52}{复杂度分析}{equation.5.69}{}}
-\newlabel{eq:ch5-phase-theta-layerwise}{{5-70}{53}{复杂度分析}{equation.5.70}{}}
-\newlabel{eq:ch5-sil-def}{{5-71}{53}{复杂度分析}{equation.5.71}{}}
-\newlabel{eq:ch5-theta-cubic}{{5-72}{53}{复杂度分析}{equation.5.72}{}}
-\newlabel{eq:ch5-theta-quadratic}{{5-73}{53}{复杂度分析}{equation.5.73}{}}
-\newlabel{eq:ch5-phase-theta-subproblem}{{5-74}{53}{复杂度分析}{equation.5.74}{}}
-\newlabel{eq:ch5-phase-theta-candidate}{{5-75}{53}{复杂度分析}{equation.5.75}{}}
-\newlabel{eq:ch5-phase-w}{{5-76}{54}{复杂度分析}{equation.5.76}{}}
-\newlabel{eq:ch5-pre-spec}{{5-77}{54}{复杂度分析}{equation.5.77}{}}
-\newlabel{eq:ch5-pre-index}{{5-78}{54}{复杂度分析}{equation.5.78}{}}
-\newlabel{eq:ch5-pre-candidate}{{5-79}{54}{复杂度分析}{equation.5.79}{}}
-\newlabel{eq:ch5-pre-budget}{{5-80}{54}{复杂度分析}{equation.5.80}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces 复杂度分解与线性推理适用边界示意图}}{55}{figure.caption.42}\protected@file@percent }
-\newlabel{fig:ch5-complexity-boundary}{{5.2}{55}{复杂度分解与线性推理适用边界示意图}{figure.caption.42}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces 各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text  {sparse}}=n\bar {k}$，$K_{\text  {eig}}\in [50,100]$ 视为常数）}}{55}{table.caption.44}\protected@file@percent }
-\newlabel{tab:ch5-5-6}{{5.1}{55}{各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text {sparse}}=n\bar {k}$，$K_{\text {eig}}\in [50,100]$ 视为常数）}{table.caption.44}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}本章小结}{56}{section.5.4}\protected@file@percent }
-\newlabel{sec:ch5-summary}{{5.4}{56}{本章小结}{section.5.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}复杂度分析}{60}{section.5.3}\protected@file@percent }
+\newlabel{sec:ch5-time}{{5.3}{60}{复杂度分析}{section.5.3}{}}
+\newlabel{eq:ch5-prop31}{{5-66}{60}{复杂度分析}{equation.5.66}{}}
+\newlabel{eq:ch5-infer-msparse}{{5-67}{60}{复杂度分析}{equation.5.67}{}}
+\newlabel{eq:ch5-kbar-time}{{5-68}{60}{复杂度分析}{equation.5.68}{}}
+\newlabel{eq:ch5-infer-nkbd}{{5-69}{60}{复杂度分析}{equation.5.69}{}}
+\citation{Efron2004LARS,Mairal2012LARSComplexity}
+\newlabel{eq:ch5-prop31b}{{5-70}{61}{复杂度分析}{equation.5.70}{}}
+\newlabel{eq:ch5-phase-theta-layerwise}{{5-71}{61}{复杂度分析}{equation.5.71}{}}
+\newlabel{eq:ch5-sil-def}{{5-72}{61}{复杂度分析}{equation.5.72}{}}
+\newlabel{eq:ch5-phase-theta-subproblem}{{5-73}{61}{复杂度分析}{equation.5.73}{}}
+\newlabel{eq:ch5-phase-theta-candidate}{{5-74}{62}{复杂度分析}{equation.5.74}{}}
+\newlabel{eq:ch5-phase-w}{{5-75}{62}{复杂度分析}{equation.5.75}{}}
+\newlabel{eq:ch5-pre-spec}{{5-76}{62}{复杂度分析}{equation.5.76}{}}
+\newlabel{eq:ch5-pre-index}{{5-77}{62}{复杂度分析}{equation.5.77}{}}
+\newlabel{eq:ch5-pre-candidate}{{5-78}{62}{复杂度分析}{equation.5.78}{}}
+\newlabel{eq:ch5-pre-budget}{{5-79}{62}{复杂度分析}{equation.5.79}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces 复杂度分解与线性推理适用边界示意图}}{63}{figure.caption.40}\protected@file@percent }
+\newlabel{fig:ch5-complexity-boundary}{{5.2}{63}{复杂度分解与线性推理适用边界示意图}{figure.caption.40}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces 各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text  {sparse}}=n\bar {k}$，$K_{\text  {eig}}\in [50,100]$ 视为常数）}}{63}{table.caption.42}\protected@file@percent }
+\newlabel{tab:ch5-5-6}{{5.1}{63}{各方法推理与训练复杂度对比（固定图、全图一次前向/结构固化后查询口径；$m=\mathrm {nnz}(A)$，$m_{\text {sparse}}=n\bar {k}$，$K_{\text {eig}}\in [50,100]$ 视为常数）}{table.caption.42}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}本章小结}{64}{section.5.4}\protected@file@percent }
+\newlabel{sec:ch5-summary}{{5.4}{64}{本章小结}{section.5.4}{}}
 \citation{Wilcoxon1945Ranking}
 \citation{Hu2020OGB}
 \citation{Akiba2019Optuna,Bergstra2011TPE}
-\pp@pagectr{footnote}{6}{76}{57}
-\@writefile{toc}{\contentsline {chapter}{\numberline {第6章}实验评估}{57}{chapter.6}\protected@file@percent }
-\newlabel{chap:ch6-experiment}{{6}{57}{实验评估}{chapter.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}实验设置}{57}{section.6.1}\protected@file@percent }
-\newlabel{sec:ch6-setup}{{6.1}{57}{实验设置}{section.6.1}{}}
+\pp@pagectr{footnote}{6}{85}{65}
+\@writefile{toc}{\contentsline {chapter}{\numberline {第6章}实验评估}{65}{chapter.6}\protected@file@percent }
+\newlabel{chap:ch6-experiment}{{6}{65}{实验评估}{chapter.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}实验设置}{65}{section.6.1}\protected@file@percent }
+\newlabel{sec:ch6-setup}{{6.1}{65}{实验设置}{section.6.1}{}}
+\gdef \LT@i {\LT@entry 
+    {1}{88.35826pt}\LT@entry 
+    {1}{166.75789pt}\LT@entry 
+    {1}{91.35826pt}\LT@entry 
+    {5}{59.9055pt}}
+\pp@pagectr{footnote}{7}{86}{66}
+\newlabel{eq:ch6-phi-warmstart}{{6-1}{66}{实验设置}{equation.6.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.1}{\ignorespaces MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}}{66}{table.6.1}\protected@file@percent }
+\newlabel{tab:ch6-hyperparams}{{6.1}{66}{MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}{table.6.1}{}}
 \citation{Wilcoxon1945Ranking}
-\pp@pagectr{footnote}{7}{77}{58}
-\newlabel{eq:ch6-phi-warmstart}{{6-1}{58}{实验设置}{equation.6.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.1}{\ignorespaces MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}}{59}{table.caption.45}\protected@file@percent }
-\newlabel{tab:ch6-hyperparams}{{6.1}{59}{MSAS-GNN 主实验涉及的核心超参数与 Cora 上的代表性默认配置}{table.caption.45}{}}
 \citation{Kipf2017GCN}
 \citation{Wu2019SGC}
 \citation{Bojchevski2020PPRGo}
@@ -414,79 +473,86 @@
 \citation{Zhang2022GLNN}
 \citation{Pei2020GeomGCN}
 \citation{Zhu2020H2GCN}
+\citation{Zeng2020GraphSAINT}
+\citation{Wu2022NodeFormer}
+\citation{Wu2023DIFFormer}
+\citation{Wu2023SGFormer}
+\citation{Chen2023NAGphormer}
+\@writefile{lot}{\contentsline {table}{\numberline {6.2}{\ignorespaces 节点分类数据集统计信息}}{69}{table.caption.43}\protected@file@percent }
+\newlabel{tab:ch6-datasets}{{6.2}{69}{节点分类数据集统计信息}{table.caption.43}{}}
+\newlabel{eq:ch6-speedup}{{6-2}{69}{实验设置}{equation.6.2}{}}
 \citation{Hu2020OGB}
-\@writefile{lot}{\contentsline {table}{\numberline {6.2}{\ignorespaces 节点分类数据集统计信息}}{60}{table.caption.47}\protected@file@percent }
-\newlabel{tab:ch6-datasets}{{6.2}{60}{节点分类数据集统计信息}{table.caption.47}{}}
-\newlabel{eq:ch6-speedup}{{6-2}{60}{实验设置}{equation.6.2}{}}
-\newlabel{eq:ch6-approx}{{6-3}{60}{实验设置}{equation.6.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}节点分类主实验}{61}{section.6.2}\protected@file@percent }
-\newlabel{sec:ch6-main}{{6.2}{61}{节点分类主实验}{section.6.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.3}{\ignorespaces 引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{61}{table.caption.49}\protected@file@percent }
-\newlabel{tab:ch6-homophily-large}{{6.3}{61}{引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}{table.caption.49}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.4}{\ignorespaces 网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{62}{table.caption.51}\protected@file@percent }
-\newlabel{tab:ch6-heterophily}{{6.4}{62}{网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}{table.caption.51}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}消融实验与分析结论验证}{62}{section.6.3}\protected@file@percent }
-\newlabel{sec:ch6-ablation}{{6.3}{62}{消融实验与分析结论验证}{section.6.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}逐模块消融分析}{62}{subsection.6.3.1}\protected@file@percent }
-\newlabel{subsec:ch6-modular}{{6.3.1}{62}{逐模块消融分析}{subsection.6.3.1}{}}
-\newlabel{eq:ch6-ablation-sparsity}{{6-4}{62}{逐模块消融分析}{equation.6.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.5}{\ignorespaces 综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}}{64}{table.caption.53}\protected@file@percent }
-\newlabel{tab:ch6-ablation}{{6.5}{64}{综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}{table.caption.53}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.6}{\ignorespaces 跳距预算分配策略消融（准确率\%）}}{65}{table.caption.55}\protected@file@percent }
-\newlabel{tab:ch6-hopbudget}{{6.6}{65}{跳距预算分配策略消融（准确率\%）}{table.caption.55}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}跳距预算分配策略消融}{65}{subsection.6.3.2}\protected@file@percent }
-\newlabel{subsec:ch6-hopbudget}{{6.3.2}{65}{跳距预算分配策略消融}{subsection.6.3.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}超参数敏感性分析}{65}{subsection.6.3.3}\protected@file@percent }
-\newlabel{subsec:ch6-hyperparam}{{6.3.3}{65}{超参数敏感性分析}{subsection.6.3.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces 关键超参数敏感性分析（Cora）}}{66}{figure.caption.57}\protected@file@percent }
-\newlabel{fig:ch6-hyperparam}{{6.1}{66}{关键超参数敏感性分析（Cora）}{figure.caption.57}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.4}效率分析}{66}{section.6.4}\protected@file@percent }
-\newlabel{sec:ch6-efficiency}{{6.4}{66}{效率分析}{section.6.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}推理效率与内存综合对比}{66}{subsection.6.4.1}\protected@file@percent }
-\newlabel{subsec:ch6-infer}{{6.4.1}{66}{推理效率与内存综合对比}{subsection.6.4.1}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.7}{\ignorespaces 推理效率与显存占用综合对比（GPU，$\text  {batch\_size}=1024$）}}{67}{table.caption.58}\protected@file@percent }
-\newlabel{tab:ch6-infer}{{6.7}{67}{推理效率与显存占用综合对比（GPU，$\text {batch\_size}=1024$）}{table.caption.58}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}预处理摊销与break-even分析}{67}{subsection.6.4.2}\protected@file@percent }
-\newlabel{subsec:ch6-breakeven}{{6.4.2}{67}{预处理摊销与break-even分析}{subsection.6.4.2}{}}
-\newlabel{eq:ch6-breakeven}{{6-5}{67}{预处理摊销与break-even分析}{equation.6.5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {6.8}{\ignorespaces 预处理摊销与break-even估计（时间单位统一为秒）}}{68}{table.caption.60}\protected@file@percent }
-\newlabel{tab:ch6-breakeven}{{6.8}{68}{预处理摊销与break-even估计（时间单位统一为秒）}{table.caption.60}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.5}可视化分析}{68}{section.6.5}\protected@file@percent }
-\newlabel{sec:ch6-visual}{{6.5}{68}{可视化分析}{section.6.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces 节点级自适应稀疏参数$\mittau (i)$分布分析（Cora）}}{68}{figure.caption.62}\protected@file@percent }
-\newlabel{fig:ch6-taudist}{{6.2}{68}{节点级自适应稀疏参数$\tau (i)$分布分析（Cora）}{figure.caption.62}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces t-SNE节点表示可视化对比（Cora，7类）}}{69}{figure.caption.63}\protected@file@percent }
-\newlabel{fig:ch6-tsne}{{6.3}{69}{t-SNE节点表示可视化对比（Cora，7类）}{figure.caption.63}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6.6}本章小结}{69}{section.6.6}\protected@file@percent }
-\newlabel{sec:ch6-summary}{{6.6}{69}{本章小结}{section.6.6}{}}
-\pp@pagectr{footnote}{8}{90}{71}
-\@writefile{toc}{\contentsline {chapter}{\numberline {第7章}总结与展望}{71}{chapter.7}\protected@file@percent }
-\newlabel{chap:7}{{7}{71}{总结与展望}{chapter.7}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.1}研究工作总结}{71}{section.7.1}\protected@file@percent }
-\newlabel{sec:ch7-summary}{{7.1}{71}{研究工作总结}{section.7.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.1}问题背景与核心挑战}{71}{subsection.7.1.1}\protected@file@percent }
-\newlabel{subsec:ch7-background}{{7.1.1}{71}{问题背景与核心挑战}{subsection.7.1.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.2}各章核心工作回顾}{71}{subsection.7.1.2}\protected@file@percent }
-\newlabel{subsec:ch7-chapters}{{7.1.2}{71}{各章核心工作回顾}{subsection.7.1.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.3}方法、分析与实验结果的一致性说明}{72}{subsection.7.1.3}\protected@file@percent }
-\newlabel{subsec:ch7-loop}{{7.1.3}{72}{方法、分析与实验结果的一致性说明}{subsection.7.1.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.2}主要贡献与创新点}{72}{section.7.2}\protected@file@percent }
-\newlabel{sec:ch7-contributions}{{7.2}{72}{主要贡献与创新点}{section.7.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.3}研究局限性}{73}{section.7.3}\protected@file@percent }
-\newlabel{sec:ch7-limitations}{{7.3}{73}{研究局限性}{section.7.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {7.4}未来研究方向}{73}{section.7.4}\protected@file@percent }
-\newlabel{sec:ch7-future}{{7.4}{73}{未来研究方向}{section.7.4}{}}
+\newlabel{eq:ch6-approx}{{6-3}{70}{实验设置}{equation.6.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}节点分类主实验}{70}{section.6.2}\protected@file@percent }
+\newlabel{sec:ch6-main}{{6.2}{70}{节点分类主实验}{section.6.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.3}{\ignorespaces 引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{71}{table.caption.45}\protected@file@percent }
+\newlabel{tab:ch6-homophily-large}{{6.3}{71}{引文网络与大规模图节点分类准确率（\%，均值$\pm $标准差，10次重复）}{table.caption.45}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.4}{\ignorespaces 网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}}{72}{table.caption.47}\protected@file@percent }
+\newlabel{tab:ch6-heterophily}{{6.4}{72}{网页图节点分类准确率（\%，均值$\pm $标准差，10次重复）}{table.caption.47}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}消融实验与分析结论验证}{73}{section.6.3}\protected@file@percent }
+\newlabel{sec:ch6-ablation}{{6.3}{73}{消融实验与分析结论验证}{section.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}逐模块消融分析}{73}{subsection.6.3.1}\protected@file@percent }
+\newlabel{subsec:ch6-modular}{{6.3.1}{73}{逐模块消融分析}{subsection.6.3.1}{}}
+\newlabel{eq:ch6-ablation-sparsity}{{6-4}{73}{逐模块消融分析}{equation.6.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.5}{\ignorespaces 综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}}{75}{table.caption.49}\protected@file@percent }
+\newlabel{tab:ch6-ablation}{{6.5}{75}{综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}{table.caption.49}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}跳距预算分配策略消融}{76}{subsection.6.3.2}\protected@file@percent }
+\newlabel{subsec:ch6-hopbudget}{{6.3.2}{76}{跳距预算分配策略消融}{subsection.6.3.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.6}{\ignorespaces 跳距预算分配策略消融（准确率\%）}}{76}{table.caption.51}\protected@file@percent }
+\newlabel{tab:ch6-hopbudget}{{6.6}{76}{跳距预算分配策略消融（准确率\%）}{table.caption.51}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}超参数敏感性分析}{77}{subsection.6.3.3}\protected@file@percent }
+\newlabel{subsec:ch6-hyperparam}{{6.3.3}{77}{超参数敏感性分析}{subsection.6.3.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces 关键超参数敏感性分析（Cora）}}{77}{figure.caption.53}\protected@file@percent }
+\newlabel{fig:ch6-hyperparam}{{6.1}{77}{关键超参数敏感性分析（Cora）}{figure.caption.53}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}效率分析}{78}{section.6.4}\protected@file@percent }
+\newlabel{sec:ch6-efficiency}{{6.4}{78}{效率分析}{section.6.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}推理效率与内存综合对比}{78}{subsection.6.4.1}\protected@file@percent }
+\newlabel{subsec:ch6-infer}{{6.4.1}{78}{推理效率与内存综合对比}{subsection.6.4.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.7}{\ignorespaces 推理效率与显存占用综合对比（GPU，$\text  {batch\_size}=1024$）}}{78}{table.caption.54}\protected@file@percent }
+\newlabel{tab:ch6-infer}{{6.7}{78}{推理效率与显存占用综合对比（GPU，$\text {batch\_size}=1024$）}{table.caption.54}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.8}{\ignorespaces 近年高效图学习方法推理效率补充对比（ogbn-arxiv，GPU，$\text  {batch\_size}=1024$）}}{79}{table.caption.56}\protected@file@percent }
+\newlabel{tab:ch6-infer-recent}{{6.8}{79}{近年高效图学习方法推理效率补充对比（ogbn-arxiv，GPU，$\text {batch\_size}=1024$）}{table.caption.56}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}预处理摊销与 break-even 分析}{80}{subsection.6.4.2}\protected@file@percent }
+\newlabel{subsec:ch6-breakeven}{{6.4.2}{80}{预处理摊销与 break-even 分析}{subsection.6.4.2}{}}
+\newlabel{eq:ch6-breakeven}{{6-5}{80}{预处理摊销与 break-even 分析}{equation.6.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.9}{\ignorespaces 预处理摊销与 break-even 估计（时间单位统一为秒）}}{80}{table.caption.58}\protected@file@percent }
+\newlabel{tab:ch6-breakeven}{{6.9}{80}{预处理摊销与 break-even 估计（时间单位统一为秒）}{table.caption.58}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}可视化分析}{81}{section.6.5}\protected@file@percent }
+\newlabel{sec:ch6-visual}{{6.5}{81}{可视化分析}{section.6.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces 节点级自适应稀疏参数$\mittau (i)$分布分析（Cora）}}{81}{figure.caption.60}\protected@file@percent }
+\newlabel{fig:ch6-taudist}{{6.2}{81}{节点级自适应稀疏参数$\tau (i)$分布分析（Cora）}{figure.caption.60}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces t-SNE节点表示可视化对比（Cora，7类）}}{82}{figure.caption.61}\protected@file@percent }
+\newlabel{fig:ch6-tsne}{{6.3}{82}{t-SNE节点表示可视化对比（Cora，7类）}{figure.caption.61}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.6}本章小结}{83}{section.6.6}\protected@file@percent }
+\newlabel{sec:ch6-summary}{{6.6}{83}{本章小结}{section.6.6}{}}
+\pp@pagectr{footnote}{8}{104}{84}
+\@writefile{toc}{\contentsline {chapter}{\numberline {第7章}总结与展望}{84}{chapter.7}\protected@file@percent }
+\newlabel{chap:7}{{7}{84}{总结与展望}{chapter.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.1}研究工作总结}{84}{section.7.1}\protected@file@percent }
+\newlabel{sec:ch7-summary}{{7.1}{84}{研究工作总结}{section.7.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.1}问题背景与核心挑战}{84}{subsection.7.1.1}\protected@file@percent }
+\newlabel{subsec:ch7-background}{{7.1.1}{84}{问题背景与核心挑战}{subsection.7.1.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.2}各章核心工作回顾}{84}{subsection.7.1.2}\protected@file@percent }
+\newlabel{subsec:ch7-chapters}{{7.1.2}{84}{各章核心工作回顾}{subsection.7.1.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1.3}方法、分析与实验结果的一致性说明}{85}{subsection.7.1.3}\protected@file@percent }
+\newlabel{subsec:ch7-loop}{{7.1.3}{85}{方法、分析与实验结果的一致性说明}{subsection.7.1.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}主要贡献与创新点}{86}{section.7.2}\protected@file@percent }
+\newlabel{sec:ch7-contributions}{{7.2}{86}{主要贡献与创新点}{section.7.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.3}研究局限性}{87}{section.7.3}\protected@file@percent }
+\newlabel{sec:ch7-limitations}{{7.3}{87}{研究局限性}{section.7.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7.4}未来研究方向}{88}{section.7.4}\protected@file@percent }
+\newlabel{sec:ch7-future}{{7.4}{88}{未来研究方向}{section.7.4}{}}
 \@input{bu.aux}
 \bibdata{ref/refs}
 \gdef\bu@bibdata{ref/refs}
 \ttl@writefile{toc}{\setcounter {tocdepth}{0}}
-\@writefile{toc}{\contentsline {chapter}{参考文献}{75}{section*.64}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{索\hskip 2em\relax 引}{78}{section*.66}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{创新索引}{78}{section*.69}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{主题索引}{79}{section*.70}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{专有名称索引}{79}{section*.71}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{在学期间完成的相关学术成果}{81}{section*.72}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{致\hskip 1em\relax 谢}{82}{section*.74}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{答辩委员会名单}{83}{section*.76}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{参考文献}{89}{section*.62}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{索\hskip 2em\relax 引}{93}{section*.64}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{创新索引}{93}{section*.67}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{主题索引}{94}{section*.68}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{专有名称索引}{94}{section*.69}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{在学期间完成的相关学术成果}{96}{section*.70}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{致\hskip 1em\relax 谢}{97}{section*.72}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{答辩委员会名单}{98}{section*.74}\protected@file@percent }
 \ttl@finishall
-\gdef \@abspage@last{102}
+\gdef \@abspage@last{118}

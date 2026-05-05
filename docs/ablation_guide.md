@@ -9,7 +9,8 @@ python scripts/experiments/run_ablation_hop_strategy.py --datasets cora chameleo
 
 ## B0~B5 累加逻辑
 
-- B0: SDGNN 兼容基线（全局统一 λ，但仍沿用本仓库分层候选/Phase-Θ 口径）
+- SDGNN: 原始协议纯基线（`K-hop + D-hop fanout` 平坦候选池）
+- B0: SDGNN 兼容基线（分层 BFS 候选池 + 全局统一 λ + 单个平坦 LARS/Lasso）
 - B1: +谱能量驱动 τ(i)
 - B2: +度中心性
 - B3: +k-core
@@ -19,7 +20,7 @@ python scripts/experiments/run_ablation_hop_strategy.py --datasets cora chameleo
 - B5-frozen: 冻结 W，不执行 Phase-W
 
 正文实验中，凡依赖教师表示 `H*` 的分解式方法（`B0`~`B5`、`B2-RND` 以及 `sdgnn_pure`）
-统一采用两层 `GCN` 作为教师模型，以保持可比性。
+统一采用三层 `GCN` 作为教师模型，以保持可比性。
 
 ## 原始 SDGNN
 

@@ -12,5 +12,10 @@
 | SGC | Wu et al., ICML 2019 | PyG |
 | PPRGo | Bojchevski et al., KDD 2020 | PyG APPNP |
 | GLNN | Zhang et al., NeurIPS 2022 | 本仓库 |
+| GraphSAINT | Zeng et al., ICLR 2020 | 本仓库自包含复现 |
+| NodeFormer | Wu et al., NeurIPS 2022 | 本仓库自包含复现 |
+| DIFFormer | Wu et al., ICLR 2023 | 本仓库自包含复现 |
+| SGFormer | Wu et al., NeurIPS 2023 | 本仓库自包含复现 |
+| NAGphormer | Chen et al., ICLR 2023 | 本仓库自包含复现 |
 | Geom-GCN | Pei et al., ICLR 2020 | 本仓库（补充参照） |
 | H2GCN | Zhu et al., NeurIPS 2020 | 本仓库（补充参照） |

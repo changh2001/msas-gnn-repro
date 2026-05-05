@@ -12,12 +12,13 @@
 - [ ] H*缓存完整（60个文件）
 
 ## 主实验（论文表6.2/6.3）
-- [ ] Cora: 88.3±0.7% (p=0.002)
+- [ ] Cora: 88.0±0.7% (p=0.002)
 - [ ] Citeseer: 82.1±0.9% (p=0.001)
 - [ ] PubMed: 89.4±0.4% (p=0.048)
 - [ ] ogbn-arxiv: 75.13±0.23% (p=0.009)
-- [ ] Chameleon: 67.2±0.9% (p=0.003)
-- [ ] Squirrel: 56.9±1.2% (p=0.011)
+- [ ] Chameleon: 65.6±0.9% (p=0.003)
+- [ ] Squirrel: 55.9±1.2% (p=0.011)
+- [ ] GraphSAINT/NodeFormer/DIFFormer/SGFormer/NAGphormer 补充基线日志完整
 
 ## 消融（论文表6.4）
 - [ ] B0→B5单调递增
@@ -28,8 +29,8 @@
 - [ ] 平均加速比~8.0x（vs GCN，四数据集）
 
 ## 摊销（论文表6.7）
-- [ ] Cora Q_be≈33750, PubMed Q_be≈3543, ogbn-arxiv Q_be≈467
+- [ ] Cora Q_be≈32727, PubMed Q_be≈3543, ogbn-arxiv Q_be≈464
 
 ## 可视化
-- [ ] τ分布 Pearson ρ≈-0.68
-- [ ] t-SNE Silhouette: 0.45/0.61/0.68
+- [ ] τ分布 Pearson $r_{\mathrm{Pearson}}\approx-0.68$
+- [ ] t-SNE Silhouette: 约0.44/0.51/0.57

@@ -58,6 +58,8 @@ class MSASTrainer:
                 cache_path=cache,
                 force_recompute=bool(self.cfg.get("no_cache", False)),
             )
+            if bundle.eigenvalues.numel() > 1:
+                self.cfg["lambda_gap"] = float(bundle.eigenvalues[1].item())
             stage_times["spectral_metrics"] = time.time() - stage_t0
         # 三维参数
         stage_t0 = time.time()

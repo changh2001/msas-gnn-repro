@@ -1,0 +1,6 @@
+parameter: varrho
+target: hop_dim.varrho
+strategy: near_engineering
+values: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+datasets: [cora, chameleon]
+seeds: [42, 123, 456]

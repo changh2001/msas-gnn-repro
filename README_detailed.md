@@ -69,10 +69,10 @@ MSAS-GNN 针对 SDGNN 三个结构性局限展开改进：
 
 - **主实验**：6 个数据集，含同配图与异配图
 - **消融实验**：`B0` 到 `B5`、`B2-RND`、`B5-frozen`
-- **跳距策略消融**：`uniform / xi05 / xi10 / reverse`
+- **跳距策略消融**：`uniform / near_engineering / spectral_gap_reference / reverse`
 - **效率实验**：时延、显存、参数量、相对加速比
 - **摊销实验**：break-even 查询次数 `Q_be`
-- **补充实验脚本**：`xi` 细粒度扫描、补充敏感性、谱代理量验证
+- **补充实验脚本**：近邻预算扫描、补充敏感性、谱代理量验证
 
 ---
 
@@ -304,7 +304,7 @@ python scripts/visualization/build_paper_figures.py --main
 包括两类：
 
 - 模块消融：`B0 -> B5`
-- 跳距策略消融：`uniform / xi05 / xi10 / reverse`
+- 跳距策略消融：`uniform / near_engineering / spectral_gap_reference / reverse`
 
 ### 7.3 效率 `make reproduce-efficiency`
 
@@ -320,7 +320,7 @@ python scripts/visualization/build_paper_figures.py --main
 
 包括：
 
-- `xi` 细粒度扫描
+- 近邻预算保留率补充扫描
 - Chameleon 与 ogbn-arxiv 的补充敏感性
 - `sigma proxy` 谱代理量验证
 
@@ -363,7 +363,7 @@ python scripts/visualization/build_paper_figures.py --main
 
 模块消融定义：
 
-- `B0`：SDGNN 兼容基线，和 `B1-B5` 共用分层 BFS 候选池、残差级联 `Phase-Θ` 与交替优化主干，但将自适应机制退化为全局统一 `lambda` 与均匀跳距预算
+- `B0`：SDGNN 兼容基线，使用分层 BFS 候选池、全局统一 `lambda` 与单次平坦 LARS/Lasso `Phase-Θ`
 - `B1`：在 `B0` 上加入谱能量驱动的 `tau(i)`
 - `B2`：在 `B1` 上加入中心性
 - `B3`：在 `B2` 上加入 `k-core`
@@ -373,15 +373,15 @@ python scripts/visualization/build_paper_figures.py --main
 - `B5-frozen`：冻结 `W`，不执行 `Phase-W`
 - `sdgnn_pure`：更贴近原论文的 SDGNN 训练协议，使用 `K-hop + D-hop fanout` 平坦候选池与单次 LARS/Lasso `Phase-Θ`
 
-正文实验中，凡依赖教师表示 `H*` 的分解式方法统一采用两层 `GCN` 作为教师模型；因此
+正文实验中，凡依赖教师表示 `H*` 的分解式方法统一采用三层 `GCN` 作为教师模型；因此
 `B0`、`sdgnn_pure` 与 `B5` 的差异只来自稀疏分解与预算机制，而不来自教师骨干网络。其中
-`B0` 与 `B5` 共享同一分层求解主干，`sdgnn_pure` 则在候选集构造和 `Phase-Θ` 口径上都单独对齐原始协议。
+`B0` 使用分层 BFS 候选池上的单个平坦 LARS/Lasso 子问题，`B5` 使用自特征通道加残差级联分层 LARS，`sdgnn_pure` 则在候选集构造和 `Phase-Θ` 口径上都单独对齐原始协议。
 
 跳距策略消融定义：
 
 - `uniform`
-- `xi05`
-- `xi10`
+- `near_engineering`
+- `spectral_gap_reference`
 - `reverse`
 
 ### 8.3 效率实验
@@ -404,7 +404,7 @@ python scripts/visualization/build_paper_figures.py --main
 
 脚本：
 
-- `scripts/experiments/supplemental/run_xi_sweep.py`
+- `scripts/experiments/supplemental/run_retention_sweep.py`
 - `scripts/experiments/supplemental/run_sensitivity_supplemental.py`
 - `scripts/experiments/supplemental/run_spectral_proxy.py`
 - `scripts/experiments/supplemental/backward_design_tau.py`
@@ -459,17 +459,17 @@ python scripts/visualization/build_paper_figures.py --main
 
 | 论文符号       | 代码变量                    |
 | ---------- | ----------------------- |
-| `xi`       | `xi_budget`             |
 | `beta_tau` | `beta_tau`              |
 | `gamma`    | `gamma`                 |
 | `delta`    | `delta`                 |
-| `eta`      | `eta`                   |
+| `omega_H`  | `omega_h`               |
 | `tau_base` | `tau_base`              |
 | `tau_min`  | `tau_min`               |
 | `c_E`      | `c_e`                   |
 | `lambda`   | `lambda_reg`            |
-| `k`        | `lars.k`                |
 | `L`        | `hop_dim.L`             |
+| `p_l`      | `hop_dim.strategy`, `p_base`, `p_min`, `kappa`, `varrho` |
+| `rho`      | `hop_dim.rho`（全局预算缩放） |
 | `K_eig`    | `spectral.K_eig`        |
 | `T_W`      | `alternating_opt.t_w`   |
 | `eta_W`    | `alternating_opt.eta_w` |
@@ -581,8 +581,8 @@ python scripts/visualization/build_paper_figures.py --main
 | 第 6 章 §6.2     | 主实验                  | `scripts/experiments/run_main_benchmarks.py`                             |
 | 第 6 章 §6.3     | 消融实验                 | `scripts/experiments/run_ablation_modular.py`                            |
 | 第 6 章 §6.4     | 效率分析                 | `scripts/experiments/run_efficiency.py`                                  |
-| 第 6 章 实验设置     | 大图 mini-batch 交替优化协议 | `src/msas_gnn/training/alternating_opt.py`                               |
-| 补充实验脚本         | `xi` 扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/`                                      |
+| 第 6 章 实验设置     | 大图 Phase-W mini-batch 协议 | `src/msas_gnn/training/alternating_opt.py`                               |
+| 补充实验脚本         | 近邻预算扫描、补充敏感性、谱代理量验证 | `scripts/experiments/supplemental/`                                      |
 | 第 6 章图表与补充实验图表 | LaTeX 表格与 PDF 图      | `scripts/visualization/build_paper_tables.py`, `build_paper_figures.py`  |
 
 
@@ -671,12 +671,13 @@ python scripts/setup/verify_env.py
 ## 15. 当前默认论文口径
 
 - `Cora` 主方法默认配置中，`B5 / B0` 使用 `lr=0.005`、`dropout=0.3`
-- 正文消融表同时报告两条 SDGNN 口径：`sdgnn_pure` 为原始协议基线，`B0` 为与 `B1-B5` 共用分层求解主干的兼容基线
-- 正文实验中所有依赖教师表示 `H*` 的分解式方法统一采用两层 `GCN` 教师模型
-- `GCN` 教师默认配置为 `hidden_dim=128`、`lr=0.005`、`dropout=0.3`
-- 正文敏感性分析默认扫描 `tau_base / k / xi_budget`
-- 仓库保留 `supplemental_sigma_proxy`、`supplemental_xi_sweep` 等补充实验脚本，便于扩展验证与额外分析
-- 大图 `ogbn-arxiv` 默认按第 6 章实验设置口径使用 mini-batch 交替优化
+- 正文消融表同时报告两条 SDGNN 口径：`sdgnn_pure` 为原始协议基线，`B0` 为分层 BFS 候选池 + 全局 λ + 单次平坦 LARS/Lasso 的兼容基线
+- 正文实验中所有依赖教师表示 `H*` 的分解式方法统一采用三层 `GCN` 教师模型
+- `GCN` 教师默认配置为 `hidden_dim=64`、`lr=0.005`、`dropout=0.3`
+- 正文敏感性分析默认扫描 `beta_tau / tau_base`
+- `graphsaint / nodeformer / difformer / sgformer / nagphormer` 为仓库内自包含补充基线复现实测口径
+- 仓库保留 `supplemental_sigma_proxy`、近邻预算扫描等补充实验脚本，便于扩展验证与额外分析
+- 大图 `ogbn-arxiv` 默认按第 6 章实验设置仅在 Phase-W 使用 mini-batch，结束后做全图 Phase-Theta 重对齐
 
 ---
 
@@ -688,7 +689,7 @@ python scripts/setup/verify_env.py
 | 方法                    | Cora         | Citeseer     | PubMed       | ogbn-arxiv     |
 | --------------------- | ------------ | ------------ | ------------ | -------------- |
 | SDGNN-compatible (B0) | 86.6±0.9     | 80.3±1.1     | 88.7±0.5     | 74.27±0.21     |
-| **MSAS-GNN (B5)**     | **88.0±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
+| **MSAS-GNN (B5-full)** | **88.0±0.7** | **82.1±0.9** | **89.4±0.4** | **75.13±0.23** |
 | p 值                   | 0.002        | 0.001        | 0.048        | 0.009          |
 
 
@@ -696,7 +697,7 @@ python scripts/setup/verify_env.py
 | 方法                    | Chameleon    | Squirrel     |
 | --------------------- | ------------ | ------------ |
 | SDGNN-compatible (B0) | 63.5±1.1     | 54.2±1.4     |
-| **MSAS-GNN (B5)**     | **65.6±0.9** | **55.9±1.2** |
+| **MSAS-GNN (B5-full)** | **65.6±0.9** | **55.9±1.2** |
 
 
 复现完成后，可参考 [docs/reproduce_checklist.md](docs/reproduce_checklist.md) 做逐项核对。
@@ -712,7 +713,7 @@ python scripts/setup/verify_env.py
 ### 17.2 SDGNN 基线为什么是仓库内兼容实现
 
 因为该方法没有直接可用的官方代码，本仓库同时保留了两条口径：`B0` 作为兼容基线，`sdgnn_pure` 作为更贴近原论文的复现入口。为保证正文实验可比性，这两条口径当前都统一采用 `GCN` 教师模型。相关说明见 `references/sdgnn_impl_notes.md`。
-其中，`B0` 与 `B1-B5` 共用分层求解主干，适合作为正文消融链的内部基线；`sdgnn_pure` 则在候选集与 `Phase-Θ` 口径上单独贴近原始 SDGNN。
+其中，`B0` 使用分层 BFS 候选池、全局 λ 和单次平坦 LARS/Lasso，适合作为正文消融链的内部基线；`B1-B5` 保留逐步加入的 MSAS 模块，其中 `B5-full` 使用自特征通道、残差级联 LARS 与 Phase-W。
 
 ### 17.3 为什么效率实验和论文数字不完全一致
 
@@ -734,7 +735,7 @@ python scripts/setup/verify_env.py
 
 ### 17.6 大图为什么有单独训练口径
 
-`ogbn-arxiv` 节点规模较大，因此按第 6 章实验设置使用 mini-batch 交替优化。训练结束后，代码会固定最终 `Phi_tilde`，再补做一次全图 `Phase-Theta` 重对齐。
+`ogbn-arxiv` 节点规模较大，因此按第 6 章实验设置仅在 `Phase-W` 使用 mini-batch 更新 `W_phi`。训练结束后，代码会固定最终 `Phi_tilde`，再补做一次全图 `Phase-Theta` 重对齐。
 
 ### 17.7 想快速确认当前结果有没有跑偏，应该看什么
 
@@ -755,4 +756,3 @@ python scripts/setup/verify_env.py
 - 只想复现实验：看“[7. 完整复现流程](#7-完整复现流程)”
 - 只想改配置：看“[9. 配置系统说明](#9-配置系统说明)”
 - 只想读代码：看“[10. 代码层次结构](#10-代码层次结构)”
-

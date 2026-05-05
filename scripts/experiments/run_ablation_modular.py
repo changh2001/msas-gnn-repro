@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 SEEDS = [42, 123, 456, 789, 2021, 2022, 2023, 2024, 2025, 2026]
 CFG = {
+    "sdgnn_pure": "configs/ablations/sdgnn_pure.yaml",
     "b0": "configs/ablations/b0_sdgnn.yaml",
     "b1": "configs/ablations/b1_plus_spectral.yaml",
     "b2": "configs/ablations/b2_plus_centrality.yaml",

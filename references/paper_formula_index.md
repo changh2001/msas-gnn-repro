@@ -17,7 +17,7 @@
 |-----------|---------|------|
 | 式(4.1)-(4.3) 频率维 | adaptive/frequency_correction.py | compute_frequency_weights |
 | 式(4.7)-(4.13) τ(i) | adaptive/tau_builder.py | build_tau |
-| 式(4.14)-(4.18) 跳距维 | adaptive/hop_budget.py | allocate_hop_budget |
+| 式(4.14)-(4.18) 跳距维 | adaptive/hop_budget.py | allocate_hop_budget_for_candidates |
 | §4.4 三维封装 | adaptive/joint_budget.py | build_adaptive_params |
 
 ## 第5章
@@ -27,7 +27,7 @@
 | 算法5.2 LARS | decomposition/lars_solver.py | lars_lasso_single |
 | 算法5.3 Phase-Θ | decomposition/theta_optimizer.py | run_phase_theta |
 | 算法5.4 交替优化 | training/alternating_opt.py | AlternatingOptimizer.run |
-| §5.1.2 热启动 | decomposition/warm_start.py | warm_start_phi_tilde |
+| §5.1.2 W_phi 岭回归热启动 | training/feature_transform.py | initialize_linear_feature_transform |
 | §5.3 推理 | decomposition/inference.py | infer_h_hat |
 
 ## 第6章
@@ -36,3 +36,4 @@
 | ε_approx | evaluation/metrics.py | compute_epsilon_approx |
 | Wilcoxon | evaluation/significance.py | run_wilcoxon |
 | Q_be | evaluation/break_even.py | compute_break_even |
+| 近期补充基线 | baselines/graphsaint.py, baselines/graph_transformers.py | GraphSAINT / NodeFormer / DIFFormer / SGFormer / NAGphormer |

@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 STRAT = {
     "uniform": "configs/ablations/hop_uniform.yaml",
-    "xi05": "configs/ablations/hop_xi05.yaml",
-    "xi10": "configs/ablations/hop_xi10.yaml",
+    "near_engineering": "configs/ablations/hop_near_engineering.yaml",
+    "spectral_gap_reference": "configs/ablations/hop_spectral_gap_reference.yaml",
     "reverse": "configs/ablations/hop_reverse.yaml",
 }
 ABLATION_BY_STRATEGY = {
     "uniform": "hop_uniform",
-    "xi05": "hop_xi05",
-    "xi10": "hop_xi10",
+    "near_engineering": "hop_near_engineering",
+    "spectral_gap_reference": "hop_spectral_gap_reference",
     "reverse": "hop_reverse",
 }
 SEEDS = [42, 123, 456, 789, 2021, 2022, 2023, 2024, 2025, 2026]

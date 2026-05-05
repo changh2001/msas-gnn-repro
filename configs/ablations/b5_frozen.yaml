@@ -10,13 +10,20 @@ node_dim:
   beta_tau: 1.0
   gamma: 0.5
   delta: 0.3
-  eta: 0.2
+  omega_h: 0.2
 hop_dim:
-  strategy: xi_budget
-  xi_budget: 0.5
+  strategy: spectral_gap_reference
   L: 3
+  p_base: 0.6
+  p_min: 0.1
+  kappa: 2.0
+  varrho: 0.7
+  rho: 1.0
 lars:
   k: 50
+feature_transform:
+  init_protocol: ridge_x_to_h_star
+  ridge: 1.0e-4
 alternating_opt:
   protocol: b5_frozen
   max_outer_iter: 20
