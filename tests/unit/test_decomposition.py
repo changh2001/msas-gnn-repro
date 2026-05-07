@@ -120,6 +120,42 @@ def test_phase_theta_writes_self_channel_diagonal():
     assert theta_fixed.candidate_total == 1
 
 
+def test_phase_theta_shared_target_only_changes_layer_target_path():
+    from msas_gnn.decomposition.theta_optimizer import run_phase_theta
+    from msas_gnn.typing import AdaptiveParamSet
+
+    h_star = torch.tensor([[1.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
+    phi_tilde = torch.tensor([[0.0, 0.0], [1.0, 0.0], [1.0, 0.0]])
+    params = AdaptiveParamSet(
+        tau=torch.zeros(3),
+        k_budget=torch.tensor([[1, 1], [0, 0], [0, 0]], dtype=torch.long),
+        freq_weights=torch.ones(2),
+    )
+    candidate_sets = [{0: [1], 1: [], 2: []}, {0: [2], 1: [], 2: []}]
+
+    residual = run_phase_theta(
+        h_star,
+        phi_tilde,
+        params,
+        candidate_sets,
+        cfg={"lars": {"theta_solver_mode": "residual_cascade"}},
+        node_indices=[0],
+    ).theta.to_dense()
+    shared = run_phase_theta(
+        h_star,
+        phi_tilde,
+        params,
+        candidate_sets,
+        cfg={"lars": {"theta_solver_mode": "shared_target"}},
+        node_indices=[0],
+    ).theta.to_dense()
+
+    assert residual[1, 0] != 0
+    assert residual[2, 0] == 0
+    assert shared[1, 0] != 0
+    assert shared[2, 0] != 0
+
+
 def test_phase_theta_sdgnn_uses_flat_candidate_pool():
     from msas_gnn.decomposition.theta_optimizer import run_phase_theta_sdgnn
     from msas_gnn.typing import AdaptiveParamSet

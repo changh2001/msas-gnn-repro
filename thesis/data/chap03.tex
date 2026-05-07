@@ -149,7 +149,7 @@ $\phi(\cdot;W_\phi):\mathbb{R}^{D}\to\mathbb{R}^{d}$ 将原始节点特征映射
   \tilde{\Phi}:=\ell_2\text{-normalize-row}\bigl(\phi(X;W_\phi)\bigr)\in\mathbb{R}^{n\times d}.
   \label{eq:ch3-normalized-feature}
 \end{equation}
-式~\eqref{eq:ch3-normalized-feature} 表示对变换后的节点特征逐行作 $\ell_2$ 归一化，以减弱不同节点特征尺度差异对后续稀疏分解的影响。单层线性变换是本文主实验采用的特征变换配置，并不意味着该结构在所有任务中最优；第~6~章将在去除特征变换的消融设置下，进一步分析该模块对表示逼近与下游性能的影响。
+式~\eqref{eq:ch3-normalized-feature} 表示对变换后的节点特征逐行作 $\ell_2$ 归一化，以减弱不同节点特征尺度差异对后续稀疏分解的影响。单层线性变换是本文主实验采用的特征变换配置，并不意味着该结构在所有任务中最优。第~6~章将在冻结 $W_\phi$ 与完整交替优化更新 $W_\phi$ 的消融设置下，进一步分析特征变换更新对表示逼近与下游性能的影响。
 
 在此基础上，本文的决策变量为特征变换参数 $W_\phi$ 与稀疏权重矩阵 $\Theta$，统一优化目标写为
 \begin{equation}

@@ -1,0 +1,1229 @@
+% ============================================================
+% MSAS-GNN 硕士学位论文答辩 Beamer 演示文稿
+% 北京师范大学 统计学院
+% ============================================================
+\documentclass[aspectratio=169,9pt,xcolor=dvipsnames]{beamer}
+\usetheme{default}
+\usecolortheme{default}
+
+% ---------- 中文支持 ----------
+\usepackage{xeCJK}
+\setCJKmainfont[BoldFont={* Bold}]{Kaiti SC}
+\setCJKsansfont[BoldFont={* Bold}]{Kaiti SC}
+\setCJKmonofont[BoldFont={* Bold}]{Kaiti SC}
+
+% ---------- 英文字体 ----------
+\setmainfont{Times New Roman}
+\setsansfont{Times New Roman}
+
+% ---------- 数学与符号 ----------
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{bm}
+\usepackage{bbm}
+
+% ---------- 图表 ----------
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% ---------- 表格 ----------
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+% ---------- 其他 ----------
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+% ==================== 颜色定义 ====================
+\definecolor{mynavy}{RGB}{37,62,112}
+\definecolor{myred}{RGB}{192,64,64}
+\definecolor{mygreen}{RGB}{26,144,112}
+
+% ==================== 自定义命令 ====================
+\newcommand{\highlight}[1]{\textcolor{myred}{\textbf{#1}}}
+\newcommand{\blue}[1]{\textcolor{mynavy}{#1}}
+\newcommand{\green}[1]{\textcolor{mygreen}{#1}}
+\newcommand{\kbar}{\ensuremath{\bar{k}}}
+
+% ==================== 字体大小覆盖 ====================
+\setbeamerfont{title}{size=\huge}
+\setbeamerfont{subtitle}{size=\Large}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{author}{size=\large}
+
+
+% ==================== 列表样式 ====================
+\setbeamertemplate{itemize item}[circle]
+\setbeamertemplate{itemize subitem}[circle]
+\setbeamertemplate{itemize subsubitem}[circle]
+
+% ==================== 页脚：导航（左）+ 页码（右）====================
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox to \paperwidth{%
+    \hspace{0.3em}%
+    {\usebeamercolor[fg]{navigation symbols}%
+     \insertslidenavigationsymbol%
+     \insertframenavigationsymbol%
+     \insertsubsectionnavigationsymbol%
+     \insertsectionnavigationsymbol%
+     \insertdocnavigationsymbol%
+     \insertbackfindforwardnavigationsymbol}%
+    \hfill%
+    {\usebeamercolor[fg]{structure}%
+     \footnotesize\insertframenumber\,/\,\inserttotalframenumber\hspace{0.8em}}%
+  }%
+  \vspace{0.4em}%
+}
+
+% ==================== 图片路径 ====================
+\graphicspath{{figure/}}
+
+% ==================== 标题信息 ====================
+\title[MSAS-GNN 答辩]{MSAS-GNN：谱驱动自适应稀疏图神经网络的鲁棒高效推理}
+\subtitle{MSAS-GNN: Spectral-Driven Multi-Scale Adaptive Sparse Graph Neural Networks for Robust and Efficient Inference}
+\author{答辩人：常昊 \quad 导师：翟铮\ 副教授}
+\institute{北京师范大学\quad 统计学院}
+\date{2026年5月10日}
+
+\begin{document}
+
+% ==============================================================
+% S01  封面
+% ==============================================================
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% ==============================================================
+% S02  目录
+% ==============================================================
+\begin{frame}{论文结构总览}
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \begin{block}{本次答辩汇报结构}
+        \begin{enumerate}\setlength{\itemsep}{3pt}
+          \item \textbf{研究背景与问题动机}（第1--2章）
+          \item \textbf{问题形式化与图复杂度指标}（第3章）
+          \item \textbf{谱驱动三维自适应稀疏机制}（第4章）
+          \item \textbf{算法整合、误差分析与复杂度}（第5章）
+          \item \textbf{实验评估}（第6章）——主实验·消融·效率
+          \item \textbf{总结与展望}（第7章）
+        \end{enumerate}
+      \end{block}
+      \vspace{0.2cm}
+      \begin{alertblock}{全文核心约束}
+        \centering
+        在 SDGNN 稀疏分解接口内，保持在线推理主项复杂度
+        $\boldsymbol{O(n\kbar d)}$ 不变，其中 $\kbar\ll\bar{d}^L$
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \textbf{\blue{主要实验结论（预告）}}
+      \begin{itemize}\setlength{\itemsep}{3pt}
+        \item vs.\ SDGNN（6个数据集，$p<0.05$）：
+          \begin{itemize}
+            \item 引文网络均值 \green{$\uparrow$1.3\%}
+            \item 网页图均值 \green{$\uparrow$1.9\%}
+            \item ogbn-arxiv \green{$\uparrow$0.86\%}
+          \end{itemize}
+        \item 推理加速 \blue{$8.0\times$}（四数据集均值）
+        \item ogbn-arxiv 加速 \blue{$14.7\times$}
+        \item 峰值显存节省 \blue{74.8\%}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S03  GNN 推理效率瓶颈
+% ==============================================================
+\section{研究背景与问题动机}
+
+\begin{frame}{在线图推理的效率瓶颈}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{\highlight{问题一：推理复杂度爆炸}}
+      \begin{itemize}
+        \item $L$ 层 GCN 单次前向主项复杂度：$O(L\cdot m\cdot d)$，$m=\mathrm{nnz}(A)$
+        \item 有效感受野随层数指数膨胀：\highlight{$O(\bar{d}^L)$ 个节点}
+        \item 3层、$\bar{d}=10$：需聚合 $\approx1000$ 个邻居
+        \item 在线预测时延可超过 \highlight{100\,ms}（实时系统不可接受）
+      \end{itemize}
+
+      \vspace{0.25cm}
+      \textbf{\highlight{问题二：加深网络的两大病态}}
+      \begin{itemize}
+        \item \blue{过平滑（Over-smoothing）}：节点表示趋同，信息区分度丧失
+        \item \blue{过压缩（Over-squashing）}：远端信息丢失，多跳瓶颈效应
+        \item 简单加深层数无法获得更好的感受野-效率平衡
+      \end{itemize}
+
+      \vspace{0.25cm}
+      \textbf{已有代表性方向及不足}
+      \begin{itemize}
+        \item 邻居采样（GraphSAGE、FastGCN）：推理仍需访图
+        \item 预计算线性化（SGC、APPNP）：缺节点级自适应
+        \item 稀疏分解（\highlight{SDGNN}）：本文直接扩展基线
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{在线服务场景的刚性约束}
+        \begin{itemize}
+          \item 推荐系统：\highlight{QPS $>$ 1000}，毫秒级响应
+          \item 实时风控：延迟 \highlight{$<$ 10\,ms}
+          \item 大规模图（$n>10^6$）：内存访问成为主瓶颈
+        \end{itemize}
+      \end{alertblock}
+      \vspace{0.2cm}
+      \includegraphics[width=\linewidth]{figures/3-2.pdf}
+      \vspace{0.1cm}
+      \centering\footnotesize 图3.2：SDGNN全局统一稀疏预算失效示意
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S04  SDGNN 基线与局限
+% ==============================================================
+\begin{frame}{SDGNN 的突破与局限——本文的问题来源}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \begin{block}{\green{SDGNN 核心思想}（Hu et al., 2024）}
+        \small
+        以单次稀疏分解替代多层消息传递，推理阶段仅执行：
+        \begin{equation*}
+          \hat{H}=\Theta^{\top}\tilde{\Phi}
+        \end{equation*}
+        $\tilde{\Phi}\in\mathbb{R}^{n\times d}$：预缓存特征；$\Theta\in\mathbb{R}^{n\times n}$：离线固化稀疏权重\\[3pt]
+        主项复杂度：$O(L\cdot m\cdot d)\ \longrightarrow$ \highlight{$O(n\kbar d)$}\\[2pt]
+        ogbn-arxiv 批次前向：\blue{9.2\,ms}，相对 GCN 加速 $\mathbf{13.6\times}$
+      \end{block}
+
+      \vspace{0.2cm}
+      \textbf{\highlight{核心局限：全局统一稀疏预算}}
+      \begin{itemize}
+        \item 以同一 $\lambda_{\mathrm{reg}}$ 约束\textbf{所有节点}
+        \item \textbf{枢纽节点}（高度数）：稀疏化过强 $\to$ 丢失关键邻居
+        \item \textbf{外围节点}（低度数）：稀疏化不足 $\to$ 保留冗余连接
+        \item 复杂图（异配、重尾度）：失配更明显
+      \end{itemize}
+      \vspace{0.15cm}
+      \textbf{本文问题}：能否在保持 $O(n\kbar d)$ 接口不变的前提下，\\
+      引入\textbf{节点级差异化稀疏预算}？
+    \end{column}
+
+    \begin{column}{0.50\textwidth}
+      \includegraphics[width=\linewidth]{figures/1-1.pdf}
+      \vspace{0.05cm}
+      \centering\footnotesize 图1.1：SDGNN全局统一稀疏预算局限与MSAS-GNN自适应改进示意
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S05  研究目标与全文方法链
+% ==============================================================
+\begin{frame}{研究目标与全文技术路线}
+  \begin{columns}[T]
+    \begin{column}{0.42\textwidth}
+      \textbf{\blue{研究目标}}
+      \begin{itemize}
+        \item 在保持推理主项复杂度 $O(n\kbar d)$ 不变的前提下
+        \item 利用可计算图结构统计量构建节点级差异化稀疏预算
+        \item 使不同结构角色的节点获得更匹配的信息保留强度
+        \item 设计具有可解释、可分析和可验证依据的参数体系
+      \end{itemize}
+
+      \vspace{0.1cm}
+      \textbf{\blue{全文方法链（四层递进）}}
+      \begin{itemize}
+        \item \textbf{第3章}：图复杂度指标提取\\
+          $\lambda_{\mathrm{gap}}$、$E_{\mathrm{spectral}}(i)$、$H_{\mathrm{norm}}(i)$、$C_{\mathrm{deg}}(i)$
+        \item \textbf{第4章}：三维自适应参数设计\\
+          频率维 $w_k(i)$ · 节点维 $\tau(i)$ · 跳距维 $k_i^{(l)}$
+        \item \textbf{第5章}：分层LARS算法整合\\
+          交替优化 $\to$ 固化 $\Theta^{\mathrm{fixed}}$ $\to$ $O(n\kbar d)$ 推理
+        \item \textbf{第6章}：6数据集实验验证\\
+          主实验·消融·效率分析
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.9\textheight,keepaspectratio]{figures/1-2.pdf}
+      \vspace{0.05cm}
+      
+      \footnotesize 图1.2：本文技术路线与章节接口示意图
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S06  第3章：问题形式化
+% ==============================================================
+\section{问题形式化与图复杂度指标}
+
+\begin{frame}{第3章：问题形式化与优化目标}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{在 SDGNN 接口内引入节点级正则}}
+
+      \textbf{训练阶段}（对每个节点 $i$ 求解带节点级正则的加权 Lasso）：
+      \begin{equation*}
+        \min_{\theta_i}\;
+        \bigl\|h_i^* - \tilde{\Phi}^{\top}\theta_i\bigr\|_2^2
+        +\tau(i)\|\theta_i\|_1
+        \;\text{s.t.}\;
+        \|\theta_i\|_0 \leq \textstyle\sum_{l=1}^{L}k_i^{(l)}
+      \end{equation*}
+
+      \textbf{推理阶段}（$\Theta^{\mathrm{fixed}}$ 离线固化后）：
+      \begin{equation*}
+        \hat{H}=\bigl(\Theta^{\mathrm{fixed}}\bigr)^{\top}\tilde{\Phi}_{\mathrm{cache}}
+        \quad\Rightarrow\quad {\color{myred}O(n\kbar d)}
+      \end{equation*}
+
+      \vspace{0.2cm}
+      \textbf{\blue{三项设计准则}}
+      \begin{itemize}
+        \item \textbf{可解释性}：$\tau(i)$ 与 $k_i^{(l)}$ 由可计算统计量确定，参数意义明确
+        \item \textbf{复杂度不变}：在线推理严格保持 $O(n\kbar d)$
+        \item \textbf{任务无关性}：不依赖标签统计量，等权实例化
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{表示近似误差}：
+      $\;\mathcal{E}_{\mathrm{approx}} = \frac{1}{\sqrt{n}}\|H^*-\hat{H}\|_F$
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \includegraphics[width=\linewidth]{figures/3-1.pdf}
+      \vspace{0.05cm}
+      \centering\footnotesize 图3.1：第3章整体流程图——从图输入到四类复杂度指标输出
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S07  第3章：四类图复杂度指标
+% ==============================================================
+\begin{frame}{第3章：四类图复杂度指标——自适应参数的统一输入接口}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{\blue{1 \, 谱间隙 $\lambda_{\mathrm{gap}}$}}（全图级·频率维）
+      \begin{itemize}
+        \item 归一化拉普拉斯第二小特征值，刻画代数连通度
+        \item Lanczos 迭代谱估计，$O(m\cdot t)$
+        \item $\lambda_{\mathrm{gap}}$ 大 $\Rightarrow$ 连通性强 $\Rightarrow$ 近跳信息充足
+        \item 驱动分层跳距保留率 $p_l$ 的整体设计
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\blue{2 \, 节点谱能量 $E_{\mathrm{spectral}}(i)$}}（节点级·频率维）
+      \begin{equation*}
+        E_{\mathrm{spectral}}(i) = \sum_{k=1}^{K}w_k\,|U_{ik}|^2,\quad
+        w_k=\tfrac{1}{K}\ (\text{等权})
+      \end{equation*}
+      \begin{itemize}
+        \item 节点 $i$ 在各谱分量上的参与强度
+        \item Lanczos 近似特征向量投影，$O(K\cdot m)$
+        \item 直接进入 $\tau(i)$ 多因子融合
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \textbf{\blue{3 \, 归一化局部图熵 $H_{\mathrm{norm}}(i)$}}（节点维）
+      \begin{equation*}
+        H_{\mathrm{norm}}(i)
+        =-\frac{1}{\log d_i}\sum_{j\in\mathcal{N}(i)}\tfrac{1}{d_i}\log\tfrac{1}{d_i}
+      \end{equation*}
+      \begin{itemize}
+        \item 节点局部邻域的信息丰富程度
+        \item $H_{\mathrm{norm}}\uparrow\ \Rightarrow$ 邻域多样 $\Rightarrow$ $\tau(i)$ 偏小
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\blue{4 \, 度中心性 $C_{\mathrm{deg}}(i)$ 与 $k$-core 指数}}（节点维）
+      \begin{equation*}
+        C_{\mathrm{deg}}(i)=\frac{d_i}{n-1},\qquad
+        \mathrm{core}(i)\in\mathbb{Z}^+
+      \end{equation*}
+      \begin{itemize}
+        \item 节点在全局连接中的枢纽地位
+        \item 枢纽节点（$C_{\mathrm{deg}}\uparrow$、$\mathrm{core}\uparrow$）：$\tau(i)$ 应\textbf{偏小}
+        \item 外围节点：局部冗余多，$\tau(i)$ 应\textbf{偏大}
+      \end{itemize}
+
+      % \vspace{0.1cm}
+      \begin{alertblock}{四类指标的接口关系}
+        \small 全部四类统计量在第4章统一进入自适应参数设计；在第5章通过分层LARS进入稀疏权重学习流程
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S08  第4章：三维机制概览
+% ==============================================================
+\section{三维自适应稀疏机制}
+
+\begin{frame}{第4章：三维自适应稀疏机制整体框架}
+  \begin{columns}[T]
+    \begin{column}{0.46\textwidth}
+      \includegraphics[width=\linewidth]{figures/4-1.pdf}
+      \centering\footnotesize 图4.1：三维自适应稀疏机制整体框架图
+    \end{column}
+
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{频率维（§\,4.1）}}：放松"统一低通传播"假设
+      \begin{itemize}
+        \item 节点谱能量 $E_{\mathrm{spectral}}(i)$ 作为\textbf{等权统一谱输入} $w_k(i)$
+        \item 任务无关，不引入标签统计量或同配性假设
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\highlight{节点维（§\,4.2）}}：放松"统一稀疏压力"假设
+      \begin{itemize}
+        \item 多因子融合构造节点级正则系数 $\tau(i)$
+        \item 输入：$E_{\mathrm{spectral}}(i)$、$H_{\mathrm{norm}}(i)$、$C_{\mathrm{deg}}(i)$、$\mathrm{core}(i)$
+        \item 结构信息贡献高的节点 $\Rightarrow$ $\tau(i)$ 较小 $\Rightarrow$ 保留更多邻居
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\green{跳距维（§\,4.3）}}：放松"各跳贡献均等"假设
+      \begin{itemize}
+        \item 近邻优先分层预算 $k_i^{(l)}$，保留率随跳距递减
+        \item $p_l=p_{\mathrm{base}}\cdot\varrho^{l-1}$（$\varrho\in(0,1)$），$k_i^{(l)}=\lfloor p_l\cdot|\mathcal{R}_l(i)|\rfloor$
+        \item §\,4.3.1 多跳传播信息衰减界分析提供理论依据
+      \end{itemize}
+
+      \vspace{0.15cm}
+      \begin{alertblock}{关键约束}
+        \small 三个维度均不改变推理接口：
+        $\hat{H}=(\Theta^{\mathrm{fixed}})^{\top}\tilde{\Phi}_{\mathrm{cache}}$，
+        主项复杂度 \highlight{$O(n\kbar d)$} 严格保持不变
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S09  第4章：τ(i) 具体构造
+% ==============================================================
+\begin{frame}{节点级正则系数 $\tau(i)$ 的多因子融合构造（§\,4.2）}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{多因子融合公式}}
+      {\small
+        \begin{equation*}
+          \tau(i) = \mathrm{clip}\!\left(
+            \frac{\tau_{\text{base}} \cdot \exp\!\left(-\beta_{\tau}\,E_{\text{spectral}}(i)/E_{\text{threshold}}\right)}
+                {1 + \gamma\,C_{\text{deg}}(i) + \delta\,\tfrac{\operatorname{core}(i)}{k_{\max}} + \omega_H\,H_{\text{norm}}(i)},
+            \tau_{\min},\tau_{\text{base}}
+          \right).
+        \end{equation*}
+      }
+      % 其中 $f(\cdot)$ 为单调递减映射。
+
+      \vspace{0.2cm}
+      \textbf{各因子贡献方向（均为单调递减关系）}
+      \begin{itemize}
+        \item $E_{\mathrm{spectral}}(i)\uparrow$ $\Rightarrow$ 高频参与强 $\Rightarrow$ \highlight{$\tau(i)\downarrow$}（保留更多）
+        \item $H_{\mathrm{norm}}(i)\uparrow$ $\Rightarrow$ 邻域多样 $\Rightarrow$ \highlight{$\tau(i)\downarrow$}
+        \item $C_{\mathrm{deg}}(i)\uparrow$ $\Rightarrow$ 枢纽节点 $\Rightarrow$ \highlight{$\tau(i)\downarrow$}
+        \item $\mathrm{core}(i)\uparrow$ $\Rightarrow$ 核心层级高 $\Rightarrow$ \highlight{$\tau(i)\downarrow$}
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{超参数经验稳健区间}（Cora 验证集，10次随机种子）
+      \begin{itemize}
+        \item $\beta_\tau\in[0.8,1.2]$：准确率波动 $\leq 0.3\%$
+        \item $\tau_{\mathrm{base}}\in[5\times10^{-4},5\times10^{-3}]$：87.7\%--88.0\%
+        \item B2-RND（随机化 $\tau$ 对照）未带来稳定收益，证明结构驱动有效
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \includegraphics[width=\linewidth]{figures/4-2.pdf}
+      \centering\footnotesize 图4.2：节点级正则系数 $\tau(i)$ 三维自适应框架示意图
+
+      \vspace{0.15cm}
+      \small
+      \begin{tabular}{lcc}
+        \toprule
+        节点类型 & $\tau(i)$ & 保留邻居 \\
+        \midrule
+        枢纽节点（高度、高core） & \green{较小} & 较多 \\
+        外围节点（低度、低core） & \highlight{较大} & 较少 \\
+        普通节点 & 中等 & 中等 \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S10a  分层跳距预算（一）：衰减界推导与保留率下界
+% ==============================================================
+\section{算法整合与理论分析}
+
+\begin{frame}{分层跳距预算（一）：信息衰减界与保留率设计（§\,4.3.1）}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+  \textbf{\blue{多跳传播边际贡献衰减分析}}
+
+  {\small
+  设 $P$ 为传播算子，$\mu_\star(P)$ 为其第二谱半径，第 $l$ 跳边际增量 $\Delta h_i^{[l]}$ 满足：
+
+  \textbf{步骤一}：以标准基向量 $e_i$ 展开，
+  \begin{equation*}
+    \|\Delta h_i^{[l]}\|_2
+    \le \bigl\|P^{l-1}(P-I)X\bigr\|_F
+  \end{equation*}
+
+  \textbf{步骤二}：非主特征方向在 $P^{l-1}$ 作用下几何收缩，
+  \begin{equation*}
+    \bigl\|P^{l-1}(P-I)X\bigr\|_F
+    \le \mu_\star(P)^{l-1}\cdot\|(P-I)X\|_F
+  \end{equation*}
+
+  \textbf{步骤三}：令 $C_0 := \|(P-I)X\|_F$，得\textbf{核心衰减界}，
+  \begin{equation*}
+    \|\Delta h_i^{[l]}\|_2
+    \;\le\; {\color{myred}C_0\,\mu_\star(P)^{l-1}}
+  \end{equation*}
+  当 $\mu_\star(P)<1$ 时，边际贡献上界随 $l$ 增大按\textbf{几何速度衰减}。
+
+  \smallskip
+  \textbf{保留率参考下界}：令 $(1-p_l)C_0\mu_\star(P)^{l-1} \le \varepsilon_l$，得
+  \begin{equation*}
+    p_l \;\geq\; \max\!\left\{0,\;
+    1 - \frac{\varepsilon_l}{C_0\,\mu_\star(P)^{l-1}}\right\}
+  \end{equation*}
+  $l$ 增大 $\Rightarrow$ 下界降低 $\Rightarrow$ \textbf{高跳距可允许更强稀疏化}
+  }
+\end{column}
+
+\begin{column}{0.44\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=0.40\textheight,keepaspectratio]{figures/4-3.pdf}\par
+  {\footnotesize 图4.3\;跳距预算衰减分配示意（策略1 vs 策略2）}
+
+  \smallskip
+  \textbf{口径说明}
+  \begin{itemize}\small\setlength{\itemsep}{1pt}
+    \item $C_0$ 为全图 Frobenius 范数，是对单节点边际增量的\textbf{全局保守上界}，非各节点精确贡献估计
+    \item 该界的作用在于为分层预算分配提供\textbf{方向性依据}
+    \item 更正式的误差分析见第5章 $\sigma$-谱相似性框架
+  \end{itemize}
+
+  \medskip
+  \begin{alertblock}{核心结论}
+    \small 近跳邻居边际贡献上界更大，应获得更高保留率；随跳距增加，保留率下界单调递减——为"近邻优先"分层预算设计提供理论动机
+  \end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================
+% S10b  分层跳距预算（二）：两种策略与联合分配
+% ==============================================================
+\begin{frame}{分层跳距预算（二）：$p_l$ 的两种策略与节点-跳距联合分配（§\,4.3.2--4.3.3）}
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+  \textbf{\blue{策略1：均匀衰减（几何递减，公比固定）}}
+
+  记 $p_1$、$p_L$ 分别为首末跳保留率，公比统一为：
+  \begin{equation*}
+    p_l = p_1\cdot\varrho^{l-1},
+    \quad
+    \varrho = \!\left(\frac{p_L}{p_1}\right)^{\!\frac{1}{L-1}}\!,
+    \quad \varrho\in(0,1)
+  \end{equation*}
+  \textit{示例}（$L=3$，$p_1=0.60$，$p_3=0.20$）：得 $(p_1,p_2,p_3)=(0.60,0.40,0.20)$
+
+  \smallskip
+  \textbf{\blue{策略2：谱间隙自适应（衰减速度随图结构调节）}}
+
+  以第3章预处理得到的 $\hat{\lambda}_{\mathrm{gap}}$ 为代理量：
+  \begin{equation*}
+    r = \exp(-\kappa\,\hat{\lambda}_{\mathrm{gap}}),
+    \quad
+    p_l = \max\!\bigl\{p_{\min},\;p_1\cdot r^{\,l-1}\bigr\}
+  \end{equation*}
+  \begin{itemize}\small\setlength{\itemsep}{1pt}
+    \item $\hat{\lambda}_{\mathrm{gap}}$ 大 $\Rightarrow$ $r$ 小 $\Rightarrow$ 远跳预算衰减更快
+    \item $\hat{\lambda}_{\mathrm{gap}}$ 小 $\Rightarrow$ $r\to1$ $\Rightarrow$ 远跳保留更缓和
+    \item $p_{\min}=0.1$ 防止高跳距预算完全压缩
+  \end{itemize}
+
+  \smallskip
+  {\small
+  \begin{tabular}{p{1.6cm}p{1.6cm}p{2.0cm}}
+    \toprule
+    & 策略1 & 策略2 \\
+    \midrule
+    公比 & 固定 $\varrho$ & 图适应 $r(\hat{\lambda})$ \\
+    参数 & $p_1,p_L$ & $p_1,\kappa,p_{\min}$ \\
+    适用 & 控制首尾比率 & 图间差异明显 \\
+    \bottomrule
+  \end{tabular}}
+\end{column}
+
+\begin{column}{0.46\textwidth}
+  \textbf{\blue{节点-跳距联合预算分配}}（§\,4.3.3）
+
+  \smallskip
+  仅有 $p_l$ 不够，还受环层容量 $|\mathcal{R}_l(i)|$ 约束。直接结合保留率与容量构造各跳整数预算上界：
+  \begin{equation*}
+    k_i^{(l)}
+    = \operatorname{RoundQuota}\!\bigl(\rho\,p_l\,|\mathcal{R}_l(i)|\bigr)
+    \;\leq\; |\mathcal{R}_l(i)|
+  \end{equation*}
+  $\rho\in(0,1]$ 为全局压缩系数；$\operatorname{RoundQuota}(\cdot)$ 先下取整再按最大小数部分补足，保证预算整数和等于目标总量。
+
+  \smallskip
+  \textbf{双维度分工}
+  \begin{itemize}\small\setlength{\itemsep}{2pt}
+    \item \textbf{节点维} $\tau(i)$：节点 $i$ 整体上应承受多强的稀疏约束
+    \item \textbf{跳距维} $k_i^{(l)}$：各跳环层在容量约束下应设多少预算上界
+    \item 两者在第5章分层 LARS 中\textbf{联合发挥作用}：$\tau(i)$ 控制正则强度，$k_i^{(l)}$ 作为 \texttt{max\_iter} 截断上界
+  \end{itemize}
+
+  \smallskip
+  \textit{注}：$k_i^{(l)}$ 是\textbf{上界}，非固定非零数——实际非零数还由 $\tau(i)$、路径提前停止和候选集容量共同决定
+
+  \begin{alertblock}{三维参数接口总结}
+    \small $w_k(i)$、$\tau(i)$、$k_i^{(l)}$ 设计完成后，共同作为第5章分层 LARS 主循环的输入，在 Phase\,$\Theta$ 中统一整合
+  \end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================
+% S10c  LARS 算法整合：残差级联与交替优化
+% ==============================================================
+\begin{frame}{LARS 算法整合：残差级联分层求解与交替优化（§\,5.1）}
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+  \textbf{\blue{残差级联分层 LARS 方案}}
+
+  候选集按跳距划分为互不相交环层 $\mathcal{R}_0(i),\ldots,\mathcal{R}_L(i)$，按"由近及远"顺序逐层补偿残差：
+
+  \smallskip
+  \textbf{第0步（自节点通道）}：先拟合节点 $i$ 自身特征对目标表示的贡献，
+  \begin{equation*}
+    \theta_i^{(0)} = \operatorname*{argmin}_{\theta}
+    \tfrac{1}{2}\|\tilde{\phi}_i\,\theta - h_i^*\|_2^2 + \tau(i)|\theta|,
+    \quad r_i^{(0)} = h_i^* - \tilde{\phi}_i\,\theta_i^{(0)}
+  \end{equation*}
+
+  \textbf{第 $l$ 步（$l=1,\ldots,L$）}：在剩余残差 $r_i^{(l-1)}$ 上执行 LARS，以 $k_i^{(l)}$ 为截断上界，
+  \begin{equation*}
+    \theta_i^{(l)} = \operatorname*{argmin}_{\theta}
+    \tfrac{1}{2}\bigl\|\tilde{\Phi}_{\mathcal{R}_l(i)}^\top\theta - r_i^{(l-1)}\bigr\|_2^2
+    + \tau(i)\|\theta\|_1
+  \end{equation*}
+  \begin{equation*}
+    r_i^{(l)} = r_i^{(l-1)} - \tilde{\Phi}_{\mathcal{R}_l(i)}^\top\theta_i^{(l)}
+  \end{equation*}
+
+  \smallskip
+  \textit{相比共享目标方案}：将"对同一目标的重复逼近"改为"对剩余误差的逐层补偿"，减少跳距间冗余，与近邻优先预算逻辑一致
+\end{column}
+
+\begin{column}{0.46\textwidth}
+  \textbf{\blue{端到端交替优化（算法\,5.1）与推理固化（算法\,5.2）}}
+
+  \smallskip
+  \textbf{训练阶段}
+  \begin{itemize}\small\setlength{\itemsep}{2pt}
+    \item \textbf{输入}：图 $G$，教师表示 $H^*$，$\tau(i)$，$k_i^{(l)}$
+    \item \textbf{Phase $W$}：固定 $\Theta$，梯度法更新特征变换 $W$
+    \item \textbf{Phase $\Theta$}：固定 $W$，对每节点 $i$ 执行残差级联分层 LARS，正则强度 $\tau(i)$，各层截断上界 $k_i^{(l)}$
+    \item 交替迭代至验证指标稳定（\textbf{经验稳定性}，不声称全局收敛保证）
+    \item \textbf{输出}：固化 $\Theta^{\mathrm{fixed}}$，缓存 $\tilde{\Phi}_{\mathrm{cache}}$
+  \end{itemize}
+
+  \smallskip
+  \textbf{推理阶段}
+  \begin{itemize}\small\setlength{\itemsep}{2pt}
+    \item 执行：$\hat{H}=(\Theta^{\mathrm{fixed}})^{\top}\tilde{\Phi}_{\mathrm{cache}}$
+    \item 主项复杂度：\highlight{$O(n\kbar d)$}（单次稀疏矩阵乘）
+    \item 无需访图，无需多跳邻域展开
+  \end{itemize}
+
+  \smallskip
+  \textbf{跳距策略消融验证}（Cora，表\,6.4）
+
+  {\small\begin{tabular}{lcc}
+    \toprule
+    策略 & 准确率 & $\mathcal{E}_{\mathrm{approx}}$\\
+    \midrule
+    近邻优先（参考分配） & \green{\textbf{88.0\%}} & \green{\textbf{0.151}}\\
+    均匀分配 & 87.2\% & 0.182\\
+    反向分配（深层更多） & \highlight{86.5\%} & \highlight{0.218}\\
+    \bottomrule
+  \end{tabular}}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================
+% S11a  第5章：谱相似性定义
+% ==============================================================
+\begin{frame}{第5章：误差分析（一）——自适应参数接口与$\sigma$-谱相似性（§\,5.2）}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{§\,5.2.1 自适应参数与误差分析的接口关系}}
+
+      第4章的三维参数决定稀疏图 $\hat{G}$ 的形成方式：
+      \begin{itemize}
+        \item $\tau(i)$：控制节点 $i$ 的 Lasso 稀疏压力，影响 $\theta_i$ 的非零规模
+        \item $k_i^{(l)}$：约束第 $l$ 跳环层 $\mathcal{R}_l(i)$ 进入支撑集的节点数量
+        \item 两者共同决定 $\hat{G}$ 与原图 $G$ 之间的谱结构偏差
+      \end{itemize}
+
+      \vspace{0.25cm}
+      \textbf{\blue{§\,5.2.2 $\sigma$-谱相似性定义}}
+
+      设 $\tilde{\mathcal{L}}_G$、$\tilde{\mathcal{L}}_{\hat{G}}$ 分别为 $G$、$\hat{G}$ 的归一化拉普拉斯。若存在 $\sigma\ge 1$，使得对任意 $x\in\mathbb{R}^n$：
+      \begin{equation*}
+        \frac{1}{\sigma}\,\tilde{\mathcal{L}}_G
+        \;\preceq\;
+        \tilde{\mathcal{L}}_{\hat{G}}
+        \;\preceq\;
+        \sigma\,\tilde{\mathcal{L}}_G
+      \end{equation*}
+      则称 $\hat{G}$ 与 $G$ 满足 $\sigma$-谱相似性（Loewner 半序）。$\sigma\to 1$ 表示稀疏图对原图谱结构保持越精确。
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.52\textheight,keepaspectratio]{figures/5-1.pdf}\par
+      {\footnotesize 图5.1：共享目标与残差级联两种分层 LARS 方案对比}
+
+      \vspace{0.2cm}
+      \begin{alertblock}{口径说明}
+        该推导不声称第4章参数能严格推出固定的 $\sigma$；理论链条为：参数设计倾向 $\Rightarrow$ 稀疏结构扰动 $\Rightarrow$ 条件化误差上界
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S11a-2  第5章：算子扰动推导
+% ==============================================================
+\begin{frame}{第5章：误差分析（二）——算子扰动界推导（§\,5.2.2）}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{算子扰动上界推导}}
+
+      令 $\Delta_{\mathcal{L}} := \tilde{\mathcal{L}}_{\hat{G}} - \tilde{\mathcal{L}}_G$，$M := (\sigma-1)\tilde{\mathcal{L}}_G$。由谱相似性条件两侧同减 $\tilde{\mathcal{L}}_G$，得：
+      \begin{equation*}
+        -M \;\preceq\; \Delta_{\mathcal{L}} \;\preceq\; M
+      \end{equation*}
+      因 $\tilde{\mathcal{L}}_G\succeq 0$ 且 $\sigma\ge 1$，故 $M\succeq 0$。取 $\Delta_{\mathcal{L}}$ 的单位特征向量 $v$，由 Loewner 半序对二次型的约束，可得 $\Delta_{\mathcal{L}}$ 全部特征值落于 $[-\lambda_{\max}(M),\,\lambda_{\max}(M)]$。
+
+      \vspace{0.2cm}
+      再利用实对称矩阵谱范数等于特征值绝对值最大值，以及归一化拉普拉斯的谱范数上界 $\|\tilde{\mathcal{L}}_G\|_2\le 2$，最终得到：
+      \begin{equation*}
+        \eta
+        := \|\Delta_{\mathcal{L}}\|_2
+        \le (\sigma-1)\|\tilde{\mathcal{L}}_G\|_2
+        \le {\color{myred}2(\sigma-1)}
+      \end{equation*}
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \textbf{推导思路小结}
+      \begin{enumerate}\setlength{\itemsep}{6pt}
+        \item $\sigma$-谱相似性 $\Rightarrow$ Loewner 半序约束 $-M\preceq\Delta_{\mathcal{L}}\preceq M$
+        \item Loewner 约束 $\Rightarrow$ 特征值区间 $[-\lambda_{\max}(M),\lambda_{\max}(M)]$
+        \item 特征值区间 $\Rightarrow$ 谱范数界 $\|\Delta_{\mathcal{L}}\|_2\le\|M\|_2$
+        \item $\|\tilde{\mathcal{L}}_G\|_2\le 2$ $\Rightarrow$ \highlight{$\eta\le 2(\sigma-1)$}
+      \end{enumerate}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S11b  第5章：滤波输出误差界
+% ==============================================================
+\begin{frame}{第5章：误差分析（三）——多项式滤波输出误差界（§\,5.2.3）}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{多项式谱滤波器下的输出误差}}
+
+      设 $g(\cdot)$ 为 $K_{\mathrm{poly}}$ 阶多项式谱滤波器，其单项式展开为：
+      \begin{equation*}
+        g(\bar{\mathcal{L}}) = \sum_{r=0}^{K_{\mathrm{poly}}} a_r \bar{\mathcal{L}}^{\,r}
+      \end{equation*}
+      其中 $\bar{\mathcal{L}}$ 为平移后的归一化拉普拉斯（映射至 $[-1,1]$）。
+
+      \vspace{0.15cm}
+      \textbf{逐项误差展开}：对 $r$ 次幂项，利用恒等式
+      $A^r - B^r = \sum_{s=0}^{r-1}A^s(A-B)B^{r-1-s}$，
+      取范数并反复应用三角不等式，可得：
+      \begin{equation*}
+        \bigl\|\bar{\mathcal{L}}_G^{\,r} - \bar{\mathcal{L}}_{\hat{G}}^{\,r}\bigr\|_2
+        \le r\,\eta
+      \end{equation*}
+      即 $r$ 阶多项式项的误差至多按阶数\textbf{线性放大}，不出现高阶爆炸。
+
+      \vspace{0.15cm}
+      \textbf{第一条核心结论}（谱扰动 $\eta$ 到滤波输出误差）：
+      \begin{equation*}
+        \bigl\|g(\tilde{\mathcal{L}}_G)X - g(\tilde{\mathcal{L}}_{\hat{G}})X\bigr\|_F
+        \le \eta\!\left(\sum_{r=1}^{K_{\mathrm{poly}}}r|a_r|\right)\|X\|_F
+      \end{equation*}
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \textbf{\blue{第二条核心结论}（$\sigma$ 到滤波输出误差）}
+
+      将 $\eta\le 2(\sigma-1)$ 代入上式，得到本节最终误差界：
+      \begin{equation*}
+        \bigl\|g(\tilde{\mathcal{L}}_G)X - g(\tilde{\mathcal{L}}_{\hat{G}})X\bigr\|_F
+        \le {\color{myred}2(\sigma-1)\!\left(\sum_{r=1}^{K_{\mathrm{poly}}}r|a_r|\right)\|X\|_F}
+      \end{equation*}
+      \textbf{直觉}：$\sigma\to 1$ 时误差趋于零；$\sigma$ 偏离 1 越大，谱结构扰动越严重，滤波输出误差越大。
+
+      \vspace{0.2cm}
+      \begin{alertblock}{说明（§\,7.3）}
+        该误差界刻画稀疏化对传播算子的影响，不等价于 $\hat{H}$ 与 $H^*$ 的完整拟合误差（后者还受特征变换、候选集约束、交替优化等因素影响）
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S11c  第5章：理论总结与复杂度全景
+% ==============================================================
+\begin{frame}{第5章：理论链条总结与复杂度全景（§\,5.2--5.3）}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{理论链条总结}}
+      \begin{enumerate}\setlength{\itemsep}{4pt}
+        \item \textbf{参数设计}（第4章）：$\tau(i)$、$k_i^{(l)}$ 决定 $\hat{G}$ 的稀疏结构
+        \item \textbf{谱相似性}（§\,5.2.2）：$\frac{1}{\sigma}\tilde{\mathcal{L}}_G \preceq \tilde{\mathcal{L}}_{\hat{G}} \preceq \sigma\tilde{\mathcal{L}}_G$
+        \item \textbf{算子扰动界}（§\,5.2.2）：$\eta = \|\Delta_{\mathcal{L}}\|_2 \le 2(\sigma-1)$
+        \item \textbf{滤波输出误差}（§\,5.2.3）：$\|g(\tilde{\mathcal{L}}_G)X - g(\tilde{\mathcal{L}}_{\hat{G}})X\|_F \le 2(\sigma-1)C_g\|X\|_F$
+      \end{enumerate}
+
+      \vspace{0.5cm}
+      \textbf{\blue{收敛性}}（§\,5.1.3）
+
+      Phase $\Theta$（分层截断 LARS）与 Phase $W$（梯度法）构成交替优化框架，\textbf{不声称全局收敛保证}；本文限定表述口径为\textbf{经验稳定性}：在六个数据集上，交替推进过程中目标函数与验证指标未出现持续振荡或系统性发散现象
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \textbf{\blue{各阶段复杂度汇总}}（§\,5.3）
+      \begin{center}\small
+      \begin{tabular}{lll}
+        \toprule
+        阶段 & 主项复杂度 & 口径 \\
+        \midrule
+        图指标计算 & $O(m\cdot t_{\mathrm{Lan}})$ & 一次性预处理 \\
+        节点级参数 & $O(n\cdot K)$ & 一次性预处理 \\
+        LARS 训练 & $O(n\kbar^2 d)$ & 单轮训练 \\
+        \textbf{在线推理} & \highlight{$O(n\kbar d)$} & \textbf{单次前向} \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+
+      \vspace{0.15cm}
+      \textbf{实测复杂度收益}（ogbn-arxiv）
+      \begin{itemize}
+        \item 推理加速（vs.\ GCN）：\blue{$14.7\times$}；四数据集均值：\blue{$8.0\times$}
+        \item 峰值显存节省：\blue{74.8\%}
+        \item 约 \blue{464 次}全图调用后摊销预处理开销
+      \end{itemize}
+
+      \vspace{0.1cm}
+      \begin{alertblock}{三类开销严格区分}
+        \textbf{预处理}（图指标 + 参数构造）：一次性离线\\
+        \textbf{训练}（LARS 交替优化）：离线，可摊销\\
+        \textbf{推理}（单次稀疏矩阵乘）：在线，\highlight{$O(n\kbar d)$}
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S12  第6章：实验设置
+% ==============================================================
+\section{实验评估}
+
+\begin{frame}{第6章：实验设置与评估协议}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{六个静态节点分类基准数据集}}
+      \begin{center}\small
+      \begin{tabular}{llrr}
+        \toprule
+        图类型 & 数据集 & 节点数 & 类别数 \\
+        \midrule
+        \multirow{3}{*}{引文网络}
+          & Cora       &   2,708 & 7 \\
+          & Citeseer   &   3,327 & 6 \\
+          & PubMed     &  19,717 & 3 \\
+        \midrule
+        大规模图 & ogbn-arxiv & 169,343 & 40 \\
+        \midrule
+        \multirow{2}{*}{网页图（异配）}
+          & Chameleon  &   2,277 & 5 \\
+          & Squirrel   &   5,201 & 5 \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+      \vspace{0.05cm}\footnotesize Chameleon/Squirrel：度分布重尾，节点拓扑异质性显著
+
+      \vspace{0.2cm}
+      \textbf{\blue{评估协议}}
+      \begin{itemize}
+        \item \textbf{重复次数}：10 个随机种子，报告均值$\pm$标准差
+        \item \textbf{显著性检验}：Wilcoxon 符号秩检验（双侧），$p<0.05$
+        \item \textbf{效率测量}：批次前向时间（ms/batch），峰值显存（MB），$\mathrm{batch\_size}=1024$，GPU
+        \item \textbf{统一口径}：相同教师模型、相同数据划分、相同硬件
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \textbf{\blue{基线方法分组}}
+
+      \textbf{直接对比基线}（主配对显著性检验，相同教师模型）：
+      \begin{itemize}
+        \item GCN 教师模型
+        \item \highlight{SDGNN}（本文直接扩展基线）
+      \end{itemize}
+
+      \vspace{0.15cm}
+      \textbf{补充参照}（外部精度参考，推理机制不同）：
+      \begin{itemize}
+        \item 预计算类：SGC、PPRGo、GLNN
+        \item 采样类：GraphSAINT
+        \item 图 Transformer 类：
+          \begin{itemize}
+            \item NodeFormer、DIFFormer
+            \item SGFormer、NAGphormer
+          \end{itemize}
+      \end{itemize}
+
+      \vspace{0.15cm}
+      \begin{alertblock}{口径说明}
+        补充参照方法的推理范式与 MSAS-GNN 不同（无固化稀疏权重接口），主要用于提供外部精度参照；本文主要结论针对 SDGNN 配对比较
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S13  主实验：引文网络 + ogbn-arxiv
+% ==============================================================
+\begin{frame}{主实验结果（一）：引文网络与 ogbn-arxiv}
+  \begin{center}\small
+  \begin{tabular}{lcccc}
+    \toprule
+    \textbf{方法} & \textbf{Cora} & \textbf{Citeseer}
+                  & \textbf{PubMed} & \textbf{ogbn-arxiv} \\
+    \midrule
+    \multicolumn{5}{l}{\footnotesize\textit{补充参照（推理机制不同，仅供外部精度参考）}}\\
+    SGFormer      & 87.4$\pm$0.6 & 81.1$\pm$0.7 & 89.2$\pm$0.4 & 74.96$\pm$0.17\\
+    NAGphormer    & 87.0$\pm$0.7 & 80.6$\pm$0.8 & 88.9$\pm$0.5 & 74.68$\pm$0.19\\
+    \midrule
+    \multicolumn{5}{l}{\footnotesize\textit{稀疏分解接口（主配对比较，相同教师模型与数据划分）}}\\
+    GCN 教师      & 87.0$\pm$0.8 & 80.7$\pm$1.0 & 88.9$\pm$0.5 & 74.42$\pm$0.22\\
+    SDGNN         & 86.6$\pm$0.9 & 80.3$\pm$1.1 & 88.7$\pm$0.5 & 74.27$\pm$0.21\\
+    \textbf{MSAS-GNN}
+                  & \textbf{88.0$\pm$0.7} & \textbf{82.1$\pm$0.9}
+                  & \textbf{89.4$\pm$0.4} & \textbf{75.13$\pm$0.23}\\
+    \midrule
+    \green{提升 vs.\ SDGNN}
+                  & \green{\textbf{+1.4}} & \green{\textbf{+1.8}}
+                  & \green{\textbf{+0.7}} & \green{\textbf{+0.86}}\\
+    \bottomrule
+  \end{tabular}\\[2pt]
+  \footnotesize$^\dagger$ 所有提升满足 $p<0.05$（Wilcoxon 检验：Cora $p\!=\!0.002$，Citeseer $p\!=\!0.001$，PubMed $p\!=\!0.048$，ogbn-arxiv $p\!=\!0.009$）
+  \end{center}
+
+  \vspace{0.1cm}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{\blue{关键发现}}
+      \begin{itemize}
+        \item Citeseer 提升最大（\green{+1.8\%}）：标准差从1.1降至0.9，\textbf{精度更高且更稳定}
+        \item ogbn-arxiv（$n$=169K）：\green{+0.86\%}，大规模图上节点级机制可扩展
+        \item 全部4个数据集均优于 SGFormer（最强补充基线），且推理时延更低
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{\highlight{核心结论}}
+      \begin{itemize}
+        \item 节点级自适应正则使精度提升、结果方差下降
+        \item 验证了统一预算失配假设：不同节点确实需要差异化稀疏约束
+        \item 在保持相同推理接口和复杂度下，改进显著
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S14  主实验：网页图
+% ==============================================================
+\begin{frame}{主实验结果（二）：网页图——复杂拓扑下的效果验证}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \textbf{\blue{网页图节点分类准确率}}（\%，10次重复）
+      \begin{center}\small
+      \begin{tabular}{lcc}
+        \toprule
+        \textbf{方法} & \textbf{Chameleon} & \textbf{Squirrel}\\
+        \midrule
+        \textit{H2GCN（异配参照）}
+                      & \textit{63.6$\pm$0.9} & \textit{53.8$\pm$1.2}\\
+        SGFormer      & 65.2$\pm$0.8 & 55.4$\pm$1.1\\
+        \midrule
+        GCN 教师      & 64.1$\pm$1.0 & 54.5$\pm$1.3\\
+        SDGNN         & 63.5$\pm$1.1 & 54.2$\pm$1.4\\
+        \textbf{MSAS-GNN}
+                      & \textbf{65.6$\pm$0.9} & \textbf{55.9$\pm$1.2}\\
+        \midrule
+        \green{提升 vs.\ SDGNN}
+                      & \green{\textbf{+2.1}} & \green{\textbf{+1.7}}\\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+      \vspace{0.05cm}
+      \footnotesize Chameleon $p\!=\!0.003$，Squirrel $p\!=\!0.011$（Wilcoxon）\\
+      \textbf{网页图均值提升 \green{+1.9\%}，高于引文网络的 +1.3\%}
+    \end{column}
+
+    \begin{column}{0.46\textwidth}
+      \textbf{\blue{为何网页图提升更大？}}
+      \begin{itemize}
+        \item 节点角色差异\textbf{更明显}：度分布更重尾，异配性更强
+        \item 统一稀疏约束的预算失配\textbf{更严重}：枢纽与外围节点信息保留需求差距更大
+        \item 节点级 $\tau(i)$ 能更精准区分不同拓扑角色，差异化分配效益更高
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\highlight{重要口径说明}}
+      \begin{itemize}
+        \item 正文主线采用\textbf{等权谱能量输入}，不引入同配性或标签统计量依赖
+        \item 网页图提升主要来自：\textbf{节点级多因子正则 + 近邻优先跳距预算}
+        \item 非异配图标签频率校正效应（通过§\,6.3消融独立验证）
+      \end{itemize}
+
+      \vspace{0.1cm}
+      MSAS-GNN 在 Chameleon 上超越 SGFormer（65.6\% vs.\ 65.2\%），\\
+      证明稀疏分解框架内的节点级适配可达到图Transformer的精度
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S15  消融实验
+% ==============================================================
+\begin{frame}{消融实验——逐模块与跳距策略的独立贡献验证（§\,6.3）}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \textbf{\blue{逐模块消融}}（Cora，干净图 / 30\% 噪声准确率）
+      \begin{center}\small
+      \begin{tabular}{p{0.75cm}p{3.5cm}rrc}
+        \toprule
+        配置 & 模块描述 & 干净图 & 噪声 & 时延\\
+        \midrule
+        SDGNN & 原始基线（全局 $\lambda$，平坦池） & 86.6 & 80.6 & 2.0\,ms\\
+        B0    & 分层 BFS 候选池 + 统一 $\lambda$ & 87.0 & 81.0 & 6.7\,ms\\
+        B1    & B0 + 谱能量驱动 $\tau(i)$ & 87.3 & 82.8 & 10.4\,ms\\
+        \textbf{B5} & \textbf{完整 MSAS-GNN} & \textbf{88.0} & \textbf{84.1} & —\\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+
+      \vspace{0.15cm}
+      \textbf{\blue{跳距预算策略消融}}（相同节点级正则，Cora）
+      \begin{center}\small
+      \begin{tabular}{p{3.0cm}cc}
+        \toprule
+        策略 & 准确率 & $\mathcal{E}_{\mathrm{approx}}$\\
+        \midrule
+        近邻优先（参考分配） & \green{\textbf{88.0\%}} & \green{\textbf{0.151}}\\
+        均匀分配（各跳相等） & 87.2\% & 0.182\\
+        反向分配（深层更多） & \highlight{86.5\%} & \highlight{0.218}\\
+        B2-RND（随机化 $\tau$） & 87.1\% & —\\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+    \end{column}
+
+    \begin{column}{0.41\textwidth}
+      \textbf{\blue{逐模块累积贡献分析}}
+      \begin{itemize}
+        \item \textbf{B0 vs.\ SDGNN}：分层候选池 $\to$ \green{+0.4\%}
+        \item \textbf{B1 vs.\ B0}：谱能量驱动 $\tau(i)$ $\to$ \green{+0.3\%}（干净图）；30\%噪声下 \green{+1.8\%}（\textbf{抗噪性显著提升}）
+        \item \textbf{B5 vs.\ B1}：多因子 + 跳距预算 $\to$ \green{+0.7\%}（协同效果）
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\highlight{核心结论}}
+      \begin{itemize}
+        \item \textbf{单一结构因子不足以}稳定解释性能提升
+        \item \textbf{节点级多因子正则 + 近邻优先跳距预算}共同作用，是三维机制有效性的主要来源
+        \item B2-RND 对照：随机化 $\tau$ 未带来稳定收益，证明\textbf{结构驱动设计有效}
+        \item 近邻优先 vs.\ 反向分配：$\mathcal{E}$ 下降 30.7\%，准确率提升 1.5\%
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S16  效率分析
+% ==============================================================
+\begin{frame}{效率分析——推理时延、显存与预处理摊销（§\,6.4）}
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \textbf{\blue{推理效率与显存综合对比}}（GPU，batch\_size\,=\,1024）
+      \begin{center}\small
+      \begin{tabular}{lrrrr}
+        \toprule
+        方法 & Cora & ogbn-arxiv & 加速比 & 峰值显存\\
+        \midrule
+        GCN      & 12.5\,ms & 125.3\,ms & $1\times$   & 2,500\,MB\\
+        SGFormer & —        & 39.0\,ms  & —           & 1,180\,MB\\
+        SDGNN    &  2.0\,ms &   9.2\,ms & $9.0\times$ &   589\,MB\\
+        \textbf{MSAS-GNN} & \textbf{1.8\,ms} & \textbf{8.5\,ms}
+                 & $\boldsymbol{8.0\times}$ & \textbf{630\,MB}\\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+      \footnotesize 加速比为四数据集算术均值；ogbn-arxiv 相对 GCN 实现约 \highlight{14.7$\times$}；MSAS-GNN 相对 SDGNN 显存仅多 \blue{+41\,MB}，推理时延反而\textbf{更低}
+
+      \vspace{0.15cm}
+      \textbf{\blue{预处理摊销 Break-even 分析}}
+      \begin{center}\small
+      \begin{tabular}{lrrr}
+        \toprule
+        数据集 & $t_{\mathrm{pre}}$ & 每次节省 & 摊销次数\\
+        \midrule
+        Cora        & $\approx$1,080\,s & $\approx$0.033\,s & $\approx$32,727次\\
+        PubMed      & $\approx$2,700\,s & $\approx$0.762\,s & $\approx$3,543次\\
+        ogbn-arxiv  & $\approx$9,000\,s & $\approx$19.39\,s & \highlight{$\approx$464次}\\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+    \end{column}
+
+    \begin{column}{0.43\textwidth}
+      \includegraphics[width=\linewidth]{figures/6-2.pdf}
+      \centering\footnotesize 图6.2：节点级 $\tau(i)$ 参数分布可视化（Cora）
+
+      \vspace{0.1cm}
+      \textbf{效率分析结论}
+      \begin{itemize}
+        \item 在 $\tilde{\Phi}$ 与 $\Theta^{\mathrm{fixed}}$ 固化后，推理退化为单次稀疏矩阵乘，\textbf{自适应机制不引入在线开销}
+        \item ogbn-arxiv：每日数百次全图刷新，约 1--2 天摊销完毕
+        \item 适用场景：教师表示已给定、结构可离线固化、\textbf{高频全图调用}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S17  主要贡献与创新点
+% ==============================================================
+\section{总结与展望}
+
+\begin{frame}{主要贡献与创新点}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{\blue{贡献一}}：在 SDGNN 接口内引入节点级自适应稀疏分配
+      \begin{itemize}
+        \item 以可计算图结构统计量（谱间隙、谱能量、局部图熵、中心性）驱动"哪个节点保留多少邻居"的参数化设计
+        \item 将统一稀疏控制问题转化为具体的节点级参数设计问题
+        \item 保留单次稀疏矩阵乘推理形式与 $O(n\kbar d)$ 复杂度保证
+      \end{itemize}
+
+      \vspace{0.2cm}
+      \textbf{\blue{贡献二}}：构建三维自适应参数体系
+      \begin{itemize}
+        \item \textbf{频率维}：等权节点谱能量（任务无关）
+        \item \textbf{节点维}：多因子融合 $\tau(i)$（谱能量+图熵+度中心性+$k$-core）
+        \item \textbf{跳距维}：近邻优先分层预算 $k_i^{(l)}$（随跳距递减）
+        \item 三个维度在第5章共同进入分层 LARS 求解流程，图结构统计量从解释变量转化为稀疏权重学习的实际调节因素
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \textbf{\blue{贡献三}}：在统一实验口径下验证精度与效率
+
+      \textbf{精度}（vs.\ SDGNN，Wilcoxon $p<0.05$，全部6个数据集）：
+      \begin{itemize}
+        \item 引文网络均值 \green{+1.3\%}，结果方差同步下降
+        \item 网页图均值 \green{+1.9\%}，复杂拓扑下更优
+        \item ogbn-arxiv \green{+0.86\%}，大规模图上有效
+      \end{itemize}
+
+      \vspace{0.15cm}
+      \textbf{效率}（推理阶段，相对 GCN）：
+      \begin{itemize}
+        \item 四数据集推理加速 \blue{$8.0\times$}（均值）
+        \item ogbn-arxiv 加速 \blue{$14.7\times$}
+        \item 峰值显存节省 \blue{74.8\%}
+        \item 相对 SDGNN 额外显存增量仅 +41\,MB
+      \end{itemize}
+
+      \vspace{0.15cm}
+      \begin{alertblock}{方法适用范围}
+        \small 教师表示已给定、稀疏权重可离线固化、在线推理需低时延的 SDGNN 式稀疏分解场景
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ==============================================================
+% S18  局限性、未来工作与致谢
+% ==============================================================
+\begin{frame}{研究局限与未来展望}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{\highlight{研究局限性}}（§\,7.3）
+      \begin{enumerate}\setlength{\itemsep}{4pt}
+        \item \textbf{启发式近似性质}\\
+          $\tau(i)$ 基于代理变量构造，尚未严格刻画与最优稀疏支撑的充要关系；重尾度分布、强异配图上的适用边界待进一步分析
+        \item \textbf{静态图假设}\\
+          方法适用 transductive 设定，$\Theta^{\mathrm{fixed}}$ 在新节点或边结构变化时未必继续适用；动态场景的稀疏权重维护未系统讨论
+        \item \textbf{误差界的条件化性质}\\
+          谱相似性分析提供误差\textbf{方向解释}，非对所有图结构最优稀疏性的严格保证
+      \end{enumerate}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \textbf{\blue{未来研究方向}}（§\,7.4）
+      \begin{enumerate}\setlength{\itemsep}{4pt}
+        \item \textbf{理论深化}\\
+          引入局部谱扰动分析，建立 $\tau(i)$、$k_i^{(l)}$ 与 $\sigma$-谱相似性的可检验关系，将条件化误差解释推进为直接参数设计指导
+        \item \textbf{结构可靠性增强}\\
+          引入边级可靠性评分（结构相似性+对比学习表征），通过软门控调节 LARS 候选集，联合优化图结构质量与预算分配
+        \item \textbf{动态图适配}\\
+          设计增量维护机制，局部变化时对受影响节点进行 warm-start 重估；实现分层更新策略（局部微调/部分重训练/全局热启动）
+      \end{enumerate}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.2cm}
+  \begin{center}
+    \large\textbf{感谢翟铮副教授的悉心指导与北京师范大学统计学院各位老师的支持}\\[0.3cm]
+    \LARGE\highlight{欢迎各位评委老师提问与批评指正}
+  \end{center}
+\end{frame}
+
+\end{document}

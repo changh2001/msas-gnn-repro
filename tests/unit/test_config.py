@@ -43,6 +43,27 @@ def test_cora_sdgnn_pure_defaults_use_gcn_teacher_and_original_protocol():
     assert cfg["sdgnn_pure"]["fanouts"] == [10, 10]
 
 
+def test_b5_shared_matches_b5_frozen_except_theta_solver_mode():
+    from copy import deepcopy
+
+    from msas_gnn.config import load_experiment_config
+
+    shared = load_experiment_config("cora", ablation_id="b5_shared")
+    frozen = load_experiment_config("cora", ablation_id="b5_frozen")
+    assert shared["lars"]["theta_solver_mode"] == "shared_target"
+    assert frozen["lars"]["theta_solver_mode"] == "residual_cascade"
+    assert shared["alternating_opt"]["protocol"] == "b5_frozen"
+    assert frozen["alternating_opt"]["protocol"] == "b5_frozen"
+
+    shared_cmp = deepcopy(shared)
+    frozen_cmp = deepcopy(frozen)
+    for cfg in (shared_cmp, frozen_cmp):
+        cfg.pop("ablation_id", None)
+        cfg.pop("description", None)
+        cfg["lars"].pop("theta_solver_mode", None)
+    assert shared_cmp == frozen_cmp
+
+
 def test_b6_is_removed_from_public_ablation_registry():
     from msas_gnn.config import ABLATION_CONFIGS, BASE_MODEL_BY_ABLATION
 

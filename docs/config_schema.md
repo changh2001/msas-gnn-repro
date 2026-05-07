@@ -20,6 +20,11 @@
 | T_W | alternating_opt.t_w |
 | η_W | alternating_opt.eta_w |
 
+新增实验开关：
+
+- `lars.theta_solver_mode`：`residual_cascade | shared_target`。默认 `residual_cascade`；`shared_target` 仅用于 B5-shared，对每个跳距环层使用同一个教师目标表示拟合。
+- `compute_sigma_proxy`：hop budget 消融脚本中的评估开关，默认开启，仅在 Cora 上为表格输出 `sigma_proxy`。
+
 历史别名：
 
 - `e_threshold`：旧版配置中曾直接写入节点维阈值；当前主线按论文公式运行时计算 `E_threshold = c_E * median(E_spectral)`，因此建议统一改用 `c_e`

@@ -19,9 +19,10 @@ CFG = {
     "b2": "configs/ablations/b2_plus_centrality.yaml",
     "b3": "configs/ablations/b3_plus_kcore.yaml",
     "b4": "configs/ablations/b4_plus_entropy.yaml",
+    "b5_shared": "configs/ablations/b5_shared.yaml",
+    "b5_frozen": "configs/ablations/b5_frozen.yaml",
     "b5": "configs/ablations/b5_full_main.yaml",
     "b2_rnd": "configs/ablations/b2_rnd_control.yaml",
-    "b5_frozen": "configs/ablations/b5_frozen.yaml",
 }
 
 

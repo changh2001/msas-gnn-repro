@@ -43,6 +43,18 @@ def _build_theta_fixed(n, phi_dtype, row_idx, col_idx, values, selected_counts, 
         candidate_total=int(total_candidates),
     )
 
+
+def _resolve_theta_solver_mode(cfg):
+    lars_cfg = cfg.get("lars", {}) if isinstance(cfg, dict) else {}
+    mode = lars_cfg.get("theta_solver_mode", lars_cfg.get("scheme", "residual_cascade"))
+    mode = str(mode or "residual_cascade")
+    if mode not in {"residual_cascade", "shared_target"}:
+        raise ValueError(
+            "Unknown theta_solver_mode=%s; expected residual_cascade or shared_target" % mode
+        )
+    return mode
+
+
 def run_phase_theta(
     h_star,
     phi_tilde,
@@ -55,6 +67,7 @@ def run_phase_theta(
     复杂度(推理主项)：训练O(n·k·d·L)；推理O(n·k̄·d)（Φ̃已离线缓存）
     """
     n, d = h_star.shape; L = params.k_budget.shape[1]
+    solver_mode = _resolve_theta_solver_mode(cfg)
     nodes = range(n) if node_indices is None else [int(i) for i in node_indices]
     row_idx = []
     col_idx = []
@@ -81,7 +94,10 @@ def run_phase_theta(
             budget = int(params.k_budget[i, l].item())
             if budget == 0:
                 continue
-            r_il = h_star[i] - recon_i
+            if solver_mode == "shared_target":
+                r_il = h_star[i]
+            else:
+                r_il = h_star[i] - recon_i
             phi_c = phi_tilde[cands]
             from msas_gnn.decomposition.lars_solver import lars_lasso_single
             th = lars_lasso_single(r_il, phi_c, tau_i, budget)
@@ -98,7 +114,12 @@ def run_phase_theta(
                 recon_i = recon_i + value * phi_tilde[j]
                 non_zero += 1
             nnz_counts[i] += float(non_zero)
-    logger.info("Phase-Θ完成节点求解 total_nodes=%s total_hops=%s", len(nodes), L)
+    logger.info(
+        "Phase-Θ完成节点求解 mode=%s total_nodes=%s total_hops=%s",
+        solver_mode,
+        len(nodes),
+        L,
+    )
     theta_fixed = _build_theta_fixed(
         n=n,
         phi_dtype=phi_tilde.dtype,

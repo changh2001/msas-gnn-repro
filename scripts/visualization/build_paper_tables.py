@@ -54,14 +54,15 @@ ABLATION_ROWS = [
     ("b2", "B2", "+度中心性$C_{\\text{deg}}(i)$", False),
     ("b3", "B3", "+$k$-core指数", False),
     ("b4", "B4", "+局部图熵$H(i)$", False),
-    ("b5_frozen", "B5-frozen", "B4 + 分层跳距预算 $k_i^{(l)}$，冻结 $W_\\phi$", False),
+    ("b5_shared", "B5-shared", "B4 + 分层跳距预算 $k_i^{(l)}$，共享目标 LARS，冻结 $W_\\phi$", False),
+    ("b5_frozen", "B5-frozen", "B4 + 分层跳距预算 $k_i^{(l)}$，残差级联 LARS，冻结 $W_\\phi$", False),
     ("b5", "B5-full", "B5-frozen + 完整交替优化更新 $W_\\phi$", True),
     ("b2_rnd", "B2-RND", "B2 + 随机扰动$\\tau(i)$（对照）", False),
 ]
 HOP_ROWS = [
     ("uniform", "均匀分配（各层相等）", False),
     ("near_engineering", "近邻优先（工程近似）", False),
-    ("spectral_gap_reference", "谱间隙参考分配", True),
+    ("spectral_gap_reference", "近邻优先（参考分配）", True),
     ("reverse", "反向分配（深层更多）", False),
 ]
 EFFICIENCY_ROWS = [
@@ -174,9 +175,15 @@ def _ablation_payload_view(payload: dict[str, Any]) -> dict[str, Any]:
         "noise_mean_acc": payload.get("noise_mean_acc", payload.get("noise_test_acc")),
         "mean_sparsity": payload.get(
             "mean_sparsity",
-            payload.get("pruning_sparsity", payload.get("legacy_sparsity", derived_sparsity)),
+            payload.get(
+                "mean_candidate_pruning_rate",
+                payload.get(
+                    "candidate_pruning_rate",
+                    payload.get("pruning_rate", payload.get("pruning_sparsity", payload.get("legacy_sparsity", derived_sparsity))),
+                ),
+            ),
         ),
-        "mean_inference_ms": payload.get("mean_inference_ms", payload.get("inference_ms")),
+        "mean_inference_ms": payload.get("mean_inference_ms", payload.get("mean_inference_time_ms", payload.get("inference_time_ms", payload.get("inference_ms")))),
         "mean_candidate_total": candidate_total,
         "mean_support_total": support_total,
     }
@@ -188,6 +195,8 @@ def _ablation_payload_quality(payload: dict[str, Any], stamp: float) -> tuple[in
     has_noise = int(_safe_float(view.get("noise_mean_acc")) is not None)
     has_new_sparsity = int(
         payload.get("pruning_sparsity") is not None
+        or payload.get("candidate_pruning_rate") is not None
+        or payload.get("mean_candidate_pruning_rate") is not None
         or payload.get("mean_candidate_total") is not None
         or payload.get("candidate_total") is not None
         or (
@@ -525,9 +534,9 @@ def build_ablation_tables(results_dir: Path, output_root: Path) -> list[Path]:
         r"  \caption{跳距预算分配策略消融（3层GNN，准确率\%）}",
         r"  \label{tab:ch6-hopbudget}",
         r"  \begin{threeparttable}",
-        r"    \begin{tabular}{>{\centering\arraybackslash}m{3.04cm} >{\centering\arraybackslash}m{2.19cm} >{\centering\arraybackslash}m{2.66cm} >{\centering\arraybackslash}m{2.38cm} >{\centering\arraybackslash}m{1.9cm}}",
+        r"    \begin{tabular}{>{\centering\arraybackslash}m{2.70cm} >{\centering\arraybackslash}m{1.65cm} >{\centering\arraybackslash}m{1.90cm} >{\centering\arraybackslash}m{1.80cm} >{\centering\arraybackslash}m{1.80cm} >{\centering\arraybackslash}m{1.55cm}}",
         r"\toprule",
-        r"\textbf{分配策略} & \textbf{Cora准确率} & \textbf{Chameleon准确率} & \textbf{平均$\varepsilon_{\text{approx}}$} & \textbf{相对计算开销} \\",
+        r"\textbf{分配策略} & \textbf{Cora准确率} & \textbf{Chameleon准确率} & \textbf{平均$\mathcal{E}_{\mathrm{approx}}$} & \textbf{$\widetilde{\sigma}_{\mathrm{proxy}}$} & \textbf{相对计算开销} \\",
         r"\midrule",
     ]
     for strategy, label, highlight in HOP_ROWS:
@@ -536,7 +545,8 @@ def build_ablation_tables(results_dir: Path, output_root: Path) -> list[Path]:
             _maybe_bold(label, highlight),
             _maybe_bold(_format_acc_pm(row_payload.get("cora_mean_acc"), row_payload.get("cora_std_acc")), highlight),
             _maybe_bold(_format_acc_pm(row_payload.get("chameleon_mean_acc"), row_payload.get("chameleon_std_acc")), highlight),
-            _maybe_bold(_format_float(row_payload.get("mean_epsilon_approx")), highlight),
+            _maybe_bold(_format_float(row_payload.get("mean_epsilon_approx", row_payload.get("e_approx"))), highlight),
+            _maybe_bold(_format_float(row_payload.get("sigma_proxy_mean", row_payload.get("sigma_proxy"))), highlight),
             _maybe_bold(_format_relative_overhead(row_payload.get("relative_compute_overhead")), highlight),
         ]
         hop_lines.append(" & ".join(row) + r" \\")

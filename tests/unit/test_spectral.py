@@ -55,3 +55,18 @@ def test_sigma_proxy_is_close_to_one_for_identical_graph():
     theta_fixed = ThetaFixed(theta=theta, k_bar=1.0, sparsity=0.0)
     stats = compute_sigma_proxy(data, theta_fixed, num_eigs=10)
     assert stats["sigma_proxy"] == pytest.approx(1.0, abs=5e-2)
+
+
+def test_proxy_adjacency_symmetrizes_directed_support_and_drops_self_loops():
+    from msas_gnn.evaluation.spectral_similarity import build_proxy_adjacency
+    from msas_gnn.typing import ThetaFixed
+
+    indices = torch.tensor([[0, 2, 1], [1, 2, 1]], dtype=torch.long)
+    values = torch.tensor([0.7, 1.0, 2.0], dtype=torch.float32)
+    theta = torch.sparse_coo_tensor(indices, values, size=(3, 3)).coalesce().to_sparse_csr()
+    adjacency = build_proxy_adjacency(ThetaFixed(theta=theta, k_bar=1.0, sparsity=0.0))
+    dense = adjacency.toarray()
+    assert dense[0, 1] == pytest.approx(1.0)
+    assert dense[1, 0] == pytest.approx(1.0)
+    assert dense[1, 1] == pytest.approx(0.0)
+    assert dense[2, 2] == pytest.approx(0.0)

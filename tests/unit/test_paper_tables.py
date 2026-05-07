@@ -79,6 +79,18 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
         },
     )
     _write_json(
+        results_dir / "ablation_b5_shared_cora_1.json",
+        {
+            "ablation_id": "b5_shared",
+            "dataset": "cora",
+            "mean_acc": 0.876,
+            "std_acc": 0.005,
+            "noise_mean_acc": 0.828,
+            "mean_candidate_pruning_rate": 0.9665,
+            "mean_inference_time_ms": 2.5,
+        },
+    )
+    _write_json(
         results_dir / "ablation_b5_cora_1.json",
         {
             "ablation_id": "b5",
@@ -130,6 +142,7 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
                     "chameleon_mean_acc": 0.661,
                     "chameleon_std_acc": 0.011,
                     "mean_epsilon_approx": 0.182,
+                    "sigma_proxy": 1.176,
                     "relative_compute_overhead": 0.0,
                 },
                 "near_engineering": {
@@ -138,6 +151,7 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
                     "chameleon_mean_acc": 0.673,
                     "chameleon_std_acc": 0.009,
                     "mean_epsilon_approx": 0.151,
+                    "sigma_proxy": 1.097,
                     "relative_compute_overhead": 0.05,
                 },
             }
@@ -226,9 +240,15 @@ def test_build_selected_tables_generates_main_ch6_and_supplemental_outputs(tmp_p
 
     ablation_table = (output_dir / "table_6_4_ablation.tex").read_text(encoding="utf-8")
     assert r"\label{tab:ch6-ablation}" in ablation_table
+    assert "B5-shared" in ablation_table
+    assert "共享目标 LARS" in ablation_table
     assert r"\textbf{87.5}" in ablation_table
     assert r"\textbf{83.1}" in ablation_table
     assert r"\textbf{97.4}" in ablation_table
+
+    hop_table = (output_dir / "table_6_5_hopbudget.tex").read_text(encoding="utf-8")
+    assert r"\widetilde{\sigma}_{\mathrm{proxy}}" in hop_table
+    assert "1.176" in hop_table
 
     efficiency_table = (output_dir / "table_6_6_efficiency.tex").read_text(encoding="utf-8")
     assert r"\label{tab:ch6-infer}" in efficiency_table

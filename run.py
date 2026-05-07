@@ -8,7 +8,7 @@ def build_parser():
     p.add_argument("--task", choices=["smoke","train","ablation","efficiency","visualize"], required=True)
     p.add_argument("--dataset", choices=["cora","citeseer","pubmed","ogbn_arxiv","chameleon","squirrel"], default="cora")
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--ablation", choices=["b0","sdgnn_pure","b1","b2","b3","b4","b5","b5_frozen","b2_rnd"], default="b5")
+    p.add_argument("--ablation", choices=["b0","sdgnn_pure","b1","b2","b3","b4","b5_shared","b5","b5_frozen","b2_rnd"], default="b5")
     p.add_argument("--config", default=None)
     p.add_argument("--vis_type", choices=["tsne","tau_dist","sensitivity"], default="tsne")
     p.add_argument("--methods", nargs="+", default=None)

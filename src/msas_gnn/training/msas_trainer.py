@@ -98,10 +98,18 @@ class MSASTrainer:
         eps = compute_epsilon_approx(h_star.to(self.device), h_hat)
         stage_times["classifier_eval"] = time.time() - stage_t0
         from msas_gnn.evaluation.protocols import build_protocol_metadata
+        lars_cfg = self.cfg.get("lars", {})
+        solver_mode = str(lars_cfg.get("theta_solver_mode", lars_cfg.get("scheme", "residual_cascade")))
+        hop_strategy = str(self.cfg.get("hop_dim", {}).get("strategy", "spectral_gap_reference"))
         result = {"test_acc":test_acc,"val_acc":val_acc,"epsilon_approx":eps,
+                  "e_approx":eps,
                   "k_bar":theta_fixed.k_bar,"sparsity":theta_fixed.sparsity,"tau_mean":params.tau.mean().item(),
                   "tau_min":params.tau.min().item(),"tau_max":params.tau.max().item(),
                   "support_total": theta_fixed.support_total, "candidate_total": theta_fixed.candidate_total,
+                  "pruning_rate": theta_fixed.sparsity, "candidate_pruning_rate": theta_fixed.sparsity,
+                  "inference_time_ms": None,
+                  "solver_mode": solver_mode, "theta_solver_mode": solver_mode,
+                  "hop_budget_strategy": hop_strategy,
                   "elapsed":time.time()-t0,"seed":seed,"dataset":ds,"ablation_id":ablation_id,
                   "stage_times":stage_times, "protocols": build_protocol_metadata(self.cfg)}
         if return_embeddings:

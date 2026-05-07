@@ -20,6 +20,7 @@ hop_dim:
   rho: 1.0
 lars:
   k: 50
+  theta_solver_mode: residual_cascade
 feature_transform:
   init_protocol: ridge_x_to_h_star
   ridge: 1.0e-4

@@ -14,6 +14,7 @@ teacher:
 lars:
   k: 50
   scheme: residual_cascade
+  theta_solver_mode: residual_cascade
 alternating_opt:
   max_outer_iter: 20
   patience: 5

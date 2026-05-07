@@ -12,6 +12,8 @@ def build_protocol_metadata(cfg: dict) -> dict[str, object]:
     dataset = str(cfg.get("dataset", "unknown"))
     feature_cfg = cfg.get("feature_transform", {})
     ablation_id = str(cfg.get("ablation_id", "b5"))
+    lars_cfg = cfg.get("lars", {})
+    theta_solver_mode = str(lars_cfg.get("theta_solver_mode", lars_cfg.get("scheme", "residual_cascade")))
 
     if dataset == "ogbn_arxiv":
         batch_protocol = "random_node_minibatch_recompute_phi"
@@ -26,6 +28,7 @@ def build_protocol_metadata(cfg: dict) -> dict[str, object]:
             "w_phi_init": str(feature_cfg.get("init_protocol", "ridge_x_to_h_star")),
             "phase_w_protocol": "optimize_explicit_w_phi_then_recompute_phi_tilde",
             "phase_theta_protocol": "sdgnn_flat_lars_lasso",
+            "theta_solver_mode": theta_solver_mode,
             "candidate_protocol": "khop_plus_recursive_fanout_sampling",
             "sparsity_protocol": "candidate_pruning_rate",
             "frequency_mode": "none",
@@ -38,7 +41,12 @@ def build_protocol_metadata(cfg: dict) -> dict[str, object]:
         "w_phi_parameterization": "explicit_linear_xw",
         "w_phi_init": str(feature_cfg.get("init_protocol", "ridge_x_to_h_star")),
         "phase_w_protocol": "optimize_explicit_w_phi_then_recompute_phi_tilde",
-        "phase_theta_protocol": "bfs_flat_lars_lasso" if ablation_id == "b0" else "self_channel_plus_layered_residual_cascade_lars_lasso",
+        "phase_theta_protocol": (
+            "bfs_flat_lars_lasso"
+            if ablation_id == "b0"
+            else f"self_channel_plus_layered_{theta_solver_mode}_lars_lasso"
+        ),
+        "theta_solver_mode": theta_solver_mode,
         "candidate_protocol": "layered_bfs_hop_rings",
         "sparsity_protocol": "candidate_pruning_rate",
         "frequency_mode": "equal_weight",

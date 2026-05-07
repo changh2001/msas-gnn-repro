@@ -41,6 +41,7 @@ def _augment_with_inference_metrics(cfg, result):
         or latency.get("median_ms_per_batch")
         or 0.0
     )
+    result["inference_time_ms"] = result["inference_ms"]
     return result
 
 
@@ -68,10 +69,18 @@ def summarize_seed_results(cfg, results, failures, extra=None):
         "std_acc": acc_std,
         "mean_epsilon_approx": eps_mean,
         "std_epsilon_approx": eps_std,
+        "mean_e_approx": eps_mean,
+        "std_e_approx": eps_std,
         "mean_sparsity": sparsity_mean,
         "std_sparsity": sparsity_std,
+        "mean_pruning_rate": sparsity_mean,
+        "std_pruning_rate": sparsity_std,
+        "mean_candidate_pruning_rate": sparsity_mean,
+        "std_candidate_pruning_rate": sparsity_std,
         "mean_inference_ms": infer_mean,
         "std_inference_ms": infer_std,
+        "mean_inference_time_ms": infer_mean,
+        "std_inference_time_ms": infer_std,
         "mean_k_bar": kbar_mean,
         "std_k_bar": kbar_std,
         "mean_support_total": support_mean,
@@ -83,6 +92,9 @@ def summarize_seed_results(cfg, results, failures, extra=None):
         "per_seed": results,
         "failed_seeds": failures,
         "protocols": build_protocol_metadata(cfg),
+        "solver_mode": str(cfg.get("lars", {}).get("theta_solver_mode", cfg.get("lars", {}).get("scheme", "residual_cascade"))),
+        "theta_solver_mode": str(cfg.get("lars", {}).get("theta_solver_mode", cfg.get("lars", {}).get("scheme", "residual_cascade"))),
+        "hop_budget_strategy": str(cfg.get("hop_dim", {}).get("strategy", "spectral_gap_reference")),
     }
     if extra:
         summary.update(extra)

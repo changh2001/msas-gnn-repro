@@ -9,7 +9,7 @@
 \contentsline {table}{\numberline {6.5}{\ignorespaces 综合消融实验（Cora，准确率\%，10次重复均值$\pm $标准差）}}{75}{table.caption.49}%
 \contentsline {table}{\numberline {6.6}{\ignorespaces 跳距预算分配策略消融（准确率\%）}}{76}{table.caption.51}%
 \contentsline {table}{\numberline {6.7}{\ignorespaces 推理效率与显存占用综合对比（GPU，$\text {batch\_size}=1024$）}}{78}{table.caption.54}%
-\contentsline {table}{\numberline {6.8}{\ignorespaces 近年高效图学习方法推理效率补充对比（ogbn-arxiv，GPU，$\text {batch\_size}=1024$）}}{79}{table.caption.56}%
+\contentsline {table}{\numberline {6.8}{\ignorespaces 近年高效图学习方法推理效率补充对比（ogbn-arxiv，GPU，$\text {batch\_size}=1024$）}}{80}{table.caption.56}%
 \contentsline {table}{\numberline {6.9}{\ignorespaces 预处理摊销与 break-even 估计（时间单位统一为秒）}}{80}{table.caption.58}%
 \contentsfinish 
 \contentsfinish 

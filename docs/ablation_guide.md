@@ -3,8 +3,8 @@
 ## 快速运行
 
 ```bash
-python scripts/experiments/run_ablation_modular.py --datasets cora --ablations b0 b1 b2 b3 b4 b5 b2_rnd b5_frozen
-python scripts/experiments/run_ablation_hop_strategy.py --datasets cora chameleon
+python scripts/experiments/run_ablation_modular.py --datasets cora --ablations b0 b1 b2 b3 b4 b5_shared b5_frozen b5 b2_rnd
+python scripts/experiments/run_ablation_hop_strategy.py --datasets cora chameleon --compute_sigma_proxy
 ```
 
 ## B0~B5 累加逻辑
@@ -15,9 +15,10 @@ python scripts/experiments/run_ablation_hop_strategy.py --datasets cora chameleo
 - B2: +度中心性
 - B3: +k-core
 - B4: +局部图熵
-- B5: +跳距预算（正文主方法）
+- B5-shared: B4 + 跳距预算 + 共享目标 LARS + 冻结 W
+- B5-frozen: B4 + 跳距预算 + 残差级联 LARS + 冻结 W
+- B5: +跳距预算 + 残差级联 LARS + 完整交替优化（正文主方法）
 - B2-RND: 沿 B2 路径对 τ(i) 做随机扰动的对照
-- B5-frozen: 冻结 W，不执行 Phase-W
 
 正文实验中，凡依赖教师表示 `H*` 的分解式方法（`B0`~`B5`、`B2-RND` 以及 `sdgnn_pure`）
 统一采用三层 `GCN` 作为教师模型，以保持可比性。

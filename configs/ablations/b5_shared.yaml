@@ -1,5 +1,5 @@
-ablation_id: b5_frozen
-description: B5配置但不执行Phase-W（冻结W）
+ablation_id: b5_shared
+description: B5配置但冻结W，并在Phase-Theta使用共享目标LARS
 node_dim:
   use_spectral_energy: true
   use_centrality: true
@@ -21,7 +21,7 @@ hop_dim:
   rho: 1.0
 lars:
   k: 50
-  theta_solver_mode: residual_cascade
+  theta_solver_mode: shared_target
 feature_transform:
   init_protocol: ridge_x_to_h_star
   ridge: 1.0e-4
